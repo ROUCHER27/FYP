@@ -1,4 +1,4 @@
-from sanity_check_core import build_arg_parser, run_sanity_check
+from sanity_check_signal_tilted import build_arg_parser, run_sanity_check
 
 
 def main() -> None:

@@ -9,7 +9,7 @@ Reduction = Optional[Literal["mean", "median", "sum", "none"]]
 def _reduce(loss: torch.Tensor, reduction: Reduction) -> torch.Tensor:
     """
     Apply a standard reduction to an element-wise loss tensor.
-    中文：对逐元素损失按照 mean/sum/none 指令做标准化聚合。
+    对逐元素损失按照 mean/sum/none 指令做标准化聚合。
     """
     if reduction == "mean":
         return loss.mean()
@@ -29,7 +29,7 @@ def mse_loss(
 ) -> torch.Tensor:
     """
     Standard mean squared error loss used for NN_Mean.
-    中文：常规均方误差，用作 NN_Mean 的基准损失。
+    常规均方误差，用作 NN_Mean 的基准损失。
     """
     loss = (y_true - y_pred) ** 2
     return _reduce(loss, reduction)
@@ -42,7 +42,7 @@ def medse_loss(
 ) -> torch.Tensor:
     """
     Median squared error for robustness against outliers.
-    中文：以平方误差的中位数为准的鲁棒损失，弱化异常值的影响。
+    以平方误差的中位数为准的鲁棒损失，弱化异常值的影响。
     """
     loss = (y_true - y_pred) ** 2
     return _reduce(loss, reduction)
@@ -56,7 +56,7 @@ def madl_loss(
 ) -> torch.Tensor:
     """
     Differentiable approximation of MADL using a smoothed sign via tanh.
-    中文：用 tanh 平滑符号函数得到的可导 MADL 近似，方向一致奖励、方向相反惩罚。
+    用 tanh 平滑符号函数得到的可导 MADL 近似，方向一致奖励、方向相反惩罚。
     """
     prod = y_true * y_pred
     alignment = torch.tanh(temperature * prod)
@@ -73,7 +73,7 @@ def gmadl_loss(
 ) -> torch.Tensor:
     """
     GMADL loss based on a scaled sigmoid of a * y_true * y_pred and |y_true|^b.
-    中文：基于 sigmoid(a·y·ŷ) 与 |y|^b 缩放的 GMADL 损失。
+    基于 sigmoid(a·y·ŷ) 与 |y|^b 缩放的 GMADL 损失。
     """
     product = a * y_true * y_pred
     sigmoid = torch.sigmoid(product)
@@ -89,7 +89,7 @@ def custom_loss(
 ) -> torch.Tensor:
     """
     Placeholder for a user-defined loss function to be customized for experiments.
-    中文：自定义损失的占位实现，可按实验需要自行扩展。
+    自定义损失的占位实现，可按实验需要自行扩展。
     """
     loss = mse_loss(y_true, y_pred, reduction="none")
     return _reduce(loss, reduction)

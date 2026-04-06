@@ -316,7 +316,7 @@ def format_period(period: pd.Period) -> str:
     return period.strftime("%Y-%m")
 
 
-def plot_curves(df: pd.DataFrame, loss_name: str, output_dir: Path) -> None:
+def  plot_curves(df: pd.DataFrame, loss_name: str, output_dir: Path) -> None:
     """
     画两类图：
     1. Loss 曲线（MSE 或 MedSE vs Month）。
