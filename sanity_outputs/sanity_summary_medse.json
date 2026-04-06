@@ -1,0 +1,9 @@
+{
+  "loss": "medse",
+  "avg_medse": 0.04520325114329656,
+  "avg_r2": -1714490.8051155058,
+  "avg_long_short": 0.008989391848444939,
+  "long_short_cumulative_return": 0.05481203446445715,
+  "long_short_std": 0.011631327256210423,
+  "long_short_sharpe": 2.6772668445621557
+}
