@@ -36,10 +36,18 @@ env/
 # VSCode
 .vscode/
 
+# Local workspace metadata
+.obsidian/
+.claude/
+.specstory/
+.cursorindexingignore
+.pytest_cache/
+
 # macOS
 .DS_Store
 .AppleDouble
 .LSOverride
+**/.DS_Store
 
 # Matplotlib cache
 .mpl_cache/
@@ -58,6 +66,10 @@ env/
 *.swp
 *~
 
-# Output directories (keep structure but ignore some outputs)
-# sanity_outputs/*.png
-# sanity_outputs/*.csv
+# Experiment outputs and local captures
+sanity_outputs/
+截屏*.png
+微信图片_*.png
+
+# Draft exports not needed for repo/Colab workflow
+doc/draft*.pdf

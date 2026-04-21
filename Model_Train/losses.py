@@ -1,9 +1,10 @@
-from typing import Literal, Optional
+from typing import Callable, Literal, Optional
 
 import torch
 
 
 Reduction = Optional[Literal["mean", "median", "sum", "none"]]
+ExperimentLossFn = Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
 
 
 def _reduce(loss: torch.Tensor, reduction: Reduction) -> torch.Tensor:
@@ -81,6 +82,108 @@ def gmadl_loss(
     return _reduce(loss, reduction)
 
 
+def _normalized_direction_term(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    a: float = 100.0,
+    b: float = 2.0,
+    eps: float = 1e-8,
+) -> torch.Tensor:
+    product = a * y_true * y_pred
+    dir_penalty = 1.0 - torch.sigmoid(product)
+    weight = torch.abs(y_true) ** b
+    mean_weight = weight.mean() + eps
+    normalized_weight = weight / mean_weight
+    return dir_penalty * normalized_weight
+
+
+def _huber_term(error: torch.Tensor, delta: float = 0.01) -> torch.Tensor:
+    abs_error = torch.abs(error)
+    return torch.where(
+        abs_error <= delta,
+        0.5 * error**2,
+        delta * (abs_error - 0.5 * delta),
+    )
+
+
+def imadl_rebalanced_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    a: float = 100.0,
+    b: float = 2.0,
+    lambda_dir: float = 1.0,
+    lambda_mag: float = 1.0,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """
+    Rebalanced Improved MADL that combines directional pressure with magnitude error.
+    通过归一化方向项与幅度误差的加法组合，避免小收益样本的方向信号被淹没。
+    """
+    dir_term = _normalized_direction_term(y_true, y_pred, a=a, b=b)
+    mag_term = (y_true - y_pred) ** 2
+    loss = lambda_dir * dir_term + lambda_mag * mag_term
+    return _reduce(loss, reduction)
+
+
+def directional_huber_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    a: float = 10.0,
+    delta: float = 0.01,
+    lambda_dir: float = 1.0,
+    lambda_hub: float = 1.0,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """
+    Additive directional-Huber loss with a smooth directional penalty.
+    用 tanh 方向惩罚 + Huber 幅度项结合方向性与鲁棒性。
+    """
+    product = a * y_true * y_pred
+    dir_penalty = 0.5 * (1.0 - torch.tanh(product))
+    huber_term = _huber_term(y_true - y_pred, delta=delta)
+    loss = lambda_dir * dir_penalty + lambda_hub * huber_term
+    return _reduce(loss, reduction)
+
+
+def hybrid_dir_huber_add_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    a: float = 100.0,
+    b: float = 2.0,
+    delta: float = 0.01,
+    lambda_dir: float = 1.0,
+    lambda_hub: float = 1.0,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """
+    Additive hybrid directional-Huber loss.
+    归一化方向项与 Huber 项线性相加，是首轮主贡献候选形式。
+    """
+    dir_term = _normalized_direction_term(y_true, y_pred, a=a, b=b)
+    huber_term = _huber_term(y_true - y_pred, delta=delta)
+    loss = lambda_dir * dir_term + lambda_hub * huber_term
+    return _reduce(loss, reduction)
+
+
+def hybrid_dir_huber_mul_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    a: float = 100.0,
+    b: float = 2.0,
+    delta: float = 0.01,
+    lambda_dir: float = 1.0,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """
+    Multiplicative hybrid directional-Huber loss.
+    用方向项放大 Huber 误差，突出“错方向的误差经济代价更高”。
+    """
+    dir_term = _normalized_direction_term(y_true, y_pred, a=a, b=b)
+    huber_term = _huber_term(y_true - y_pred, delta=delta)
+    loss = (1.0 + lambda_dir * dir_term) * huber_term
+    return _reduce(loss, reduction)
+
+
 def custom_loss(
     y_true: torch.Tensor,
     y_pred: torch.Tensor,
@@ -95,11 +198,60 @@ def custom_loss(
     return _reduce(loss, reduction)
 
 
+EXPERIMENT_LOSS_NAMES = (
+    "mse",
+    "medse",
+    "gmadl",
+    "imadl",
+    "dirhuber",
+    "hybrid_add",
+    "hybrid_mul",
+)
+
+
+def get_experiment_loss_fn(name: str) -> ExperimentLossFn:
+    """
+    Return the canonical training loss callable used by sanity-check experiments.
+    为静态 sanity-check 实验返回统一命名的训练损失函数。
+    """
+    name_lower = name.lower()
+    if name_lower == "mse":
+        return lambda y_true, y_pred: mse_loss(y_true, y_pred, reduction="mean")
+    if name_lower == "medse":
+        return lambda y_true, y_pred: medse_loss(y_true, y_pred, reduction="median")
+    if name_lower == "gmadl":
+        return lambda y_true, y_pred: gmadl_loss(y_true, y_pred, reduction="mean")
+    if name_lower == "imadl":
+        return lambda y_true, y_pred: imadl_rebalanced_loss(
+            y_true, y_pred, reduction="mean"
+        )
+    if name_lower == "dirhuber":
+        return lambda y_true, y_pred: directional_huber_loss(
+            y_true, y_pred, reduction="mean"
+        )
+    if name_lower == "hybrid_add":
+        return lambda y_true, y_pred: hybrid_dir_huber_add_loss(
+            y_true, y_pred, reduction="mean"
+        )
+    if name_lower == "hybrid_mul":
+        return lambda y_true, y_pred: hybrid_dir_huber_mul_loss(
+            y_true, y_pred, reduction="mean"
+        )
+    raise ValueError(f"Unsupported experiment loss: {name}")
+
+
 __all__ = [
+    "ExperimentLossFn",
+    "EXPERIMENT_LOSS_NAMES",
     "Reduction",
     "mse_loss",
     "medse_loss",
     "madl_loss",
     "gmadl_loss",
+    "imadl_rebalanced_loss",
+    "directional_huber_loss",
+    "hybrid_dir_huber_add_loss",
+    "hybrid_dir_huber_mul_loss",
+    "get_experiment_loss_fn",
     "custom_loss",
 ]

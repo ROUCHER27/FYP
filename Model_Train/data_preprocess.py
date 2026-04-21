@@ -53,16 +53,13 @@ def validate_columns(df: pd.DataFrame, required: Sequence[str]) -> None:
 def parse_dates(
     data: pd.DataFrame,
     date_column: str = "date",
-    infer_format: bool = True,
 ) -> pd.DataFrame:
     """
     Ensure date column is in pandas datetime format and sorted by PERMNO, date.
     中文：将日期列统一转为 pandas 的 datetime 并按 PERMNO、日期排序。
     """
     df = data.copy()
-    parsed_dates = pd.to_datetime(
-        df[date_column], errors="coerce", infer_datetime_format=infer_format
-    )
+    parsed_dates = pd.to_datetime(df[date_column], errors="coerce")
     if parsed_dates.isna().any():
         raise ValueError("Encountered unparsable dates; please check the raw CSV files.")
     df[date_column] = parsed_dates
