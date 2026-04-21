@@ -4,6 +4,7 @@ import io
 import json
 import os
 import random
+import shutil
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List
@@ -141,6 +142,12 @@ def build_arg_parser(description: str) -> argparse.ArgumentParser:
         type=str,
         default=None,
         help="Directory for per-loss resume state files. Defaults to <output-dir>/checkpoints.",
+    )
+    parser.add_argument(
+        "--archive-root",
+        type=str,
+        default=None,
+        help="Optional destination root for per-loss archived outputs. Use a Drive path in Colab to save directly to Drive.",
     )
     return parser
 
@@ -412,6 +419,30 @@ def sort_and_recompute_metrics(
         (1.0 + long_short_returns.fillna(0.0)).cumprod() - 1.0
     )
     return ordered.reset_index(drop=True)
+
+
+def expected_output_paths(output_dir: Path, loss_name: str) -> Dict[str, Path]:
+    return {
+        "metrics": output_dir / f"sanity_metrics_{loss_name}.csv",
+        "summary": output_dir / f"sanity_summary_{loss_name}.json",
+        "loss_curve": output_dir / f"{loss_name}_loss_curve.png",
+        "returns_curve": output_dir / f"{loss_name}_returns_curve.png",
+    }
+
+
+def archive_loss_outputs(
+    loss_name: str,
+    output_dir: Path,
+    archive_root: Path | None,
+) -> Path | None:
+    if archive_root is None:
+        return None
+    archive_dir = archive_root / loss_name
+    ensure_output_dir(archive_dir)
+    for source_path in expected_output_paths(output_dir, loss_name).values():
+        if source_path.exists():
+            shutil.copy2(source_path, archive_dir / source_path.name)
+    return archive_dir
 
 
 def train_model(
@@ -762,6 +793,9 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
     set_seed(args.seed)
     device = detect_device()
     output_dir = Path(args.output_dir)
+    archive_root = (
+        Path(args.archive_root) if getattr(args, "archive_root", None) else None
+    )
     ensure_output_dir(output_dir)
     configure_matplotlib(output_dir)
     resume_mode = normalize_resume_mode(getattr(args, "resume_mode", "auto"))
@@ -945,6 +979,9 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         f"Std {summary['long_short_std']:.4f} | Sharpe {summary['long_short_sharpe']:.4f}"
     )
     plot_curves(df_result, loss_name, output_dir)
+    archive_dir = archive_loss_outputs(loss_name, output_dir, archive_root)
+    if archive_dir is not None:
+        print(f"Archived {loss_name.upper()} outputs to {archive_dir}")
     print(f"{loss_name.upper()} 实验完成。")
     print(
         "\n提示：批量比较 7 个 loss 时，请使用对应 runner 或 run_all_experiments.py。"
