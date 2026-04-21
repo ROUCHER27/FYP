@@ -33,6 +33,7 @@ def _make_args(
         "max_epochs": 3,
         "output_dir": str(tmp_path / output_name),
         "checkpoint_dir": str(tmp_path / checkpoint_name),
+        "archive_root": None,
         "resume_mode": "resume",
         "seed": 123,
         "max_weight": None,
@@ -429,3 +430,37 @@ def test_run_sanity_check_rejects_mismatched_run_spec(
 
     with pytest.raises(ValueError, match="Run spec mismatch"):
         scst.run_sanity_check("mse", mismatched_args)
+
+
+def test_run_sanity_check_archives_single_loss_outputs_after_completion(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    x_all, y_all, dates = _make_synthetic_arrays()
+    archive_root = tmp_path / "drive" / "FYP"
+    args = _make_args(
+        tmp_path,
+        output_name="archive_outputs",
+        checkpoint_name="archive_checkpoints",
+        archive_root=str(archive_root),
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+
+    def fake_plot_curves(_df, loss_name, output_dir):
+        (Path(output_dir) / f"{loss_name}_loss_curve.png").write_bytes(b"loss")
+        (Path(output_dir) / f"{loss_name}_returns_curve.png").write_bytes(b"returns")
+
+    monkeypatch.setattr(scst, "plot_curves", fake_plot_curves)
+    scst.run_sanity_check("mse", args)
+
+    archived_dir = archive_root / "mse"
+    assert archived_dir.exists()
+    assert (archived_dir / "sanity_metrics_mse.csv").exists()
+    assert (archived_dir / "sanity_summary_mse.json").exists()
+    assert (archived_dir / "mse_loss_curve.png").exists()
+    assert (archived_dir / "mse_returns_curve.png").exists()
+
+    archived_summary = json.loads(
+        (archived_dir / "sanity_summary_mse.json").read_text()
+    )
+    assert archived_summary["loss"] == "mse"

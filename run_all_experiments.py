@@ -100,6 +100,7 @@ def build_command(
     max_epochs: int,
     batch_size: int,
     best_config_path: Path | None = None,
+    archive_root: Path | None = None,
     resume_mode: str | None = None,
     checkpoint_dir: Path | None = None,
 ) -> List[str]:
@@ -117,6 +118,8 @@ def build_command(
     ]
     if best_config_path:
         command.extend(["--best-config-path", str(best_config_path)])
+    if archive_root:
+        command.extend(["--archive-root", str(archive_root)])
     if resume_mode:
         command.extend(["--resume-mode", resume_mode])
     if checkpoint_dir:
@@ -133,6 +136,7 @@ def run_experiments(
     skip_existing: bool = False,
     stop_on_error: bool = False,
     best_config_path: Path | None = None,
+    archive_root: Path | None = None,
     resume_mode: str | None = None,
     checkpoint_dir: Path | None = None,
 ) -> Dict[str, Dict[str, float]]:
@@ -152,6 +156,7 @@ def run_experiments(
             max_epochs=max_epochs,
             batch_size=batch_size,
             best_config_path=best_config_path,
+            archive_root=archive_root,
             resume_mode=resume_mode,
             checkpoint_dir=checkpoint_dir,
         )
@@ -213,6 +218,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Best hyperparameter file forwarded to each single-loss runner.",
     )
     parser.add_argument(
+        "--archive-root",
+        type=str,
+        default=None,
+        help="Archive root forwarded to each single-loss runner. Use a Drive path in Colab to save each loss directly under Drive.",
+    )
+    parser.add_argument(
         "--skip-existing",
         action="store_true",
         help="Skip losses whose four output artifacts and summary schema already exist.",
@@ -250,6 +261,7 @@ def main() -> None:
         best_config_path=Path(args.best_config_path)
         if args.best_config_path
         else None,
+        archive_root=Path(args.archive_root) if args.archive_root else None,
         skip_existing=args.skip_existing,
         stop_on_error=args.stop_on_error,
         resume_mode=args.resume_mode,
