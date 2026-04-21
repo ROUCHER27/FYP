@@ -136,6 +136,7 @@ def test_run_experiments_does_not_skip_partial_checkpoint_state(
 
 def test_build_command_appends_resume_flags() -> None:
     checkpoint_dir = Path("/tmp/checkpoints")
+    best_config_path = Path("/tmp/best_hyperparameters.txt")
 
     command = build_command(
         loss_name="medse",
@@ -143,11 +144,16 @@ def test_build_command_appends_resume_flags() -> None:
         test_months=3,
         max_epochs=4,
         batch_size=512,
+        best_config_path=best_config_path,
         resume_mode="latest",
         checkpoint_dir=checkpoint_dir,
     )
 
-    assert command[-4:] == [
+    assert "--best-config-path" in command
+    assert str(best_config_path) in command
+    assert command[-6:] == [
+        "--best-config-path",
+        str(best_config_path),
         "--resume-mode",
         "latest",
         "--checkpoint-dir",
@@ -172,6 +178,7 @@ def test_main_passes_resume_args_to_run_experiments(monkeypatch, tmp_path: Path)
             test_months=6,
             max_epochs=10,
             batch_size=128,
+            best_config_path=str(tmp_path / "best_hyperparameters.txt"),
             skip_existing=False,
             stop_on_error=False,
             resume_mode="latest",
@@ -183,3 +190,4 @@ def test_main_passes_resume_args_to_run_experiments(monkeypatch, tmp_path: Path)
 
     assert captured["resume_mode"] == "latest"
     assert captured["checkpoint_dir"] == Path(tmp_path / "ckpts")
+    assert captured["best_config_path"] == Path(tmp_path / "best_hyperparameters.txt")

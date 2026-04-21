@@ -50,7 +50,10 @@ python run_sanity_check_mse.py --test-months 6 --max-epochs 20
 Run the batch comparison:
 
 ```bash
-python run_all_experiments.py --test-months 24 --max-epochs 20
+python run_all_experiments.py \
+  --test-months 24 \
+  --max-epochs 20 \
+  --best-config-path best_hyperparameters.txt
 ```
 
 ## Colab Workflow
@@ -61,7 +64,10 @@ Clone the repo in Colab, install dependencies, then run either a smoke test or t
 git clone https://github.com/ROUCHER27/FYP.git
 cd FYP
 pip install -r requirements.txt
-python run_all_experiments.py --test-months 2 --max-epochs 2
+python run_all_experiments.py \
+  --test-months 2 \
+  --max-epochs 2 \
+  --best-config-path best_hyperparameters.txt
 ```
 
 Recommended Colab practice:

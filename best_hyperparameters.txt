@@ -1,2 +1,2 @@
-Best MSE: 0.022521824576097246
-Config: {'input_dim': 15, 'hidden_dims': [64, 32, 16], 'activation': 'relu', 'dropout': 0.2}
+Best MSE: 0.022619743672687983
+Config: {'input_dim': 15, 'hidden_dims': [64, 32, 16], 'activation': 'tanh', 'dropout': 0.0}

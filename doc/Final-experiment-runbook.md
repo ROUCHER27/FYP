@@ -201,6 +201,7 @@ python run_sanity_check_mse.py --test-months 24 --max-epochs 20 --batch-size 102
 ```bash
 python run_all_experiments.py \
   --losses mse,medse,gmadl,imadl,dirhuber,hybrid_add,hybrid_mul \
+  --best-config-path best_hyperparameters.txt \
   --test-months 24 \
   --max-epochs 20 \
   --batch-size 1024 \
@@ -336,6 +337,7 @@ os.chdir('/content/drive/MyDrive/FYP/code')
     --losses mse,medse,gmadl,imadl,dirhuber,hybrid_add,hybrid_mul \
     --output-dir /content/drive/MyDrive/FYP/outputs/sanity_outputs \
     --checkpoint-dir /content/drive/MyDrive/FYP/outputs/checkpoints \
+    --best-config-path /content/drive/MyDrive/FYP/best_hyperparameters.txt \
     --test-months 24 \
     --max-epochs 20 \
     --batch-size 1024 \
@@ -503,6 +505,7 @@ checkpoints/
 pytest -q
 python run_all_experiments.py \
   --losses mse,medse,gmadl,imadl,dirhuber,hybrid_add,hybrid_mul \
+  --best-config-path best_hyperparameters.txt \
   --test-months 24 \
   --max-epochs 20 \
   --batch-size 1024 \
@@ -517,6 +520,7 @@ python run_all_experiments.py \
     --losses mse,medse,gmadl,imadl,dirhuber,hybrid_add,hybrid_mul \
     --output-dir /content/drive/MyDrive/FYP/outputs/sanity_outputs \
     --checkpoint-dir /content/drive/MyDrive/FYP/outputs/checkpoints \
+    --best-config-path /content/drive/MyDrive/FYP/best_hyperparameters.txt \
     --test-months 24 \
     --max-epochs 20 \
     --batch-size 1024 \
