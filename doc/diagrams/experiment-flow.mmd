@@ -1,0 +1,11 @@
+flowchart TB
+    A["FYP experiment scope"] --> B["Lock inputs<br/>X1 features + fixed MLP + fixed portfolio rule"]
+    B --> C["Define loss portfolio<br/>mse / medse / gmadl / imadl / dirhuber / hybrid / ranking slot"]
+    C --> D["Sanity check<br/>1 loss at a time<br/>small sample + 2-3 epochs"]
+    D --> E{"Sanity check passes?"}
+    E -- "no" --> F["Fix formula / runner / metrics"]
+    F --> D
+    E -- "yes" --> G["Batch run<br/>all core losses locally"]
+    G --> H["Colab smoke<br/>single loss + checkpoint save"]
+    H --> I["Full run<br/>24-month test window"]
+    I --> J["Consolidate outputs<br/>metrics tables / curves / notes"]
