@@ -7,9 +7,93 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 import pytest
+import torch
 
 import sanity_check_signal_tilted as scst
 from Model_Train.models import MLPConfig
+
+
+def _make_args(
+    tmp_path: Path,
+    *,
+    output_name: str,
+    checkpoint_name: str,
+    **overrides,
+) -> SimpleNamespace:
+    args = {
+        "data_dir": ".",
+        "pattern": "*.csv",
+        "lookback_months": 12,
+        "train_start": "1990-01",
+        "train_end": "1994-12",
+        "test_start": "1995-01",
+        "test_months": 3,
+        "best_config_path": "best_hyperparameters.txt",
+        "batch_size": 8,
+        "max_epochs": 3,
+        "output_dir": str(tmp_path / output_name),
+        "checkpoint_dir": str(tmp_path / checkpoint_name),
+        "resume_mode": "resume",
+        "seed": 123,
+        "max_weight": None,
+    }
+    args.update(overrides)
+    return SimpleNamespace(**args)
+
+
+def _make_synthetic_arrays(
+    *,
+    rows_per_month: int = 6,
+    missing_test_months: tuple[str, ...] = (),
+) -> tuple[np.ndarray, np.ndarray, pd.Series]:
+    all_months = pd.period_range("1990-01", "1995-03", freq="M")
+    skipped = {pd.Period(month, freq="M") for month in missing_test_months}
+    months = [period for period in all_months if period not in skipped]
+
+    rng = np.random.default_rng(7)
+    total_rows = len(months) * rows_per_month
+    x_all = rng.normal(size=(total_rows, 3)).astype(np.float32)
+    coeffs = np.array([0.35, -0.2, 0.15], dtype=np.float32)
+    y_all = (x_all @ coeffs + 0.03 * rng.normal(size=total_rows)).astype(np.float32)
+    dates = pd.Series(
+        [period.to_timestamp() for period in months for _ in range(rows_per_month)]
+    )
+    return x_all, y_all, dates
+
+
+def _patch_pipeline(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    x_all: np.ndarray,
+    y_all: np.ndarray,
+    dates: pd.Series,
+) -> None:
+    ids = pd.Series(np.arange(len(dates)), dtype=int)
+
+    monkeypatch.setattr(
+        scst,
+        "prepare_panel_data",
+        lambda **_kwargs: pd.DataFrame({"stub": [1]}),
+    )
+    monkeypatch.setattr(scst, "build_feature_set_x1", lambda panel, feature_cfg: panel)
+    monkeypatch.setattr(
+        scst,
+        "assemble_feature_matrix",
+        lambda _df_x1: (x_all, y_all, ids, dates),
+    )
+    monkeypatch.setattr(
+        scst,
+        "read_best_config",
+        lambda path, input_dim: MLPConfig(
+            input_dim=input_dim,
+            hidden_dims=[6],
+            activation="relu",
+            dropout=0.0,
+        ),
+    )
+    monkeypatch.setattr(scst, "plot_curves", lambda *args, **kwargs: None)
+    monkeypatch.setattr(scst, "detect_device", lambda: torch.device("cpu"))
+    monkeypatch.setattr(scst, "configure_matplotlib", lambda *_args, **_kwargs: None)
 
 
 def test_compute_directional_metrics_reports_expected_fields() -> None:
@@ -20,6 +104,14 @@ def test_compute_directional_metrics_reports_expected_fields() -> None:
 
     assert metrics["directional_accuracy"] == 0.5
     assert metrics["sign_mismatch_large_y"] == 0.0
+
+
+def test_normalize_resume_mode_supports_plan_modes_and_legacy_aliases() -> None:
+    assert scst.normalize_resume_mode("auto") == "auto"
+    assert scst.normalize_resume_mode("never") == "never"
+    assert scst.normalize_resume_mode("require") == "require"
+    assert scst.normalize_resume_mode("resume") == "auto"
+    assert scst.normalize_resume_mode("off") == "never"
 
 
 def test_summarize_results_uses_unified_output_schema() -> None:
@@ -169,3 +261,171 @@ def test_run_sanity_check_writes_unified_summary_schema(
     assert df_metrics["sample_size"].tolist() == [4, 4]
     assert np.isfinite(summary["avg_mse"])
     assert np.isfinite(summary["avg_long_short"])
+
+
+def test_run_sanity_check_resumes_training_after_completed_epoch(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    x_all, y_all, dates = _make_synthetic_arrays()
+
+    baseline_args = _make_args(
+        tmp_path,
+        output_name="baseline_outputs",
+        checkpoint_name="baseline_checkpoints",
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+    scst.run_sanity_check("mse", baseline_args)
+    baseline_metrics = pd.read_csv(
+        Path(baseline_args.output_dir) / "sanity_metrics_mse.csv"
+    )
+
+    interrupted_args = _make_args(
+        tmp_path,
+        output_name="resume_outputs",
+        checkpoint_name="resume_checkpoints",
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+
+    original_save_train_state = scst.save_train_state
+    raised = {"value": False}
+
+    def interrupting_save_train_state(path: Path, state: dict) -> None:
+        original_save_train_state(path, state)
+        if state["completed_epochs"] == 1 and not raised["value"]:
+            raised["value"] = True
+            raise RuntimeError("simulated training interruption")
+
+    monkeypatch.setattr(scst, "save_train_state", interrupting_save_train_state)
+
+    with pytest.raises(RuntimeError, match="simulated training interruption"):
+        scst.run_sanity_check("mse", interrupted_args)
+
+    train_state_path = Path(interrupted_args.checkpoint_dir) / "mse" / "train_state.json"
+    train_state = json.loads(train_state_path.read_text())
+    assert train_state["completed_epochs"] == 1
+
+    monkeypatch.setattr(scst, "save_train_state", original_save_train_state)
+    scst.run_sanity_check("mse", interrupted_args)
+
+    resumed_metrics = pd.read_csv(
+        Path(interrupted_args.output_dir) / "sanity_metrics_mse.csv"
+    )
+    pd.testing.assert_frame_equal(resumed_metrics, baseline_metrics)
+
+
+def test_run_sanity_check_resumes_evaluation_from_metrics_csv(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    x_all, y_all, dates = _make_synthetic_arrays(missing_test_months=("1995-02",))
+
+    baseline_args = _make_args(
+        tmp_path,
+        output_name="baseline_eval_outputs",
+        checkpoint_name="baseline_eval_checkpoints",
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+    scst.run_sanity_check("mse", baseline_args)
+    baseline_metrics = pd.read_csv(
+        Path(baseline_args.output_dir) / "sanity_metrics_mse.csv"
+    )
+
+    interrupted_args = _make_args(
+        tmp_path,
+        output_name="resume_eval_outputs",
+        checkpoint_name="resume_eval_checkpoints",
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+
+    original_save_progress = scst.save_progress
+    raised = {"value": False}
+
+    def interrupting_save_progress(path: Path, state: dict) -> None:
+        original_save_progress(path, state)
+        if (
+            state["stage"] == "evaluating"
+            and state["completed_months"] == ["1995-01"]
+            and not raised["value"]
+        ):
+            raised["value"] = True
+            raise RuntimeError("simulated evaluation interruption")
+
+    monkeypatch.setattr(scst, "save_progress", interrupting_save_progress)
+
+    with pytest.raises(RuntimeError, match="simulated evaluation interruption"):
+        scst.run_sanity_check("mse", interrupted_args)
+
+    metrics_path = Path(interrupted_args.output_dir) / "sanity_metrics_mse.csv"
+    partial_metrics = pd.read_csv(metrics_path)
+    assert partial_metrics["month"].tolist() == ["1995-01"]
+
+    monkeypatch.setattr(scst, "save_progress", original_save_progress)
+    scst.run_sanity_check("mse", interrupted_args)
+
+    resumed_metrics = pd.read_csv(metrics_path)
+    pd.testing.assert_frame_equal(resumed_metrics, baseline_metrics)
+
+    progress_path = Path(interrupted_args.checkpoint_dir) / "mse" / "progress.json"
+    progress = json.loads(progress_path.read_text())
+    assert progress["completed_months"] == ["1995-01", "1995-02", "1995-03"]
+
+
+def test_run_sanity_check_resume_does_not_duplicate_completed_months(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    x_all, y_all, dates = _make_synthetic_arrays(missing_test_months=("1995-02",))
+    args = _make_args(
+        tmp_path,
+        output_name="dedupe_outputs",
+        checkpoint_name="dedupe_checkpoints",
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+
+    scst.run_sanity_check("mse", args)
+    metrics_path = Path(args.output_dir) / "sanity_metrics_mse.csv"
+    first_metrics = pd.read_csv(metrics_path)
+
+    predict_calls = {"count": 0}
+    original_predict = scst.predict
+
+    def counting_predict(*args, **kwargs):
+        predict_calls["count"] += 1
+        return original_predict(*args, **kwargs)
+
+    monkeypatch.setattr(scst, "predict", counting_predict)
+    scst.run_sanity_check("mse", args)
+
+    second_metrics = pd.read_csv(metrics_path)
+    pd.testing.assert_frame_equal(second_metrics, first_metrics)
+    assert predict_calls["count"] == 0
+
+    progress_path = Path(args.checkpoint_dir) / "mse" / "progress.json"
+    progress = json.loads(progress_path.read_text())
+    assert progress["completed_months"] == ["1995-01", "1995-02", "1995-03"]
+
+
+def test_run_sanity_check_rejects_mismatched_run_spec(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    x_all, y_all, dates = _make_synthetic_arrays()
+    original_args = _make_args(
+        tmp_path,
+        output_name="spec_outputs",
+        checkpoint_name="spec_checkpoints",
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+    scst.run_sanity_check("mse", original_args)
+
+    mismatched_args = _make_args(
+        tmp_path,
+        output_name="spec_outputs",
+        checkpoint_name="spec_checkpoints",
+        test_months=4,
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+
+    with pytest.raises(ValueError, match="Run spec mismatch"):
+        scst.run_sanity_check("mse", mismatched_args)

@@ -4,7 +4,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from run_all_experiments import is_loss_complete, run_experiments
+import run_all_experiments
+from run_all_experiments import build_command, is_loss_complete, run_experiments
 
 
 def _write_success_outputs(output_dir: Path, loss_name: str) -> None:
@@ -96,3 +97,89 @@ def test_run_experiments_excludes_failed_losses_from_comparison(
     assert list(comparison["loss"]) == ["hybrid_mul"]
     assert "error" in results["hybrid_add"]
     assert results["hybrid_mul"]["loss"] == "hybrid_mul"
+
+
+def test_run_experiments_does_not_skip_partial_checkpoint_state(
+    tmp_path: Path, monkeypatch
+) -> None:
+    output_dir = tmp_path / "outputs"
+    checkpoint_dir = tmp_path / "checkpoints"
+    output_dir.mkdir()
+    checkpoint_dir.mkdir()
+    (checkpoint_dir / "mse_epoch5.pt").write_bytes(b"checkpoint")
+    (output_dir / "sanity_metrics_mse.csv").write_text(
+        "month,mse,medse,long_short_return\n1995-01,1.0,0.8,0.1\n"
+    )
+
+    calls = []
+
+    def fake_run(cmd, check):
+        calls.append(cmd)
+        _write_success_outputs(output_dir, "mse")
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    results = run_experiments(
+        losses=["mse"],
+        output_dir=output_dir,
+        test_months=2,
+        max_epochs=1,
+        skip_existing=True,
+        resume_mode="latest",
+        checkpoint_dir=checkpoint_dir,
+    )
+
+    assert len(calls) == 1
+    assert results["mse"]["loss"] == "mse"
+
+
+def test_build_command_appends_resume_flags() -> None:
+    checkpoint_dir = Path("/tmp/checkpoints")
+
+    command = build_command(
+        loss_name="medse",
+        output_dir=Path("/tmp/outputs"),
+        test_months=3,
+        max_epochs=4,
+        batch_size=512,
+        resume_mode="latest",
+        checkpoint_dir=checkpoint_dir,
+    )
+
+    assert command[-4:] == [
+        "--resume-mode",
+        "latest",
+        "--checkpoint-dir",
+        str(checkpoint_dir),
+    ]
+
+
+def test_main_passes_resume_args_to_run_experiments(monkeypatch, tmp_path: Path) -> None:
+    captured = {}
+
+    def fake_run_experiments(**kwargs):
+        captured.update(kwargs)
+        return {"mse": {"loss": "mse"}}
+
+    monkeypatch.setattr(run_all_experiments, "run_experiments", fake_run_experiments)
+    monkeypatch.setattr(
+        run_all_experiments.argparse.ArgumentParser,
+        "parse_args",
+        lambda self: run_all_experiments.argparse.Namespace(
+            losses="mse",
+            output_dir=str(tmp_path / "outputs"),
+            test_months=6,
+            max_epochs=10,
+            batch_size=128,
+            skip_existing=False,
+            stop_on_error=False,
+            resume_mode="latest",
+            checkpoint_dir=str(tmp_path / "ckpts"),
+        ),
+    )
+
+    run_all_experiments.main()
+
+    assert captured["resume_mode"] == "latest"
+    assert captured["checkpoint_dir"] == Path(tmp_path / "ckpts")

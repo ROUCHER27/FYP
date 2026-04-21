@@ -99,8 +99,10 @@ def build_command(
     test_months: int,
     max_epochs: int,
     batch_size: int,
+    resume_mode: str | None = None,
+    checkpoint_dir: Path | None = None,
 ) -> List[str]:
-    return [
+    command = [
         sys.executable,
         RUNNER_BY_LOSS[loss_name],
         "--output-dir",
@@ -112,6 +114,11 @@ def build_command(
         "--batch-size",
         str(batch_size),
     ]
+    if resume_mode:
+        command.extend(["--resume-mode", resume_mode])
+    if checkpoint_dir:
+        command.extend(["--checkpoint-dir", str(checkpoint_dir)])
+    return command
 
 
 def run_experiments(
@@ -122,6 +129,8 @@ def run_experiments(
     batch_size: int = 1024,
     skip_existing: bool = False,
     stop_on_error: bool = False,
+    resume_mode: str | None = None,
+    checkpoint_dir: Path | None = None,
 ) -> Dict[str, Dict[str, float]]:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -138,6 +147,8 @@ def run_experiments(
             test_months=test_months,
             max_epochs=max_epochs,
             batch_size=batch_size,
+            resume_mode=resume_mode,
+            checkpoint_dir=checkpoint_dir,
         )
         try:
             subprocess.run(cmd, check=True)
@@ -200,6 +211,18 @@ def build_arg_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="Stop the batch immediately after the first failed loss.",
     )
+    parser.add_argument(
+        "--resume-mode",
+        type=str,
+        default=None,
+        help="Resume policy forwarded to each single-loss runner.",
+    )
+    parser.add_argument(
+        "--checkpoint-dir",
+        type=str,
+        default=None,
+        help="Checkpoint directory forwarded to each single-loss runner.",
+    )
     return parser
 
 
@@ -215,6 +238,8 @@ def main() -> None:
         batch_size=args.batch_size,
         skip_existing=args.skip_existing,
         stop_on_error=args.stop_on_error,
+        resume_mode=args.resume_mode,
+        checkpoint_dir=Path(args.checkpoint_dir) if args.checkpoint_dir else None,
     )
 
     completed = [name for name, result in results.items() if "error" not in result]
