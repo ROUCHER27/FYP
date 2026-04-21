@@ -51,7 +51,7 @@ from Model_Train.features import (
     assemble_feature_matrix,
     build_feature_set_x1,
 )
-from Model_Train.losses import medse_loss, mse_loss
+from Model_Train.losses import EXPERIMENT_LOSS_NAMES, get_experiment_loss_fn
 from Model_Train.models import MLP, MLPConfig
 
 
@@ -225,7 +225,7 @@ def train_model(
 ) -> MLP:
     """
     单次训练流程：DataLoader -> 前向 -> 反向 -> 更新。
-    loss_name 决定使用 MSE 还是 MedSE。
+    loss_name 决定本次实验使用的训练损失函数。
     """
     dataset = TensorDataset(
         torch.from_numpy(x_train).float(), torch.from_numpy(y_train).float()
@@ -233,13 +233,7 @@ def train_model(
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     model = MLP(config).to(device)
     optimizer = torch.optim.Adam(model.parameters())
-
-    if loss_name == "mse":
-        criterion = lambda a, b: mse_loss(a, b, reduction="mean")
-    elif loss_name == "medse":
-        criterion = lambda a, b: medse_loss(a, b, reduction="median")
-    else:
-        raise ValueError(f"Unsupported loss for sanity check: {loss_name}")
+    criterion = get_experiment_loss_fn(loss_name)
 
     model.train()
     for epoch in range(max_epochs):
@@ -283,6 +277,33 @@ def compute_metrics(
     else:
         r2 = float(1.0 - np.sum(residuals**2) / denom)
     return {"mse": mse, "medse": medse, "r2": r2}
+
+
+def compute_directional_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
+    """
+    方向性指标：
+    - directional_accuracy: sign(y) == sign(ŷ) 的比例
+    - sign_mismatch_large_y: |y| 高于 75 分位时的符号错误率
+    """
+    if y_true.size == 0:
+        return {
+            "directional_accuracy": float("nan"),
+            "sign_mismatch_large_y": float("nan"),
+        }
+    sign_match = np.sign(y_true) == np.sign(y_pred)
+    directional_accuracy = float(np.mean(sign_match))
+
+    threshold = float(np.percentile(np.abs(y_true), 75))
+    large_y_mask = np.abs(y_true) > threshold
+    if large_y_mask.sum() == 0:
+        sign_mismatch_large_y = float("nan")
+    else:
+        sign_mismatch_large_y = float(np.mean(~sign_match[large_y_mask]))
+
+    return {
+        "directional_accuracy": directional_accuracy,
+        "sign_mismatch_large_y": sign_mismatch_large_y,
+    }
 
 
 def apply_weight_cap(
@@ -414,12 +435,12 @@ def format_period(period: pd.Period) -> str:
 def plot_curves(df: pd.DataFrame, loss_name: str, output_dir: Path) -> None:
     """
     画两类图：
-    1. Loss 曲线（MSE 或 MedSE vs Month）。
+    1. Loss 曲线（固定使用 MSE vs Month）。
     2. Long-Short Return 曲线。
     """
     months = pd.to_datetime(df["month"])
-    metric_col = "mse" if loss_name == "mse" else "medse"
-    label = metric_col.upper()
+    metric_col = "mse"
+    label = "MSE"
 
     plt.figure(figsize=(8, 4))
     plt.plot(months, df[metric_col], marker="o", label=label)
@@ -456,10 +477,35 @@ def plot_curves(df: pd.DataFrame, loss_name: str, output_dir: Path) -> None:
     print(f"Long-Short return curve saved to {ret_path}")
 
 
+def summarize_results(loss_name: str, df_result: pd.DataFrame) -> Dict[str, float]:
+    """
+    统一汇总 schema，供单实验与批量对比脚本复用。
+    """
+    long_short_returns = df_result["long_short_return"].astype(float)
+    ls_stats = compute_long_short_stats(long_short_returns)
+    return {
+        "loss": loss_name,
+        "avg_mse": float(df_result["mse"].mean()),
+        "avg_medse": float(df_result["medse"].mean()),
+        "avg_r2": float(df_result["r2"].mean()),
+        "avg_directional_accuracy": float(df_result["directional_accuracy"].mean()),
+        "avg_sign_mismatch_large_y": float(df_result["sign_mismatch_large_y"].mean()),
+        "avg_long_short": float(df_result["long_short_return"].mean()),
+        "long_short_cumulative_return": ls_stats["cumulative_return"],
+        "long_short_std": ls_stats["std"],
+        "long_short_sharpe": ls_stats["sharpe"],
+    }
+
+
 def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
     """
     固定训练窗口，只训练一次模型，然后在未来 6 个月逐月预测/调仓。
     """
+    loss_name = loss_name.lower()
+    if loss_name not in EXPERIMENT_LOSS_NAMES:
+        raise ValueError(
+            f"Unsupported loss '{loss_name}'. Supported losses: {', '.join(EXPERIMENT_LOSS_NAMES)}"
+        )
     global MAX_WEIGHT
     MAX_WEIGHT = args.max_weight
     set_seed(args.seed)
@@ -504,7 +550,6 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         max_epochs=args.max_epochs,
     )
 
-    label = "MSE" if loss_name == "mse" else "MedSE"
     month_records: List[Dict[str, object]] = []
     print("Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.")
     for period in test_periods:
@@ -517,22 +562,25 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         y_month = y_all[mask]
         preds = predict(model, x_month, device=device)
         metrics = compute_metrics(y_month, preds)
+        directional_metrics = compute_directional_metrics(y_month, preds)
         port = compute_portfolio_returns(preds, y_month)
-        # 根据实验类型选择关注的损失（MSE 或 MedSE）
-        loss_value = metrics["mse"] if loss_name == "mse" else metrics["medse"]
         month_records.append(
             {
                 "month": format_period(period),
                 "sample_size": int(mask.sum()),
-                label.lower(): loss_value,
+                "mse": metrics["mse"],
+                "medse": metrics["medse"],
                 "r2": metrics["r2"],
+                "directional_accuracy": directional_metrics["directional_accuracy"],
+                "sign_mismatch_large_y": directional_metrics["sign_mismatch_large_y"],
                 "long_return": port["long"],
                 "short_return": port["short"],
                 "long_short_return": port["long_short"],
             }
         )
         print(
-            f"Month {format_period(period)} | {label} {loss_value:.6f} | "
+            f"Month {format_period(period)} | {loss_name.upper()} | "
+            f"MSE {metrics['mse']:.6f} | MedSE {metrics['medse']:.6f} | "
             f"R2 {metrics['r2']:.4f} | Long {port['long']:.4f} | "
             f"Short {port['short']:.4f} | Long-Short {port['long_short']:.4f}"
         )
@@ -546,34 +594,21 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
     df_result["cumulative_long_short_return"] = (
         (1.0 + long_short_returns.fillna(0.0)).cumprod() - 1.0
     )
-    ls_stats = compute_long_short_stats(long_short_returns)
     csv_path = Path(args.output_dir) / f"sanity_metrics_{loss_name}.csv"
     df_result.to_csv(csv_path, index=False)
-    print(f"Saved metrics for {label} to {csv_path}")
+    print(f"Saved metrics for {loss_name.upper()} to {csv_path}")
 
-    avg_key = label.lower()
-    summary = {
-        "loss": loss_name,
-        f"avg_{avg_key}": float(df_result[avg_key].mean()),
-        "avg_r2": float(df_result["r2"].mean()),  # R^2 体现解释度
-        "avg_long_short": float(df_result["long_short_return"].mean()),
-        "long_short_cumulative_return": ls_stats["cumulative_return"],
-        "long_short_std": ls_stats["std"],
-        "long_short_sharpe": ls_stats["sharpe"],
-    }
+    summary = summarize_results(loss_name, df_result)
     summary_path = output_dir / f"sanity_summary_{loss_name}.json"
     summary_path.write_text(json.dumps(summary, indent=2))
     print(f"Wrote summary to {summary_path}")
     print(
         "Long-Short stats | Cumulative "
-        f"{ls_stats['cumulative_return']:.4f} | "
-        f"Std {ls_stats['std']:.4f} | Sharpe {ls_stats['sharpe']:.4f}"
+        f"{summary['long_short_cumulative_return']:.4f} | "
+        f"Std {summary['long_short_std']:.4f} | Sharpe {summary['long_short_sharpe']:.4f}"
     )
     plot_curves(df_result, loss_name, output_dir)
-    if loss_name == "mse":
-        print("MSE 实验完成。")
-    else:
-        print("MedSE 实验完成。")
+    print(f"{loss_name.upper()} 实验完成。")
     print(
-        "\n提示：若要比较 MSE 与 MedSE，请分别运行对应脚本（run_sanity_check_mse.py / run_sanity_check_medse.py）。"
+        "\n提示：批量比较 7 个 loss 时，请使用对应 runner 或 run_all_experiments.py。"
     )

@@ -1,9 +1,0 @@
-{
-  "loss": "mse",
-  "avg_mse": 2.8886912862459817,
-  "avg_r2": -113.80839197463511,
-  "avg_long_short": -0.012085349758763972,
-  "long_short_cumulative_return": -0.07233486296533531,
-  "long_short_std": 0.028754754789655623,
-  "long_short_sharpe": -1.4559289385385275
-}

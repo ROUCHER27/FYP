@@ -1,0 +1,10 @@
+flowchart LR
+    X["X1 features<br/>~15 dims"] --> L1["Dense 64"]
+    L1 --> A1["ReLU"]
+    A1 --> D1["Dropout 0.2"]
+    D1 --> L2["Dense 32"]
+    L2 --> A2["ReLU"]
+    A2 --> D2["Dropout 0.2"]
+    D2 --> L3["Dense 16"]
+    L3 --> A3["ReLU"]
+    A3 --> O["Output<br/>1 return forecast"]
