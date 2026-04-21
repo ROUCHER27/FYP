@@ -99,6 +99,7 @@ def build_command(
     test_months: int,
     max_epochs: int,
     batch_size: int,
+    best_config_path: Path | None = None,
     resume_mode: str | None = None,
     checkpoint_dir: Path | None = None,
 ) -> List[str]:
@@ -114,6 +115,8 @@ def build_command(
         "--batch-size",
         str(batch_size),
     ]
+    if best_config_path:
+        command.extend(["--best-config-path", str(best_config_path)])
     if resume_mode:
         command.extend(["--resume-mode", resume_mode])
     if checkpoint_dir:
@@ -129,6 +132,7 @@ def run_experiments(
     batch_size: int = 1024,
     skip_existing: bool = False,
     stop_on_error: bool = False,
+    best_config_path: Path | None = None,
     resume_mode: str | None = None,
     checkpoint_dir: Path | None = None,
 ) -> Dict[str, Dict[str, float]]:
@@ -147,6 +151,7 @@ def run_experiments(
             test_months=test_months,
             max_epochs=max_epochs,
             batch_size=batch_size,
+            best_config_path=best_config_path,
             resume_mode=resume_mode,
             checkpoint_dir=checkpoint_dir,
         )
@@ -202,6 +207,12 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Batch size passed to each runner.",
     )
     parser.add_argument(
+        "--best-config-path",
+        type=str,
+        default=None,
+        help="Best hyperparameter file forwarded to each single-loss runner.",
+    )
+    parser.add_argument(
         "--skip-existing",
         action="store_true",
         help="Skip losses whose four output artifacts and summary schema already exist.",
@@ -236,6 +247,9 @@ def main() -> None:
         test_months=args.test_months,
         max_epochs=args.max_epochs,
         batch_size=args.batch_size,
+        best_config_path=Path(args.best_config_path)
+        if args.best_config_path
+        else None,
         skip_existing=args.skip_existing,
         stop_on_error=args.stop_on_error,
         resume_mode=args.resume_mode,
