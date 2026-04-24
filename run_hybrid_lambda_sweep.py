@@ -37,6 +37,37 @@ RUNNER_BY_LOSS = {
     "hybrid_mul": "run_sanity_check_hybrid_mul.py",
 }
 
+COMPARISON_COLUMNS = [
+    "variant_id",
+    "base_loss",
+    "lambda_dir",
+    "lambda_hub",
+    "loss",
+    "avg_mse",
+    "avg_medse",
+    "avg_r2",
+    "avg_directional_accuracy",
+    "avg_sign_mismatch_large_y",
+    "avg_long_short",
+    "long_short_cumulative_return",
+    "long_short_std",
+    "long_short_sharpe",
+]
+
+
+def resolve_runner_path(base_loss: str) -> Path:
+    runner_name = RUNNER_BY_LOSS[base_loss]
+    runner_path = Path(__file__).resolve().parent / runner_name
+    if not runner_path.exists():
+        raise FileNotFoundError(f"Runner script not found: {runner_path}")
+    return runner_path
+
+
+def validate_runner_paths(variant_ids: List[str]) -> None:
+    for variant_id in variant_ids:
+        variant = VARIANT_SPECS[variant_id]
+        resolve_runner_path(variant.base_loss)
+
 
 def resolve_variant_ids(preset: str, variants: str | None) -> List[str]:
     if variants:
@@ -74,7 +105,7 @@ def build_command_for_variant(
     paths = derive_variant_paths(output_root, variant_id)
     command = [
         sys.executable,
-        RUNNER_BY_LOSS[variant.base_loss],
+        str(resolve_runner_path(variant.base_loss)),
         "--output-dir",
         str(paths["output_dir"]),
         "--checkpoint-dir",
@@ -99,7 +130,10 @@ def build_command_for_variant(
 
 def load_variant_summary(output_dir: Path, variant: VariantSpec) -> Dict[str, float]:
     summary_path = Path(output_dir) / f"sanity_summary_{variant.base_loss}.json"
-    return json.loads(summary_path.read_text())
+    try:
+        return json.loads(summary_path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"Failed to read summary for {variant.base_loss}: {summary_path}") from exc
 
 
 def run_lambda_sweep(
@@ -117,6 +151,7 @@ def run_lambda_sweep(
 ) -> Path:
     rows = []
     output_root = Path(output_root)
+    validate_runner_paths(variant_ids)
     output_root.mkdir(parents=True, exist_ok=True)
     Path(checkpoint_root).mkdir(parents=True, exist_ok=True)
     if archive_root is not None:
@@ -151,7 +186,12 @@ def run_lambda_sweep(
                 raise FileNotFoundError(f"Missing summary for variant {variant_id}: {summary_path}")
             continue
 
-        summary = load_variant_summary(paths["output_dir"], variant)
+        try:
+            summary = load_variant_summary(paths["output_dir"], variant)
+        except ValueError:
+            if stop_on_error:
+                raise
+            continue
         rows.append(
             {
                 "variant_id": variant_id,
@@ -162,7 +202,7 @@ def run_lambda_sweep(
             }
         )
 
-    comparison = pd.DataFrame(rows)
+    comparison = pd.DataFrame(rows, columns=COMPARISON_COLUMNS)
     comparison.to_csv(output_root / "lambda_sweep_comparison.csv", index=False)
     return output_root / "lambda_sweep_comparison.csv"
 

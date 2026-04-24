@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 import run_hybrid_lambda_sweep as sweep
 
@@ -57,11 +58,33 @@ def test_build_command_for_variant_forwards_loss_kwargs_and_drive_paths(tmp_path
     )
 
     assert Path(command[1]).name == "run_sanity_check_hybrid_add.py"
+    assert Path(command[1]).is_absolute()
     assert "--loss-kwargs" in command
     assert json.loads(command[command.index("--loss-kwargs") + 1]) == variant.loss_kwargs
     assert str(paths["output_dir"]) in command
     assert str((tmp_path / "checkpoints" / "A4")) in command
     assert str((tmp_path / "archive" / "A4")) in command
+
+
+def test_run_lambda_sweep_validates_runner_paths_before_execution(
+    tmp_path: Path, monkeypatch
+) -> None:
+    monkeypatch.setitem(sweep.RUNNER_BY_LOSS, "hybrid_add", "missing_runner.py")
+
+    with pytest.raises(FileNotFoundError, match="missing_runner.py"):
+        sweep.run_lambda_sweep(
+            output_root=tmp_path,
+            variant_ids=["A4"],
+            best_config_path=Path("/tmp/best_hyperparameters.txt"),
+            checkpoint_root=tmp_path / "checkpoints",
+            archive_root=tmp_path / "archive",
+            test_months=24,
+            max_epochs=20,
+            batch_size=1024,
+            resume_mode="auto",
+            skip_existing=False,
+            stop_on_error=False,
+        )
 
 
 def test_run_lambda_sweep_writes_comparison_csv(tmp_path: Path, monkeypatch) -> None:
@@ -96,3 +119,67 @@ def test_run_lambda_sweep_writes_comparison_csv(tmp_path: Path, monkeypatch) -> 
     assert set(comparison["variant_id"]) == {"A4", "M2"}
     assert set(comparison["base_loss"]) == {"hybrid_add", "hybrid_mul"}
     assert set(comparison["lambda_dir"]) == {5.0}
+
+
+def test_run_lambda_sweep_skips_corrupted_summary_when_not_stopping(
+    tmp_path: Path, monkeypatch
+) -> None:
+    calls = []
+
+    def fake_run(cmd, check):
+        calls.append(cmd)
+        variant_id = Path(cmd[cmd.index("--output-dir") + 1]).name
+        variant = sweep.VARIANT_SPECS[variant_id]
+        output_dir = Path(cmd[cmd.index("--output-dir") + 1])
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / f"sanity_summary_{variant.base_loss}.json").write_text("{bad json")
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    comparison_path = sweep.run_lambda_sweep(
+        output_root=tmp_path,
+        variant_ids=["A4"],
+        best_config_path=Path("/tmp/best_hyperparameters.txt"),
+        checkpoint_root=tmp_path / "checkpoints",
+        archive_root=tmp_path / "archive",
+        test_months=24,
+        max_epochs=20,
+        batch_size=1024,
+        resume_mode="auto",
+        skip_existing=False,
+        stop_on_error=False,
+    )
+
+    comparison = pd.read_csv(comparison_path)
+    assert len(calls) == 1
+    assert comparison.empty
+
+
+def test_run_lambda_sweep_raises_on_corrupted_summary_when_stop_on_error(
+    tmp_path: Path, monkeypatch
+) -> None:
+    def fake_run(cmd, check):
+        variant_id = Path(cmd[cmd.index("--output-dir") + 1]).name
+        variant = sweep.VARIANT_SPECS[variant_id]
+        output_dir = Path(cmd[cmd.index("--output-dir") + 1])
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / f"sanity_summary_{variant.base_loss}.json").write_text("{bad json")
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    with pytest.raises(ValueError, match="Failed to read summary"):
+        sweep.run_lambda_sweep(
+            output_root=tmp_path,
+            variant_ids=["A4"],
+            best_config_path=Path("/tmp/best_hyperparameters.txt"),
+            checkpoint_root=tmp_path / "checkpoints",
+            archive_root=tmp_path / "archive",
+            test_months=24,
+            max_epochs=20,
+            batch_size=1024,
+            resume_mode="auto",
+            skip_existing=False,
+            stop_on_error=True,
+        )
