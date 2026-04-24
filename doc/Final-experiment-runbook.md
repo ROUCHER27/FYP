@@ -84,8 +84,8 @@ tags:
 |---|---|
 | `input_dim` | `15` |
 | `hidden_dims` | `[64, 32, 16]` |
-| `activation` | `relu` |
-| `dropout` | `0.2` |
+| `activation` | `tanh` |
+| `dropout` | `0.0` |
 
 ### 2.4 当前支持的 loss
 
@@ -431,6 +431,9 @@ checkpoints/
 > 也就是说，断点续训不是“随便改了参数继续跑”，而是“同一个实验实例恢复执行”。如果你想换测试月数、换 batch size、换模型结构，应使用新的输出目录或新的 checkpoint 目录。
 
 ## 8. 最终输出文件说明
+
+> [!warning]
+> 当前本地仓库中的 `sanity_outputs/` 混有 2 个月本地短测产物，不应直接作为最终论文表格来源。Phase 2 必须使用独立输出目录重新生成或汇总 24 个月主实验结果。
 
 ### 8.1 每个 loss 的标准产物
 
