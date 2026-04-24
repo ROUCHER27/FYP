@@ -432,6 +432,52 @@ def test_run_sanity_check_rejects_mismatched_run_spec(
         scst.run_sanity_check("mse", mismatched_args)
 
 
+def test_run_sanity_check_persists_loss_kwargs_in_run_spec(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    x_all, y_all, dates = _make_synthetic_arrays()
+    args = _make_args(
+        tmp_path,
+        output_name="loss_kwargs_outputs",
+        checkpoint_name="loss_kwargs_checkpoints",
+        loss_kwargs='{"lambda_dir": 5.0, "lambda_hub": 0.1}',
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+
+    scst.run_sanity_check("hybrid_add", args)
+
+    run_spec_path = Path(args.checkpoint_dir) / "hybrid_add" / "run_spec.json"
+    run_spec = json.loads(run_spec_path.read_text())
+    assert run_spec["loss_kwargs"] == {"lambda_dir": 5.0, "lambda_hub": 0.1}
+
+
+def test_run_sanity_check_rejects_mismatched_loss_kwargs_in_run_spec(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    x_all, y_all, dates = _make_synthetic_arrays()
+    original_args = _make_args(
+        tmp_path,
+        output_name="spec_kwargs_outputs",
+        checkpoint_name="spec_kwargs_checkpoints",
+        loss_kwargs='{"lambda_dir": 5.0, "lambda_hub": 0.1}',
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+    scst.run_sanity_check("hybrid_add", original_args)
+
+    mismatched_args = _make_args(
+        tmp_path,
+        output_name="spec_kwargs_outputs",
+        checkpoint_name="spec_kwargs_checkpoints",
+        loss_kwargs='{"lambda_dir": 10.0, "lambda_hub": 0.1}',
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+
+    with pytest.raises(ValueError, match="Run spec mismatch"):
+        scst.run_sanity_check("hybrid_add", mismatched_args)
+
+
 def test_run_sanity_check_archives_single_loss_outputs_after_completion(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

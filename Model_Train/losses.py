@@ -198,6 +198,24 @@ def custom_loss(
     return _reduce(loss, reduction)
 
 
+def _validated_loss_kwargs(name: str, loss_kwargs: dict | None) -> dict:
+    if not loss_kwargs:
+        return {}
+
+    allowed_by_loss = {
+        "hybrid_add": {"lambda_dir", "lambda_hub"},
+        "hybrid_mul": {"lambda_dir"},
+    }
+    allowed = allowed_by_loss.get(name, set())
+    unknown = sorted(set(loss_kwargs) - allowed)
+    if unknown:
+        raise ValueError(
+            f"Unsupported loss kwargs for {name}: {', '.join(unknown)}. "
+            f"Supported loss kwargs: {', '.join(sorted(allowed)) or 'none'}"
+        )
+    return {key: float(value) for key, value in loss_kwargs.items()}
+
+
 EXPERIMENT_LOSS_NAMES = (
     "mse",
     "medse",
@@ -209,12 +227,16 @@ EXPERIMENT_LOSS_NAMES = (
 )
 
 
-def get_experiment_loss_fn(name: str) -> ExperimentLossFn:
+def get_experiment_loss_fn(
+    name: str,
+    loss_kwargs: dict | None = None,
+) -> ExperimentLossFn:
     """
     Return the canonical training loss callable used by sanity-check experiments.
     为静态 sanity-check 实验返回统一命名的训练损失函数。
     """
     name_lower = name.lower()
+    resolved_kwargs = _validated_loss_kwargs(name_lower, loss_kwargs)
     if name_lower == "mse":
         return lambda y_true, y_pred: mse_loss(y_true, y_pred, reduction="mean")
     if name_lower == "medse":
@@ -231,11 +253,11 @@ def get_experiment_loss_fn(name: str) -> ExperimentLossFn:
         )
     if name_lower == "hybrid_add":
         return lambda y_true, y_pred: hybrid_dir_huber_add_loss(
-            y_true, y_pred, reduction="mean"
+            y_true, y_pred, reduction="mean", **resolved_kwargs
         )
     if name_lower == "hybrid_mul":
         return lambda y_true, y_pred: hybrid_dir_huber_mul_loss(
-            y_true, y_pred, reduction="mean"
+            y_true, y_pred, reduction="mean", **resolved_kwargs
         )
     raise ValueError(f"Unsupported experiment loss: {name}")
 

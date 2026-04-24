@@ -80,3 +80,36 @@ def test_mse_and_medse_reduce_consistently_for_small_tensors() -> None:
 def test_experiment_loss_resolver_rejects_unknown_name() -> None:
     with pytest.raises(ValueError, match="Unsupported experiment loss"):
         get_experiment_loss_fn("hybrid")
+
+
+def test_hybrid_add_resolver_accepts_runtime_loss_kwargs() -> None:
+    y_true = torch.tensor([0.02, -0.03, 0.01], dtype=torch.float32)
+    y_pred = torch.tensor([0.01, -0.01, 0.02], dtype=torch.float32)
+
+    baseline = get_experiment_loss_fn("hybrid_add")(y_true, y_pred)
+    tuned = get_experiment_loss_fn(
+        "hybrid_add",
+        loss_kwargs={"lambda_dir": 5.0, "lambda_hub": 0.1},
+    )(y_true, y_pred)
+
+    assert torch.isfinite(tuned)
+    assert tuned.item() != pytest.approx(baseline.item())
+
+
+def test_hybrid_mul_resolver_accepts_runtime_loss_kwargs() -> None:
+    y_true = torch.tensor([0.02, -0.03, 0.01], dtype=torch.float32)
+    y_pred = torch.tensor([0.01, -0.01, 0.02], dtype=torch.float32)
+
+    baseline = get_experiment_loss_fn("hybrid_mul")(y_true, y_pred)
+    tuned = get_experiment_loss_fn(
+        "hybrid_mul",
+        loss_kwargs={"lambda_dir": 5.0},
+    )(y_true, y_pred)
+
+    assert torch.isfinite(tuned)
+    assert tuned.item() != pytest.approx(baseline.item())
+
+
+def test_experiment_loss_resolver_rejects_unknown_loss_kwargs() -> None:
+    with pytest.raises(ValueError, match="Unsupported loss kwargs"):
+        get_experiment_loss_fn("hybrid_add", loss_kwargs={"lambda_bad": 1.0})

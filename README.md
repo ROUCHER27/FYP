@@ -56,6 +56,37 @@ python run_all_experiments.py \
   --best-config-path best_hyperparameters.txt
 ```
 
+Run a tuned hybrid loss with runtime lambda overrides:
+
+```bash
+python run_sanity_check_hybrid_add.py \
+  --output-dir sanity_outputs/hybrid_add_a4 \
+  --checkpoint-dir sanity_outputs/checkpoints/hybrid_add_a4 \
+  --archive-root /content/drive/MyDrive/FYP/hybrid_add_a4 \
+  --best-config-path best_hyperparameters.txt \
+  --loss-kwargs '{"lambda_dir": 5.0, "lambda_hub": 0.1}' \
+  --test-months 24 \
+  --max-epochs 20 \
+  --batch-size 1024 \
+  --resume-mode auto
+```
+
+Run the dedicated hybrid lambda sweep:
+
+```bash
+python run_hybrid_lambda_sweep.py \
+  --preset minimal \
+  --output-root /content/FYP/lambda_sweep \
+  --checkpoint-root /content/drive/MyDrive/FYP/lambda_sweep/checkpoints \
+  --archive-root /content/drive/MyDrive/FYP/lambda_sweep/archive \
+  --best-config-path best_hyperparameters.txt \
+  --test-months 24 \
+  --max-epochs 20 \
+  --batch-size 1024 \
+  --skip-existing \
+  --resume-mode auto
+```
+
 ## Colab Workflow
 
 Clone the repo in Colab, install dependencies, then run either a smoke test or the batch runner:

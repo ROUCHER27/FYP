@@ -216,6 +216,47 @@ python run_all_experiments.py \
 - 汇总每个 loss 的 summary
 - 生成总对比表 `all_losses_comparison.csv`
 
+### 3.5 Hybrid lambda sweep（Phase 1 扩展）
+
+当 `hybrid_add` / `hybrid_mul` 的默认 lambda 需要继续调优时，不要手工改源码默认值，直接通过 CLI 覆盖：
+
+单个 tuned run 示例：
+
+```bash
+python run_sanity_check_hybrid_add.py \
+  --output-dir /content/FYP/sanity_outputs/hybrid_add_a4 \
+  --checkpoint-dir /content/drive/MyDrive/FYP/checkpoints/hybrid_add_a4 \
+  --archive-root /content/drive/MyDrive/FYP/hybrid_add_a4 \
+  --best-config-path best_hyperparameters.txt \
+  --loss-kwargs '{"lambda_dir": 5.0, "lambda_hub": 0.1}' \
+  --test-months 24 \
+  --max-epochs 20 \
+  --batch-size 1024 \
+  --resume-mode auto
+```
+
+批量 lambda sweep 示例：
+
+```bash
+python run_hybrid_lambda_sweep.py \
+  --preset minimal \
+  --output-root /content/FYP/lambda_sweep \
+  --checkpoint-root /content/drive/MyDrive/FYP/lambda_sweep/checkpoints \
+  --archive-root /content/drive/MyDrive/FYP/lambda_sweep/archive \
+  --best-config-path best_hyperparameters.txt \
+  --test-months 24 \
+  --max-epochs 20 \
+  --batch-size 1024 \
+  --skip-existing \
+  --resume-mode auto
+```
+
+说明：
+
+- `--preset minimal` 运行 `A4`, `A5`, `M2`
+- `--preset full` 运行 `A1-A5`, `M1-M4`
+- 每个 variant 都会写入独立输出目录、独立 checkpoint 目录，并在根目录生成 `lambda_sweep_comparison.csv`
+
 ## 4. 关键 CLI 参数说明
 
 ### 4.1 单个 loss runner 关键参数

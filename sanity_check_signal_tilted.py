@@ -149,7 +149,28 @@ def build_arg_parser(description: str) -> argparse.ArgumentParser:
         default=None,
         help="Optional destination root for per-loss archived outputs. Use a Drive path in Colab to save directly to Drive.",
     )
+    parser.add_argument(
+        "--loss-kwargs",
+        type=str,
+        default=None,
+        help="Optional JSON object of runtime loss parameters, e.g. '{\"lambda_dir\": 5.0, \"lambda_hub\": 0.1}'.",
+    )
     return parser
+
+
+def parse_loss_kwargs(value: str | Dict[str, Any] | None) -> Dict[str, float]:
+    if value is None:
+        return {}
+    if isinstance(value, dict):
+        payload = value
+    else:
+        try:
+            payload = json.loads(value)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Invalid --loss-kwargs JSON: {value}") from exc
+    if not isinstance(payload, dict):
+        raise ValueError("--loss-kwargs must decode to a JSON object.")
+    return {str(key): float(payload[key]) for key in payload}
 
 
 def normalize_resume_mode(value: str | None) -> str:
@@ -349,10 +370,12 @@ def build_run_spec(
     args: argparse.Namespace,
     config: MLPConfig,
     input_dim: int,
+    loss_kwargs: Dict[str, float],
 ) -> Dict[str, Any]:
     return {
         "version": 1,
         "loss_name": loss_name,
+        "loss_kwargs": loss_kwargs,
         "data_dir": str(args.data_dir),
         "pattern": str(args.pattern),
         "lookback_months": int(args.lookback_months),
@@ -454,6 +477,7 @@ def train_model(
     batch_size: int,
     max_epochs: int,
     seed: int = 42,
+    loss_kwargs: Dict[str, float] | None = None,
     checkpoint_path: Path | None = None,
     train_state_path: Path | None = None,
     resume_mode: str = "off",
@@ -467,7 +491,7 @@ def train_model(
     )
     model = MLP(config).to(device)
     optimizer = torch.optim.Adam(model.parameters())
-    criterion = get_experiment_loss_fn(loss_name)
+    criterion = get_experiment_loss_fn(loss_name, loss_kwargs=loss_kwargs)
     start_epoch = 0
 
     if (
@@ -791,6 +815,7 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
     global MAX_WEIGHT
     MAX_WEIGHT = args.max_weight
     set_seed(args.seed)
+    loss_kwargs = parse_loss_kwargs(getattr(args, "loss_kwargs", None))
     device = detect_device()
     output_dir = Path(args.output_dir)
     archive_root = (
@@ -834,7 +859,13 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         raise RuntimeError("Testing window contains zero samples.")
 
     config = read_best_config(Path(args.best_config_path), input_dim=x_all.shape[1])
-    run_spec = build_run_spec(loss_name, args, config, input_dim=x_all.shape[1])
+    run_spec = build_run_spec(
+        loss_name,
+        args,
+        config,
+        input_dim=x_all.shape[1],
+        loss_kwargs=loss_kwargs,
+    )
     ensure_matching_run_spec(resume_paths["run_spec"], run_spec, resume_mode)
     print("Using MLPConfig:", config)
     ensure_output_dir(output_dir)
@@ -856,6 +887,7 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         batch_size=args.batch_size,
         max_epochs=args.max_epochs,
         seed=args.seed,
+        loss_kwargs=loss_kwargs,
         checkpoint_path=resume_paths["checkpoint"],
         train_state_path=resume_paths["train_state"],
         resume_mode=resume_mode,
