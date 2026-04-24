@@ -9,6 +9,8 @@ import pandas as pd
 
 from Model_Train.losses import EXPERIMENT_LOSS_NAMES
 
+REPO_ROOT = Path(__file__).resolve().parent
+RUN_TIMEOUT_SECONDS = 7200
 
 SUMMARY_COLUMNS = [
     "loss",
@@ -43,6 +45,21 @@ def parse_losses(value: str) -> List[str]:
             f"Supported losses: {', '.join(EXPERIMENT_LOSS_NAMES)}"
         )
     return losses
+
+
+def resolve_runner_path(loss_name: str) -> Path:
+    runner_name = RUNNER_BY_LOSS[loss_name]
+    runner_path = REPO_ROOT / runner_name
+    if not runner_path.exists():
+        raise FileNotFoundError(
+            f"Runner script not found for {loss_name}: {runner_path}"
+        )
+    return runner_path
+
+
+def validate_runner_scripts_exist(losses: Iterable[str]) -> None:
+    for loss_name in losses:
+        resolve_runner_path(loss_name)
 
 
 def expected_output_paths(output_dir: Path, loss_name: str) -> Dict[str, Path]:
@@ -106,7 +123,7 @@ def build_command(
 ) -> List[str]:
     command = [
         sys.executable,
-        RUNNER_BY_LOSS[loss_name],
+        str(resolve_runner_path(loss_name)),
         "--output-dir",
         str(output_dir),
         "--test-months",
@@ -140,6 +157,8 @@ def run_experiments(
     resume_mode: str | None = None,
     checkpoint_dir: Path | None = None,
 ) -> Dict[str, Dict[str, float]]:
+    losses = list(losses)
+    validate_runner_scripts_exist(losses)
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     results: Dict[str, Dict[str, float]] = {}
@@ -161,13 +180,19 @@ def run_experiments(
             checkpoint_dir=checkpoint_dir,
         )
         try:
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True, timeout=RUN_TIMEOUT_SECONDS)
             if not is_loss_complete(output_dir, loss_name):
                 raise RuntimeError(
                     f"Loss {loss_name} finished without producing complete outputs."
                 )
             results[loss_name] = load_summary(output_dir, loss_name)
-        except (subprocess.CalledProcessError, OSError, RuntimeError, ValueError) as exc:
+        except (
+            subprocess.CalledProcessError,
+            subprocess.TimeoutExpired,
+            OSError,
+            RuntimeError,
+            ValueError,
+        ) as exc:
             results[loss_name] = {"loss": loss_name, "error": str(exc)}
             if stop_on_error:
                 break

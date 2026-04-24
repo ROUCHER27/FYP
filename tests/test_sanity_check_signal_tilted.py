@@ -107,6 +107,41 @@ def test_compute_directional_metrics_reports_expected_fields() -> None:
     assert metrics["sign_mismatch_large_y"] == 0.0
 
 
+def test_set_seed_enables_torch_determinism_flags(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+    original_deterministic = torch.backends.cudnn.deterministic
+    original_benchmark = torch.backends.cudnn.benchmark
+    torch.backends.cudnn.deterministic = False
+    torch.backends.cudnn.benchmark = True
+
+    try:
+        scst.set_seed(123)
+        assert torch.backends.cudnn.deterministic is True
+        assert torch.backends.cudnn.benchmark is False
+    finally:
+        torch.backends.cudnn.deterministic = original_deterministic
+        torch.backends.cudnn.benchmark = original_benchmark
+
+
+def test_compute_portfolio_returns_accepts_explicit_max_weight(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured = []
+    original_apply_weight_cap = scst.apply_weight_cap
+
+    def recording_apply_weight_cap(weights, max_weight, max_iter=10):
+        captured.append(max_weight)
+        return original_apply_weight_cap(weights, max_weight=max_weight, max_iter=max_iter)
+
+    monkeypatch.setattr(scst, "apply_weight_cap", recording_apply_weight_cap)
+    preds = np.array([-2.0, -1.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0], dtype=float)
+    targets = np.linspace(-0.1, 0.1, 10, dtype=float)
+
+    scst.compute_portfolio_returns(preds, targets, max_weight=0.05)
+
+    assert captured == [0.05, 0.05]
+
+
 def test_normalize_resume_mode_supports_plan_modes_and_legacy_aliases() -> None:
     assert scst.normalize_resume_mode("auto") == "auto"
     assert scst.normalize_resume_mode("never") == "never"
@@ -464,3 +499,29 @@ def test_run_sanity_check_archives_single_loss_outputs_after_completion(
         (archived_dir / "sanity_summary_mse.json").read_text()
     )
     assert archived_summary["loss"] == "mse"
+
+
+def test_run_sanity_check_passes_args_max_weight_to_portfolio_builder(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    x_all, y_all, dates = _make_synthetic_arrays(rows_per_month=10)
+    args = _make_args(
+        tmp_path,
+        output_name="max_weight_outputs",
+        checkpoint_name="max_weight_checkpoints",
+        max_weight=None,
+    )
+    _patch_pipeline(monkeypatch, x_all=x_all, y_all=y_all, dates=dates)
+
+    captured = []
+
+    def fake_compute_portfolio_returns(preds, targets, max_weight):
+        captured.append(max_weight)
+        return {"long": 0.01, "short": -0.01, "long_short": 0.02}
+
+    monkeypatch.setattr(scst, "compute_portfolio_returns", fake_compute_portfolio_returns)
+
+    scst.run_sanity_check("mse", args)
+
+    assert captured == [None, None, None]

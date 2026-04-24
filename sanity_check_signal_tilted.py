@@ -16,7 +16,7 @@ import torch
 from torch.utils.data import DataLoader, TensorDataset
 
 Z_SCORE_CLIP = 3.0  # Winsorize 阈值，限制 bucket 内 z-score 极值
-MAX_WEIGHT: float | None = 0.05  # Step4: 单票最大权重（5%），控制个股风险敞口
+DEFAULT_MAX_WEIGHT: float | None = 0.05  # Step4: 单票最大权重（5%），控制个股风险敞口
 
 
 def parse_max_weight(value: str) -> float | None:
@@ -128,7 +128,7 @@ def build_arg_parser(description: str) -> argparse.ArgumentParser:
     parser.add_argument(
         "--max-weight",
         type=parse_max_weight,
-        default=MAX_WEIGHT,
+        default=DEFAULT_MAX_WEIGHT,
         help="Step4: 最大单票权重 (控制组合集中度)，传 'None' 可关闭。",
     )
     parser.add_argument(
@@ -192,6 +192,9 @@ def set_seed(seed: int) -> None:
     torch.manual_seed(seed)
     if torch.cuda.is_available():
         torch.cuda.manual_seed_all(seed)
+    if getattr(torch.backends, "cudnn", None):
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
 
 
 def read_best_config(path: Path, input_dim: int) -> MLPConfig:
@@ -632,14 +635,16 @@ def apply_weight_cap(
 
 
 def compute_portfolio_returns(
-    preds: np.ndarray, targets: np.ndarray
+    preds: np.ndarray,
+    targets: np.ndarray,
+    max_weight: float | None = DEFAULT_MAX_WEIGHT,
 ) -> Dict[str, float]:
     """
     Rebalance & Return 逻辑：
     1) 每月按预测值排序，Top 10% / Bottom 10% 划分 Long / Short bucket。
     2) 在各自 bucket 内做 z-score，并 clip 到 [-Z_SCORE_CLIP, Z_SCORE_CLIP]。
     3) Long 端使用 z>0，Short 端使用 z<0 的绝对值，得到非负权重并初步归一化。
-    4) 调用 apply_weight_cap 控制单票权重不超过 MAX_WEIGHT（可通过 CLI 关闭）。
+    4) 调用 apply_weight_cap 控制单票权重不超过 max_weight（可通过 CLI 关闭）。
     """
     n = preds.size
     if n == 0:
@@ -667,7 +672,7 @@ def compute_portfolio_returns(
             weights = np.ones_like(weights, dtype=np.float64) / weights.size
         else:
             weights = weights / weight_sum
-        weights = apply_weight_cap(weights, max_weight=MAX_WEIGHT)
+        weights = apply_weight_cap(weights, max_weight=max_weight)
         return float(np.sum(weights * bucket_targets))
 
     long_ret = _bucket_return(long_idx, positive_side=True)
@@ -788,8 +793,6 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         raise ValueError(
             f"Unsupported loss '{loss_name}'. Supported losses: {', '.join(EXPERIMENT_LOSS_NAMES)}"
         )
-    global MAX_WEIGHT
-    MAX_WEIGHT = args.max_weight
     set_seed(args.seed)
     device = detect_device()
     output_dir = Path(args.output_dir)
@@ -915,7 +918,7 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         preds = predict(model, x_month, device=device)
         metrics = compute_metrics(y_month, preds)
         directional_metrics = compute_directional_metrics(y_month, preds)
-        port = compute_portfolio_returns(preds, y_month)
+        port = compute_portfolio_returns(preds, y_month, max_weight=args.max_weight)
         month_record = (
             {
                 "month": month_str,

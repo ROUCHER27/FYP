@@ -3,5 +3,6 @@ pandas
 matplotlib
 seaborn
 torch
+scikit-learn
 jupyter
 pytest

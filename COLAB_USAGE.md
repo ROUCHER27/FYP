@@ -99,6 +99,106 @@ os.chdir('/content/drive/MyDrive/FYP/code')
     --resume-mode auto
 ```
 
+### 6. Phase1.5 鲁棒性批量运行（Drive 持久化）
+
+Phase1.5 使用固定训练/测试窗口：
+
+- 训练期：`1990-01` 到 `1994-12`
+- 测试期：`1995-01` 起连续 `24` 个月
+
+新入口 `run_phase15_robustness.py` 会自动把结果写到 Drive 下的标准目录：
+
+```
+/content/drive/MyDrive/FYP/outputs/phase1_5_robustness/
+├── light/
+│   ├── runs/
+│   │   ├── seed42_cap005/mse/
+│   │   ├── seed52_cap005/mse/
+│   │   ├── seed62_cap005/mse/
+│   │   └── seed42_nocap/mse/
+│   └── checkpoints/
+│       ├── seed42_cap005/mse/
+│       ├── seed52_cap005/mse/
+│       ├── seed62_cap005/mse/
+│       └── seed42_nocap/mse/
+└── full/
+    ├── runs/
+    └── checkpoints/
+```
+
+#### 6.1 轻量矩阵（默认）
+
+轻量矩阵会运行：
+
+- 所有 7 个 loss
+- `seed = 42, 52, 62` 且 `max_weight = 0.05`
+- 额外加一组 `seed = 42, max_weight = None`
+
+```python
+!python run_phase15_robustness.py \
+    --drive-root /content/drive/MyDrive/FYP \
+    --data-dir /content/drive/MyDrive/FYP/data \
+    --best-config-path /content/drive/MyDrive/FYP/code/best_hyperparameters.txt \
+    --test-months 24 \
+    --max-epochs 20 \
+    --batch-size 1024 \
+    --skip-existing \
+    --resume-mode auto
+```
+
+#### 6.2 全矩阵
+
+全矩阵会运行：
+
+- 所有 7 个 loss
+- `seed = 42, 52, 62`
+- `max_weight = 0.05` 和 `None`
+
+```python
+!python run_phase15_robustness.py \
+    --matrix-mode full \
+    --drive-root /content/drive/MyDrive/FYP \
+    --data-dir /content/drive/MyDrive/FYP/data \
+    --best-config-path /content/drive/MyDrive/FYP/code/best_hyperparameters.txt \
+    --test-months 24 \
+    --max-epochs 20 \
+    --batch-size 1024 \
+    --skip-existing \
+    --resume-mode auto
+```
+
+#### 6.3 汇总 Phase1.5 结果
+
+下面命令会输出两张表：
+
+- `phase15_raw_runs.csv`：每个 `(loss, seed, max_weight)` 一行
+- `phase15_grouped_summary.csv`：按 `(loss, max_weight)` 聚合后的均值/标准差表
+
+```python
+!python aggregate_phase15_results.py \
+    --drive-root /content/drive/MyDrive/FYP \
+    --matrix-mode light
+```
+
+如果刚跑的是全矩阵，把 `--matrix-mode light` 改成 `--matrix-mode full`。
+
+默认输出位置：
+
+- `/content/drive/MyDrive/FYP/outputs/phase1_5_robustness/light/phase15_raw_runs.csv`
+- `/content/drive/MyDrive/FYP/outputs/phase1_5_robustness/light/phase15_grouped_summary.csv`
+
+#### 6.4 挂载 Drive 后的最小启动模板
+
+```python
+from google.colab import drive
+drive.mount('/content/drive')
+
+!pip install -r /content/drive/MyDrive/FYP/code/requirements.txt
+
+import os
+os.chdir('/content/drive/MyDrive/FYP/code')
+```
+
 ---
 
 ## 🧪 验证断点续训：故意中断测试

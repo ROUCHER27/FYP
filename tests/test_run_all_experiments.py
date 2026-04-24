@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 import run_all_experiments
 from run_all_experiments import build_command, is_loss_complete, run_experiments
@@ -47,7 +48,7 @@ def test_run_experiments_skips_existing_losses(tmp_path: Path, monkeypatch) -> N
 
     calls = []
 
-    def fake_run(cmd, check):
+    def fake_run(cmd, check, timeout=None):
         calls.append(cmd)
         _write_success_outputs(output_dir, "medse")
         return subprocess.CompletedProcess(cmd, 0)
@@ -75,7 +76,7 @@ def test_run_experiments_excludes_failed_losses_from_comparison(
     output_dir = tmp_path / "outputs"
     output_dir.mkdir()
 
-    def fake_run(cmd, check):
+    def fake_run(cmd, check, timeout=None):
         runner_name = Path(cmd[1]).name
         if runner_name == "run_sanity_check_hybrid_add.py":
             raise subprocess.CalledProcessError(returncode=1, cmd=cmd)
@@ -113,7 +114,7 @@ def test_run_experiments_does_not_skip_partial_checkpoint_state(
 
     calls = []
 
-    def fake_run(cmd, check):
+    def fake_run(cmd, check, timeout=None):
         calls.append(cmd)
         _write_success_outputs(output_dir, "mse")
         return subprocess.CompletedProcess(cmd, 0)
@@ -165,6 +166,43 @@ def test_build_command_appends_resume_flags() -> None:
         "--checkpoint-dir",
         str(checkpoint_dir),
     ]
+
+
+def test_build_command_rejects_missing_runner(monkeypatch) -> None:
+    monkeypatch.setitem(run_all_experiments.RUNNER_BY_LOSS, "mse", "missing_runner.py")
+
+    with pytest.raises(FileNotFoundError, match="missing_runner.py"):
+        build_command(
+            loss_name="mse",
+            output_dir=Path("/tmp/outputs"),
+            test_months=3,
+            max_epochs=4,
+            batch_size=512,
+        )
+
+
+def test_run_experiments_passes_timeout_to_subprocess(tmp_path: Path, monkeypatch) -> None:
+    output_dir = tmp_path / "outputs"
+    output_dir.mkdir()
+    captured = {}
+
+    def fake_run(cmd, check, timeout=None):
+        captured["timeout"] = timeout
+        _write_success_outputs(output_dir, "mse")
+        return subprocess.CompletedProcess(cmd, 0)
+
+    monkeypatch.setattr(subprocess, "run", fake_run)
+
+    results = run_experiments(
+        losses=["mse"],
+        output_dir=output_dir,
+        test_months=2,
+        max_epochs=1,
+        skip_existing=False,
+    )
+
+    assert results["mse"]["loss"] == "mse"
+    assert captured["timeout"] == run_all_experiments.RUN_TIMEOUT_SECONDS
 
 
 def test_main_passes_resume_args_to_run_experiments(monkeypatch, tmp_path: Path) -> None:
