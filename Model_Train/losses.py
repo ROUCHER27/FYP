@@ -206,6 +206,9 @@ EXPERIMENT_LOSS_NAMES = (
     "dirhuber",
     "hybrid_add",
     "hybrid_mul",
+    "hybrid_add_a4",
+    "hybrid_mul_m1",
+    "hybrid_mul_m2",
 )
 
 
@@ -236,6 +239,18 @@ def get_experiment_loss_fn(name: str) -> ExperimentLossFn:
     if name_lower == "hybrid_mul":
         return lambda y_true, y_pred: hybrid_dir_huber_mul_loss(
             y_true, y_pred, reduction="mean"
+        )
+    if name_lower == "hybrid_add_a4":
+        return lambda y_true, y_pred: hybrid_dir_huber_add_loss(
+            y_true, y_pred, lambda_dir=5.0, lambda_hub=0.1, reduction="mean"
+        )
+    if name_lower == "hybrid_mul_m1":
+        return lambda y_true, y_pred: hybrid_dir_huber_mul_loss(
+            y_true, y_pred, lambda_dir=2.0, reduction="mean"
+        )
+    if name_lower == "hybrid_mul_m2":
+        return lambda y_true, y_pred: hybrid_dir_huber_mul_loss(
+            y_true, y_pred, lambda_dir=5.0, reduction="mean"
         )
     raise ValueError(f"Unsupported experiment loss: {name}")
 

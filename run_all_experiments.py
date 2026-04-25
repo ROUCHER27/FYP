@@ -33,6 +33,9 @@ RUNNER_BY_LOSS = {
     "dirhuber": "run_sanity_check_dirhuber.py",
     "hybrid_add": "run_sanity_check_hybrid_add.py",
     "hybrid_mul": "run_sanity_check_hybrid_mul.py",
+    "hybrid_add_a4": "run_sanity_check_hybrid_add_a4.py",
+    "hybrid_mul_m1": "run_sanity_check_hybrid_mul_m1.py",
+    "hybrid_mul_m2": "run_sanity_check_hybrid_mul_m2.py",
 }
 
 

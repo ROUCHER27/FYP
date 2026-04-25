@@ -25,9 +25,27 @@ from Model_Train.losses import (
         ("dirhuber", directional_huber_loss),
         ("hybrid_add", hybrid_dir_huber_add_loss),
         ("hybrid_mul", hybrid_dir_huber_mul_loss),
+        (
+            "hybrid_add_a4",
+            lambda y_true, y_pred: hybrid_dir_huber_add_loss(
+                y_true, y_pred, lambda_dir=5.0, lambda_hub=0.1
+            ),
+        ),
+        (
+            "hybrid_mul_m1",
+            lambda y_true, y_pred: hybrid_dir_huber_mul_loss(
+                y_true, y_pred, lambda_dir=2.0
+            ),
+        ),
+        (
+            "hybrid_mul_m2",
+            lambda y_true, y_pred: hybrid_dir_huber_mul_loss(
+                y_true, y_pred, lambda_dir=5.0
+            ),
+        ),
     ],
 )
-def test_experiment_loss_catalog_supports_all_seven_losses(
+def test_experiment_loss_catalog_supports_registered_losses(
     loss_name: str, loss_fn
 ) -> None:
     resolved = get_experiment_loss_fn(loss_name)
