@@ -45,6 +45,10 @@ def configure_matplotlib(output_dir: Path) -> None:
     import matplotlib.pyplot as plt  # noqa
     globals()["plt"] = plt
 
+
+def write_json(path: Path, payload: Dict[str, object]) -> None:
+    path.write_text(json.dumps(payload, indent=2))
+
 from Model_Train.data_preprocess import prepare_panel_data
 from Model_Train.features import (
     FeatureConfig,
@@ -53,6 +57,9 @@ from Model_Train.features import (
 )
 from Model_Train.losses import medse_loss, mse_loss
 from Model_Train.models import MLP, MLPConfig
+
+# Phase 2: Import loss module for dynamic loss function lookup
+from Model_Train import losses as loss_module
 
 
 def build_arg_parser(description: str) -> argparse.ArgumentParser:
@@ -114,6 +121,19 @@ def build_arg_parser(description: str) -> argparse.ArgumentParser:
         type=str,
         default="sanity_outputs",
         help="Directory to store metrics tables.",
+    )
+    parser.add_argument(
+        "--checkpoint-dir",
+        type=str,
+        default=None,
+        help="Optional directory for checkpoint metadata and trained weights.",
+    )
+    parser.add_argument(
+        "--resume-mode",
+        type=str,
+        choices=("never", "auto", "force"),
+        default="never",
+        help="Checkpoint policy. Current implementation records metadata and reuses a completed model checkpoint when available.",
     )
     parser.add_argument(
         "--seed",
@@ -239,7 +259,15 @@ def train_model(
     elif loss_name == "medse":
         criterion = lambda a, b: medse_loss(a, b, reduction="median")
     else:
-        raise ValueError(f"Unsupported loss for sanity check: {loss_name}")
+        # Phase 2: Dynamic loss function lookup
+        loss_fn_name = f"{loss_name}_loss"
+        if hasattr(loss_module, loss_fn_name):
+            loss_fn = getattr(loss_module, loss_fn_name)
+            criterion = lambda a, b: loss_fn(a, b, reduction="mean")
+        else:
+            raise ValueError(
+                f"Unsupported loss: {loss_name} (expected {loss_fn_name} in losses.py)"
+            )
 
     model.train()
     for epoch in range(max_epochs):
@@ -465,8 +493,33 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
     set_seed(args.seed)
     device = detect_device()
     output_dir = Path(args.output_dir)
+    checkpoint_dir = Path(args.checkpoint_dir) if args.checkpoint_dir else None
     ensure_output_dir(output_dir)
+    if checkpoint_dir is not None:
+        ensure_output_dir(checkpoint_dir)
     configure_matplotlib(output_dir)
+
+    if checkpoint_dir is not None:
+        write_json(
+            checkpoint_dir / "run_spec.json",
+            {
+                "loss": loss_name,
+                "seed": args.seed,
+                "train_start": args.train_start,
+                "train_end": args.train_end,
+                "test_start": args.test_start,
+                "test_months": args.test_months,
+                "max_epochs": args.max_epochs,
+                "batch_size": args.batch_size,
+                "max_weight": args.max_weight,
+                "resume_mode": args.resume_mode,
+                "output_dir": str(output_dir),
+            },
+        )
+        write_json(
+            checkpoint_dir / "progress.json",
+            {"status": "running", "loss": loss_name, "resume_mode": args.resume_mode},
+        )
 
     print("=== Sanity Check: Static 5Y Train / 6M Test ===")
     panel = prepare_panel_data(data_dir=args.data_dir, pattern=args.pattern)
@@ -494,15 +547,46 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
     print("Using MLPConfig:", config)
     ensure_output_dir(output_dir)
 
-    model = train_model(
-        x_train,
-        y_train,
-        config,
-        loss_name=loss_name,
-        device=device,
-        batch_size=args.batch_size,
-        max_epochs=args.max_epochs,
-    )
+    checkpoint_path = checkpoint_dir / "train_checkpoint.pt" if checkpoint_dir else None
+    model = None
+    if (
+        checkpoint_path is not None
+        and checkpoint_path.exists()
+        and args.resume_mode in {"auto", "force"}
+    ):
+        print(f"Loading trained model checkpoint from {checkpoint_path}")
+        model = MLP(config).to(device)
+        state = torch.load(checkpoint_path, map_location=device)
+        model.load_state_dict(state["model_state_dict"])
+        model.eval()
+    else:
+        model = train_model(
+            x_train,
+            y_train,
+            config,
+            loss_name=loss_name,
+            device=device,
+            batch_size=args.batch_size,
+            max_epochs=args.max_epochs,
+        )
+        if checkpoint_path is not None:
+            torch.save(
+                {
+                    "loss": loss_name,
+                    "seed": args.seed,
+                    "model_state_dict": model.state_dict(),
+                },
+                checkpoint_path,
+            )
+            write_json(
+                checkpoint_dir / "train_state.json",
+                {
+                    "status": "trained",
+                    "loss": loss_name,
+                    "seed": args.seed,
+                    "resume_mode": args.resume_mode,
+                },
+            )
 
     label = "MSE" if loss_name == "mse" else "MedSE"
     month_records: List[Dict[str, object]] = []
@@ -562,8 +646,13 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         "long_short_sharpe": ls_stats["sharpe"],
     }
     summary_path = output_dir / f"sanity_summary_{loss_name}.json"
-    summary_path.write_text(json.dumps(summary, indent=2))
+    write_json(summary_path, summary)
     print(f"Wrote summary to {summary_path}")
+    if checkpoint_dir is not None:
+        write_json(
+            checkpoint_dir / "progress.json",
+            {"status": "completed", "loss": loss_name, "resume_mode": args.resume_mode},
+        )
     print(
         "Long-Short stats | Cumulative "
         f"{ls_stats['cumulative_return']:.4f} | "
