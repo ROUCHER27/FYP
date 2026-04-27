@@ -12,6 +12,14 @@ from typing import Dict, List
 import pandas as pd
 
 
+def read_first_available(summary: Dict[str, object], *keys: str) -> object:
+    """Return the first present metric value across current and legacy schemas."""
+    for key in keys:
+        if key in summary:
+            return summary[key]
+    return None
+
+
 def collect_run_results(
     drive_root: Path,
     losses: List[str],
@@ -61,10 +69,26 @@ def collect_run_results(
                         "seed": seed,
                         "max_weight": max_weight,
                         "cap_tag": cap_tag,
-                        "cumulative_return": summary.get("cumulative_return", None),
-                        "sharpe_ratio": summary.get("sharpe_ratio", None),
-                        "avg_monthly_return": summary.get("avg_monthly_return", None),
-                        "std_monthly_return": summary.get("std_monthly_return", None),
+                        "cumulative_return": read_first_available(
+                            summary,
+                            "cumulative_return",
+                            "long_short_cumulative_return",
+                        ),
+                        "sharpe_ratio": read_first_available(
+                            summary,
+                            "sharpe_ratio",
+                            "long_short_sharpe",
+                        ),
+                        "avg_monthly_return": read_first_available(
+                            summary,
+                            "avg_monthly_return",
+                            "avg_long_short",
+                        ),
+                        "std_monthly_return": read_first_available(
+                            summary,
+                            "std_monthly_return",
+                            "long_short_std",
+                        ),
                         "max_drawdown": summary.get("max_drawdown", None),
                         "win_rate": summary.get("win_rate", None),
                         "avg_r2": summary.get("avg_r2", None),
