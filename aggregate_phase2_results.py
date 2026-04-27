@@ -88,6 +88,14 @@ def compute_grouped_statistics(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         DataFrame with grouped statistics
     """
+    # Convert numeric columns to proper types
+    numeric_cols = [
+        "cumulative_return", "sharpe_ratio", "avg_monthly_return",
+        "std_monthly_return", "max_drawdown", "win_rate", "avg_r2"
+    ]
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
     # Group by loss and cap
     grouped = df.groupby(["loss", "cap_tag"]).agg({
         "cumulative_return": ["mean", "std", "min", "max"],
