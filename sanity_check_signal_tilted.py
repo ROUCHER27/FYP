@@ -54,6 +54,9 @@ from Model_Train.features import (
 from Model_Train.losses import medse_loss, mse_loss
 from Model_Train.models import MLP, MLPConfig
 
+# Phase 2: Import loss module for dynamic loss function lookup
+from Model_Train import losses as loss_module
+
 
 def build_arg_parser(description: str) -> argparse.ArgumentParser:
     """
@@ -239,7 +242,15 @@ def train_model(
     elif loss_name == "medse":
         criterion = lambda a, b: medse_loss(a, b, reduction="median")
     else:
-        raise ValueError(f"Unsupported loss for sanity check: {loss_name}")
+        # Phase 2: Dynamic loss function lookup
+        loss_fn_name = f"{loss_name}_loss"
+        if hasattr(loss_module, loss_fn_name):
+            loss_fn = getattr(loss_module, loss_fn_name)
+            criterion = lambda a, b: loss_fn(a, b, reduction="mean")
+        else:
+            raise ValueError(
+                f"Unsupported loss: {loss_name} (expected {loss_fn_name} in losses.py)"
+            )
 
     model.train()
     for epoch in range(max_epochs):
