@@ -249,7 +249,7 @@ drive.mount('/content/drive')
 
 如有问题，请查看：
 - 计划文档: `.claude/plans/doc-phase2-2-colab-drive-python-replicated-sutherland.md`
-- Phase 2 文档: `doc/phase2/` 目录
+- Phase 2 实验文档: 本 README 文件
 
 ---
 

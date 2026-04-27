@@ -103,8 +103,14 @@ def compute_grouped_statistics(df: pd.DataFrame) -> pd.DataFrame:
     grouped.columns = ["_".join(col).strip("_") for col in grouped.columns.values]
 
     # Compute coefficient of variation (CV) for Sharpe ratio
-    grouped["sharpe_cv"] = (
-        grouped["sharpe_ratio_std"] / grouped["sharpe_ratio_mean"].abs()
+    # Handle division by zero
+    grouped["sharpe_cv"] = grouped.apply(
+        lambda row: (
+            row["sharpe_ratio_std"] / abs(row["sharpe_ratio_mean"])
+            if row["sharpe_ratio_mean"] != 0
+            else float("inf")
+        ),
+        axis=1,
     )
 
     # Compute failure rate (Sharpe < 0)
