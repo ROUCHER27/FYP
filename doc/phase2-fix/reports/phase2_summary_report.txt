@@ -1,0 +1,20 @@
+Phase 2 Results Summary
+================================================================================
+
+Top losses by mean Sharpe:
+- m2_robust_gamma10 (cap05): Sharpe 1.0043 +/- 0.5638, runs=3
+- m2_robust_gamma01 (cap05): Sharpe 0.7470 +/- 0.3937, runs=3
+- m2_robust_gamma001 (cap05): Sharpe 0.6919 +/- 0.8258, runs=3
+- imadl_m2_alpha06 (cap05): Sharpe 0.6895 +/- 0.1685, runs=3
+- imadl_m2_alpha05 (cap05): Sharpe 0.5822 +/- 0.3193, runs=3
+- imadl_m2_alpha08 (cap05): Sharpe 0.5683 +/- 0.4130, runs=3
+- adaptive_lambda10 (cap05): Sharpe 0.4938 +/- 0.7617, runs=3
+- imadl_m2_alpha07 (cap05): Sharpe 0.4024 +/- 0.2466, runs=3
+- imadl_m2_alpha04 (cap05): Sharpe 0.3540 +/- 0.0656, runs=3
+- adaptive_lambda50 (cap05): Sharpe 0.2763 +/- 0.1597, runs=3
+- imadl_m2_alpha03 (cap05): Sharpe 0.2159 +/- 0.2010, runs=3
+- imadl_m2_alpha02 (cap05): Sharpe 0.1788 +/- 1.1576, runs=3
+- adaptive_lambda100 (cap05): Sharpe 0.0955 +/- 0.0343, runs=3
+- imadl_gmadl_beta05 (cap05): Sharpe 0.0406 +/- 0.4116, runs=3
+- imadl_gmadl_beta07 (cap05): Sharpe -0.0020 +/- 0.2747, runs=3
+- imadl_gmadl_beta03 (cap05): Sharpe -0.0345 +/- 0.1381, runs=3
