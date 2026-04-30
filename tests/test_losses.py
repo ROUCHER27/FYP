@@ -15,6 +15,10 @@ from Model_Train.losses import (
     madl_loss,
     m2_loss,
     m2_robust_gamma01_loss,
+    m2_robust_gamma03_loss,
+    m2_robust_gamma05_loss,
+    m2_robust_gamma07_loss,
+    m2_robust_gamma15_loss,
     medse_loss,
     mse_loss,
 )
@@ -114,6 +118,27 @@ def test_robustness_penalty_increases_loss_for_higher_prediction_variance() -> N
 
 
 @pytest.mark.parametrize(
+    ("gamma_loss_fn", "expected_gamma"),
+    [
+        (m2_robust_gamma03_loss, 0.3),
+        (m2_robust_gamma05_loss, 0.5),
+        (m2_robust_gamma07_loss, 0.7),
+        (m2_robust_gamma15_loss, 1.5),
+    ],
+)
+def test_new_gamma_variants_match_base_robustness_formula(gamma_loss_fn, expected_gamma: float) -> None:
+    y_true = torch.tensor([0.01, -0.02, 0.03], dtype=torch.float32)
+    y_pred = torch.tensor([0.02, -0.01, -0.01], dtype=torch.float32)
+
+    actual = gamma_loss_fn(y_true, y_pred)
+    expected = (
+        m2_loss(y_true, y_pred, reduction="none") + expected_gamma * y_pred.var()
+    ).mean()
+
+    assert torch.allclose(actual, expected)
+
+
+@pytest.mark.parametrize(
     ("loss_name", "loss_fn"),
     [
         ("m2", m2_loss),
@@ -129,7 +154,11 @@ def test_robustness_penalty_increases_loss_for_higher_prediction_variance() -> N
         ("imadl_gmadl_beta07", None),
         ("m2_robust_gamma001", None),
         ("m2_robust_gamma01", m2_robust_gamma01_loss),
+        ("m2_robust_gamma03", m2_robust_gamma03_loss),
+        ("m2_robust_gamma05", m2_robust_gamma05_loss),
+        ("m2_robust_gamma07", m2_robust_gamma07_loss),
         ("m2_robust_gamma10", None),
+        ("m2_robust_gamma15", m2_robust_gamma15_loss),
         ("adaptive_lambda10", adaptive_lambda10_loss),
         ("adaptive_lambda50", adaptive_lambda50_loss),
         ("adaptive_lambda100", adaptive_lambda100_loss),

@@ -11,7 +11,7 @@ from pathlib import Path
 from analyze_loss_scales import main as analyze_main
 
 
-DEFAULT_LOSSES = "imadl_m2_alpha05,imadl_gmadl_beta05,m2_robust_gamma01,adaptive_lambda50"
+DEFAULT_LOSSES = "imadl_m2_alpha06,m2_robust_gamma01,m2_robust_gamma10"
 
 
 def parse_csv(value: str) -> list[str]:

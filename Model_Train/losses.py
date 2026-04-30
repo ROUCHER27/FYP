@@ -396,6 +396,33 @@ def m2_robust_gamma01_loss(
     return m2_robustness_enhanced_loss(y_true, y_pred, gamma=0.1, reduction=reduction)
 
 
+def m2_robust_gamma03_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """M2 + robustness with gamma=0.3."""
+    return m2_robustness_enhanced_loss(y_true, y_pred, gamma=0.3, reduction=reduction)
+
+
+def m2_robust_gamma05_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """M2 + robustness with gamma=0.5."""
+    return m2_robustness_enhanced_loss(y_true, y_pred, gamma=0.5, reduction=reduction)
+
+
+def m2_robust_gamma07_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """M2 + robustness with gamma=0.7."""
+    return m2_robustness_enhanced_loss(y_true, y_pred, gamma=0.7, reduction=reduction)
+
+
 def m2_robust_gamma10_loss(
     y_true: torch.Tensor,
     y_pred: torch.Tensor,
@@ -403,6 +430,15 @@ def m2_robust_gamma10_loss(
 ) -> torch.Tensor:
     """M2 + robustness with gamma=1.0 (strong penalty)."""
     return m2_robustness_enhanced_loss(y_true, y_pred, gamma=1.0, reduction=reduction)
+
+
+def m2_robust_gamma15_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """M2 + robustness with gamma=1.5."""
+    return m2_robustness_enhanced_loss(y_true, y_pred, gamma=1.5, reduction=reduction)
 
 
 def adaptive_hybrid_loss(
@@ -476,7 +512,11 @@ EXPERIMENT_LOSS_NAMES = (
     "imadl_gmadl_beta07",
     "m2_robust_gamma001",
     "m2_robust_gamma01",
+    "m2_robust_gamma03",
+    "m2_robust_gamma05",
+    "m2_robust_gamma07",
     "m2_robust_gamma10",
+    "m2_robust_gamma15",
     "adaptive_lambda10",
     "adaptive_lambda50",
     "adaptive_lambda100",
@@ -497,7 +537,11 @@ _PHASE2_LOSS_FNS: Dict[str, Callable[..., torch.Tensor]] = {
     "imadl_gmadl_beta07": imadl_gmadl_beta07_loss,
     "m2_robust_gamma001": m2_robust_gamma001_loss,
     "m2_robust_gamma01": m2_robust_gamma01_loss,
+    "m2_robust_gamma03": m2_robust_gamma03_loss,
+    "m2_robust_gamma05": m2_robust_gamma05_loss,
+    "m2_robust_gamma07": m2_robust_gamma07_loss,
     "m2_robust_gamma10": m2_robust_gamma10_loss,
+    "m2_robust_gamma15": m2_robust_gamma15_loss,
     "adaptive_lambda10": adaptive_lambda10_loss,
     "adaptive_lambda50": adaptive_lambda50_loss,
     "adaptive_lambda100": adaptive_lambda100_loss,
@@ -569,7 +613,11 @@ __all__ = [
     "m2_robustness_enhanced_loss",
     "m2_robust_gamma001_loss",
     "m2_robust_gamma01_loss",
+    "m2_robust_gamma03_loss",
+    "m2_robust_gamma05_loss",
+    "m2_robust_gamma07_loss",
     "m2_robust_gamma10_loss",
+    "m2_robust_gamma15_loss",
     "adaptive_hybrid_loss",
     "adaptive_lambda10_loss",
     "adaptive_lambda50_loss",
