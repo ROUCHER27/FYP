@@ -4,11 +4,11 @@
 from __future__ import annotations
 
 import argparse
-import subprocess
 import sys
 from pathlib import Path
 
 from analyze_loss_scales import main as analyze_main
+from run_phase2_robustness import run_command_with_live_log
 
 
 DEFAULT_LOSSES = "imadl_m2_alpha06,m2_robust_gamma01,m2_robust_gamma10"
@@ -61,10 +61,12 @@ def run_sanity(args: argparse.Namespace, loss: str) -> int:
         "--resume-mode",
         args.resume_mode,
     ]
-    with log_file.open("w") as handle:
-        handle.write("command=" + " ".join(command) + "\n\n")
-        proc = subprocess.run(command, stdout=handle, stderr=subprocess.STDOUT, timeout=args.timeout_seconds)
-    return proc.returncode
+    return run_command_with_live_log(
+        command,
+        log_file,
+        timeout_seconds=args.timeout_seconds,
+        header_lines=["command=" + " ".join(command), ""],
+    )
 
 
 def main() -> None:
