@@ -10,8 +10,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
+import threading
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -116,6 +118,49 @@ def write_json(path: Path, payload: dict[str, object]) -> None:
     path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n")
 
 
+def run_command_with_live_log(
+    command: list[str],
+    log_file: Path,
+    *,
+    timeout_seconds: int,
+    header_lines: list[str] | None = None,
+) -> int:
+    """Run a child command while teeing stdout to both the notebook and log file."""
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
+    proc = subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
+        env=env,
+    )
+    assert proc.stdout is not None
+
+    def stream_output() -> None:
+        with log_file.open("w") as log_handle:
+            for line in header_lines or []:
+                log_handle.write(line + "\n")
+            log_handle.flush()
+            for line in proc.stdout:
+                print(line, end="", flush=True)
+                log_handle.write(line)
+                log_handle.flush()
+
+    reader = threading.Thread(target=stream_output, daemon=True)
+    reader.start()
+    try:
+        return_code = proc.wait(timeout=timeout_seconds)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        reader.join(timeout=5)
+        raise
+    reader.join(timeout=5)
+    return return_code
+
+
 def build_command(args: argparse.Namespace, run: BatchRun, output_dir: Path, checkpoint_dir: Path) -> list[str]:
     max_weight = "None" if run.max_weight is None else str(run.max_weight)
     return [
@@ -206,17 +251,19 @@ def run_batch(args: argparse.Namespace) -> int:
         try:
             command = build_command(args, run, output_dir, checkpoint_dir)
             record["command"] = command
-            with log_file.open("w") as log_handle:
-                log_handle.write(f"run_id={run.run_id}\n")
-                log_handle.write(f"started_at={datetime.now(timezone.utc).isoformat()}\n")
-                log_handle.write("command=" + " ".join(command) + "\n\n")
-                subprocess.run(
-                    command,
-                    check=True,
-                    stdout=log_handle,
-                    stderr=subprocess.STDOUT,
-                    timeout=args.timeout_seconds,
-                )
+            return_code = run_command_with_live_log(
+                command,
+                log_file,
+                timeout_seconds=args.timeout_seconds,
+                header_lines=[
+                    f"run_id={run.run_id}",
+                    f"started_at={datetime.now(timezone.utc).isoformat()}",
+                    "command=" + " ".join(command),
+                    "",
+                ],
+            )
+            if return_code:
+                raise subprocess.CalledProcessError(return_code, command)
             if not is_complete(output_dir, run.loss):
                 raise RuntimeError(f"Run finished without expected summary/metrics for {run.run_id}")
             print("  OK")
