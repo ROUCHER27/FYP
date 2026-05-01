@@ -1,10 +1,13 @@
 import argparse
 import ast
+import io
 import json
 import os
 import random
+import shutil
+import tempfile
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import matplotlib
 import numpy as np
@@ -45,13 +48,14 @@ def configure_matplotlib(output_dir: Path) -> None:
     import matplotlib.pyplot as plt  # noqa
     globals()["plt"] = plt
 
+
 from Model_Train.data_preprocess import prepare_panel_data
 from Model_Train.features import (
     FeatureConfig,
     assemble_feature_matrix,
     build_feature_set_x1,
 )
-from Model_Train.losses import medse_loss, mse_loss
+from Model_Train.losses import EXPERIMENT_LOSS_NAMES, get_experiment_loss_fn
 from Model_Train.models import MLP, MLPConfig
 
 
@@ -127,7 +131,43 @@ def build_arg_parser(description: str) -> argparse.ArgumentParser:
         default=MAX_WEIGHT,
         help="Step4: 最大单票权重 (控制组合集中度)，传 'None' 可关闭。",
     )
+    parser.add_argument(
+        "--resume-mode",
+        type=str,
+        default="auto",
+        help="Resume policy: auto, never, or require. Legacy aliases: resume, off.",
+    )
+    parser.add_argument(
+        "--checkpoint-dir",
+        type=str,
+        default=None,
+        help="Directory for per-loss resume state files. Defaults to <output-dir>/checkpoints.",
+    )
+    parser.add_argument(
+        "--archive-root",
+        type=str,
+        default=None,
+        help="Optional destination root for per-loss archived outputs. Use a Drive path in Colab to save directly to Drive.",
+    )
     return parser
+
+
+def normalize_resume_mode(value: str | None) -> str:
+    if value is None:
+        return "auto"
+    mapping = {
+        "auto": "auto",
+        "resume": "auto",
+        "never": "never",
+        "off": "never",
+        "require": "require",
+    }
+    normalized = mapping.get(value.lower())
+    if normalized is None:
+        raise ValueError(
+            f"Unsupported resume mode '{value}'. Supported modes: auto, never, require."
+        )
+    return normalized
 
 
 def detect_device() -> torch.device:
@@ -214,6 +254,197 @@ def ensure_output_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
 
 
+def atomic_write_bytes(path: Path, data: bytes) -> None:
+    ensure_output_dir(path.parent)
+    with tempfile.NamedTemporaryFile(dir=path.parent, delete=False) as handle:
+        handle.write(data)
+        handle.flush()
+        os.fsync(handle.fileno())
+        temp_path = Path(handle.name)
+    os.replace(temp_path, path)
+
+
+def atomic_write_text(path: Path, text: str) -> None:
+    atomic_write_bytes(path, text.encode("utf-8"))
+
+
+def write_json_atomic(path: Path, payload: Dict[str, Any]) -> None:
+    atomic_write_text(path, json.dumps(payload, indent=2, sort_keys=True))
+
+
+def write_dataframe_csv_atomic(path: Path, df: pd.DataFrame) -> None:
+    atomic_write_text(path, df.to_csv(index=False))
+
+
+def write_torch_atomic(path: Path, payload: Dict[str, Any]) -> None:
+    buffer = io.BytesIO()
+    torch.save(payload, buffer)
+    atomic_write_bytes(path, buffer.getvalue())
+
+
+def save_run_spec(path: Path, spec: Dict[str, Any]) -> None:
+    write_json_atomic(path, spec)
+
+
+def load_run_spec(path: Path) -> Dict[str, Any] | None:
+    if not path.exists():
+        return None
+    return json.loads(path.read_text())
+
+
+def save_train_state(path: Path, state: Dict[str, Any]) -> None:
+    write_json_atomic(path, state)
+
+
+def load_train_state(path: Path) -> Dict[str, Any]:
+    if not path.exists():
+        return {
+            "completed_epochs": 0,
+            "max_epochs": 0,
+            "checkpoint_file": "train_checkpoint.pt",
+        }
+    return json.loads(path.read_text())
+
+
+def save_progress(path: Path, state: Dict[str, Any]) -> None:
+    write_json_atomic(path, state)
+
+
+def load_progress(path: Path) -> Dict[str, Any]:
+    if not path.exists():
+        return {"stage": "pending", "completed_months": [], "completed_epochs": 0}
+    data = json.loads(path.read_text())
+    data.setdefault("stage", "pending")
+    data.setdefault("completed_months", [])
+    data.setdefault("completed_epochs", 0)
+    return data
+
+
+def move_optimizer_state(optimizer: torch.optim.Optimizer, device: torch.device) -> None:
+    for state in optimizer.state.values():
+        for key, value in state.items():
+            if torch.is_tensor(value):
+                state[key] = value.to(device)
+
+
+def build_resume_paths(loss_name: str, args: argparse.Namespace) -> Dict[str, Path]:
+    checkpoint_root = getattr(args, "checkpoint_dir", None)
+    if checkpoint_root is None:
+        checkpoint_root = Path(args.output_dir) / "checkpoints"
+    else:
+        checkpoint_root = Path(checkpoint_root)
+    loss_dir = checkpoint_root / loss_name
+    ensure_output_dir(loss_dir)
+    return {
+        "loss_dir": loss_dir,
+        "run_spec": loss_dir / "run_spec.json",
+        "train_state": loss_dir / "train_state.json",
+        "progress": loss_dir / "progress.json",
+        "checkpoint": loss_dir / "train_checkpoint.pt",
+    }
+
+
+def build_run_spec(
+    loss_name: str,
+    args: argparse.Namespace,
+    config: MLPConfig,
+    input_dim: int,
+) -> Dict[str, Any]:
+    return {
+        "version": 1,
+        "loss_name": loss_name,
+        "data_dir": str(args.data_dir),
+        "pattern": str(args.pattern),
+        "lookback_months": int(args.lookback_months),
+        "train_start": str(args.train_start),
+        "train_end": str(args.train_end),
+        "test_start": str(args.test_start),
+        "test_months": int(args.test_months),
+        "best_config_path": str(args.best_config_path),
+        "batch_size": int(args.batch_size),
+        "max_epochs": int(args.max_epochs),
+        "seed": int(args.seed),
+        "max_weight": None if args.max_weight is None else float(args.max_weight),
+        "input_dim": int(input_dim),
+        "model_config": {
+            "input_dim": int(config.input_dim),
+            "hidden_dims": list(config.hidden_dims),
+            "activation": str(config.activation),
+            "dropout": float(config.dropout),
+        },
+    }
+
+
+def ensure_matching_run_spec(
+    path: Path,
+    current_spec: Dict[str, Any],
+    resume_mode: str,
+) -> None:
+    existing_spec = load_run_spec(path)
+    if existing_spec is None:
+        save_run_spec(path, current_spec)
+        return
+    if resume_mode in {"auto", "require"} and existing_spec != current_spec:
+        raise ValueError(f"Run spec mismatch for {path.parent.name}: {path}")
+    if resume_mode == "never":
+        save_run_spec(path, current_spec)
+
+
+def set_epoch_seed(base_seed: int, epoch_index: int) -> int:
+    epoch_seed = int(base_seed) + int(epoch_index)
+    set_seed(epoch_seed)
+    return epoch_seed
+
+
+def load_metrics_csv(path: Path) -> pd.DataFrame:
+    if not path.exists():
+        return pd.DataFrame()
+    df = pd.read_csv(path)
+    if df.empty:
+        return df
+    return df.drop_duplicates(subset=["month"], keep="first")
+
+
+def sort_and_recompute_metrics(
+    df_result: pd.DataFrame, ordered_months: List[str]
+) -> pd.DataFrame:
+    if df_result.empty:
+        return df_result.copy()
+    ordered = df_result.drop_duplicates(subset=["month"], keep="first").copy()
+    month_order = {month: idx for idx, month in enumerate(ordered_months)}
+    ordered["__month_order"] = ordered["month"].map(month_order)
+    ordered = ordered.sort_values("__month_order").drop(columns="__month_order")
+    long_short_returns = ordered["long_short_return"].astype(float)
+    ordered["cumulative_long_short_return"] = (
+        (1.0 + long_short_returns.fillna(0.0)).cumprod() - 1.0
+    )
+    return ordered.reset_index(drop=True)
+
+
+def expected_output_paths(output_dir: Path, loss_name: str) -> Dict[str, Path]:
+    return {
+        "metrics": output_dir / f"sanity_metrics_{loss_name}.csv",
+        "summary": output_dir / f"sanity_summary_{loss_name}.json",
+        "loss_curve": output_dir / f"{loss_name}_loss_curve.png",
+        "returns_curve": output_dir / f"{loss_name}_returns_curve.png",
+    }
+
+
+def archive_loss_outputs(
+    loss_name: str,
+    output_dir: Path,
+    archive_root: Path | None,
+) -> Path | None:
+    if archive_root is None:
+        return None
+    archive_dir = archive_root / loss_name
+    ensure_output_dir(archive_dir)
+    for source_path in expected_output_paths(output_dir, loss_name).values():
+        if source_path.exists():
+            shutil.copy2(source_path, archive_dir / source_path.name)
+    return archive_dir
+
+
 def train_model(
     x_train: np.ndarray,
     y_train: np.ndarray,
@@ -222,27 +453,53 @@ def train_model(
     device: torch.device,
     batch_size: int,
     max_epochs: int,
+    seed: int = 42,
+    checkpoint_path: Path | None = None,
+    train_state_path: Path | None = None,
+    resume_mode: str = "off",
 ) -> MLP:
     """
     单次训练流程：DataLoader -> 前向 -> 反向 -> 更新。
-    loss_name 决定使用 MSE 还是 MedSE。
+    loss_name 决定本次实验使用的训练损失函数。
     """
     dataset = TensorDataset(
         torch.from_numpy(x_train).float(), torch.from_numpy(y_train).float()
     )
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
     model = MLP(config).to(device)
     optimizer = torch.optim.Adam(model.parameters())
+    criterion = get_experiment_loss_fn(loss_name)
+    start_epoch = 0
 
-    if loss_name == "mse":
-        criterion = lambda a, b: mse_loss(a, b, reduction="mean")
-    elif loss_name == "medse":
-        criterion = lambda a, b: medse_loss(a, b, reduction="median")
-    else:
-        raise ValueError(f"Unsupported loss for sanity check: {loss_name}")
+    if (
+        resume_mode in {"auto", "require"}
+        and checkpoint_path is not None
+        and train_state_path is not None
+        and checkpoint_path.exists()
+    ):
+        train_state = load_train_state(train_state_path)
+        start_epoch = int(train_state.get("completed_epochs", 0))
+        if start_epoch > 0:
+            payload = torch.load(checkpoint_path, map_location=device)
+            model.load_state_dict(payload["model_state"])
+            optimizer.load_state_dict(payload["optimizer_state"])
+            move_optimizer_state(optimizer, device)
+            print(f"Resuming {loss_name.upper()} training from epoch {start_epoch + 1}.")
+    elif resume_mode == "require":
+        raise FileNotFoundError(
+            f"Checkpoint not found for {loss_name} under {checkpoint_path.parent if checkpoint_path else 'unknown'}."
+        )
 
     model.train()
-    for epoch in range(max_epochs):
+    for epoch in range(start_epoch, max_epochs):
+        epoch_seed = set_epoch_seed(seed, epoch)
+        generator = torch.Generator(device="cpu")
+        generator.manual_seed(epoch_seed)
+        loader = DataLoader(
+            dataset,
+            batch_size=batch_size,
+            shuffle=True,
+            generator=generator,
+        )
         for batch_x, batch_y in loader:
             batch_x = batch_x.to(device)
             batch_y = batch_y.to(device)
@@ -251,6 +508,25 @@ def train_model(
             loss = criterion(batch_y, preds)
             loss.backward()
             optimizer.step()
+        if checkpoint_path is not None:
+            write_torch_atomic(
+                checkpoint_path,
+                {
+                    "model_state": model.state_dict(),
+                    "optimizer_state": optimizer.state_dict(),
+                },
+            )
+        if train_state_path is not None:
+            save_train_state(
+                train_state_path,
+                {
+                    "completed_epochs": epoch + 1,
+                    "max_epochs": max_epochs,
+                    "checkpoint_file": checkpoint_path.name
+                    if checkpoint_path is not None
+                    else None,
+                },
+            )
         if (epoch + 1) % 5 == 0 or epoch == 0 or epoch + 1 == max_epochs:
             print(f"Epoch {epoch + 1}/{max_epochs} finished for {loss_name.upper()}.")
     return model
@@ -283,6 +559,33 @@ def compute_metrics(
     else:
         r2 = float(1.0 - np.sum(residuals**2) / denom)
     return {"mse": mse, "medse": medse, "r2": r2}
+
+
+def compute_directional_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, float]:
+    """
+    方向性指标：
+    - directional_accuracy: sign(y) == sign(ŷ) 的比例
+    - sign_mismatch_large_y: |y| 高于 75 分位时的符号错误率
+    """
+    if y_true.size == 0:
+        return {
+            "directional_accuracy": float("nan"),
+            "sign_mismatch_large_y": float("nan"),
+        }
+    sign_match = np.sign(y_true) == np.sign(y_pred)
+    directional_accuracy = float(np.mean(sign_match))
+
+    threshold = float(np.percentile(np.abs(y_true), 75))
+    large_y_mask = np.abs(y_true) > threshold
+    if large_y_mask.sum() == 0:
+        sign_mismatch_large_y = float("nan")
+    else:
+        sign_mismatch_large_y = float(np.mean(~sign_match[large_y_mask]))
+
+    return {
+        "directional_accuracy": directional_accuracy,
+        "sign_mismatch_large_y": sign_mismatch_large_y,
+    }
 
 
 def apply_weight_cap(
@@ -414,12 +717,12 @@ def format_period(period: pd.Period) -> str:
 def plot_curves(df: pd.DataFrame, loss_name: str, output_dir: Path) -> None:
     """
     画两类图：
-    1. Loss 曲线（MSE 或 MedSE vs Month）。
+    1. Loss 曲线（固定使用 MSE vs Month）。
     2. Long-Short Return 曲线。
     """
     months = pd.to_datetime(df["month"])
-    metric_col = "mse" if loss_name == "mse" else "medse"
-    label = metric_col.upper()
+    metric_col = "mse"
+    label = "MSE"
 
     plt.figure(figsize=(8, 4))
     plt.plot(months, df[metric_col], marker="o", label=label)
@@ -456,17 +759,57 @@ def plot_curves(df: pd.DataFrame, loss_name: str, output_dir: Path) -> None:
     print(f"Long-Short return curve saved to {ret_path}")
 
 
+def summarize_results(loss_name: str, df_result: pd.DataFrame) -> Dict[str, float]:
+    """
+    统一汇总 schema，供单实验与批量对比脚本复用。
+    """
+    long_short_returns = df_result["long_short_return"].astype(float)
+    ls_stats = compute_long_short_stats(long_short_returns)
+    return {
+        "loss": loss_name,
+        "avg_mse": float(df_result["mse"].mean()),
+        "avg_medse": float(df_result["medse"].mean()),
+        "avg_r2": float(df_result["r2"].mean()),
+        "avg_directional_accuracy": float(df_result["directional_accuracy"].mean()),
+        "avg_sign_mismatch_large_y": float(df_result["sign_mismatch_large_y"].mean()),
+        "avg_long_short": float(df_result["long_short_return"].mean()),
+        "long_short_cumulative_return": ls_stats["cumulative_return"],
+        "long_short_std": ls_stats["std"],
+        "long_short_sharpe": ls_stats["sharpe"],
+    }
+
+
 def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
     """
     固定训练窗口，只训练一次模型，然后在未来 6 个月逐月预测/调仓。
     """
+    loss_name = loss_name.lower()
+    if loss_name not in EXPERIMENT_LOSS_NAMES:
+        raise ValueError(
+            f"Unsupported loss '{loss_name}'. Supported losses: {', '.join(EXPERIMENT_LOSS_NAMES)}"
+        )
     global MAX_WEIGHT
     MAX_WEIGHT = args.max_weight
     set_seed(args.seed)
     device = detect_device()
     output_dir = Path(args.output_dir)
+    archive_root = (
+        Path(args.archive_root) if getattr(args, "archive_root", None) else None
+    )
     ensure_output_dir(output_dir)
     configure_matplotlib(output_dir)
+    resume_mode = normalize_resume_mode(getattr(args, "resume_mode", "auto"))
+    resume_paths = build_resume_paths(loss_name, args)
+    if resume_mode in {"auto", "require"}:
+        train_state = load_train_state(resume_paths["train_state"])
+        progress = load_progress(resume_paths["progress"])
+    else:
+        train_state = {
+            "completed_epochs": 0,
+            "max_epochs": int(getattr(args, "max_epochs", 0)),
+            "checkpoint_file": resume_paths["checkpoint"].name,
+        }
+        progress = {"stage": "pending", "completed_months": [], "completed_epochs": 0}
 
     print("=== Sanity Check: Static 5Y Train / 6M Test ===")
     panel = prepare_panel_data(data_dir=args.data_dir, pattern=args.pattern)
@@ -491,9 +834,19 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         raise RuntimeError("Testing window contains zero samples.")
 
     config = read_best_config(Path(args.best_config_path), input_dim=x_all.shape[1])
+    run_spec = build_run_spec(loss_name, args, config, input_dim=x_all.shape[1])
+    ensure_matching_run_spec(resume_paths["run_spec"], run_spec, resume_mode)
     print("Using MLPConfig:", config)
     ensure_output_dir(output_dir)
 
+    save_progress(
+        resume_paths["progress"],
+        {
+            "stage": "training",
+            "completed_months": progress.get("completed_months", []),
+            "completed_epochs": int(train_state.get("completed_epochs", 0)),
+        },
+    )
     model = train_model(
         x_train,
         y_train,
@@ -502,78 +855,134 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         device=device,
         batch_size=args.batch_size,
         max_epochs=args.max_epochs,
+        seed=args.seed,
+        checkpoint_path=resume_paths["checkpoint"],
+        train_state_path=resume_paths["train_state"],
+        resume_mode=resume_mode,
     )
 
-    label = "MSE" if loss_name == "mse" else "MedSE"
-    month_records: List[Dict[str, object]] = []
+    train_state = load_train_state(resume_paths["train_state"])
+    existing_progress = (
+        load_progress(resume_paths["progress"])
+        if resume_mode in {"auto", "require"}
+        else {"stage": "evaluating", "completed_months": [], "completed_epochs": 0}
+    )
+    completed_months = list(existing_progress.get("completed_months", []))
+    save_progress(
+        resume_paths["progress"],
+        {
+            "stage": "evaluating",
+            "completed_months": completed_months,
+            "completed_epochs": int(train_state.get("completed_epochs", 0)),
+        },
+    )
+    ordered_months = [format_period(period) for period in test_periods]
+    csv_path = Path(args.output_dir) / f"sanity_metrics_{loss_name}.csv"
+    df_result = (
+        load_metrics_csv(csv_path)
+        if resume_mode in {"auto", "require"}
+        else pd.DataFrame()
+    )
+    if resume_mode in {"auto", "require"} and not df_result.empty:
+        df_result = sort_and_recompute_metrics(df_result, ordered_months)
+        write_dataframe_csv_atomic(csv_path, df_result)
+    metrics_completed = set(df_result["month"].astype(str).tolist()) if not df_result.empty else set()
+    empty_completed = {
+        month for month in completed_months if month not in metrics_completed
+    }
     print("Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.")
     for period in test_periods:
+        month_str = format_period(period)
+        if month_str in metrics_completed or month_str in empty_completed:
+            continue
         month_mask = (date_periods == period).to_numpy()
         mask = month_mask & test_mask
         if not mask.any():
-            print(f"Warning: no data for test month {format_period(period)}.")
+            print(f"Warning: no data for test month {month_str}.")
+            completed_months.append(month_str)
+            empty_completed.add(month_str)
+            save_progress(
+                resume_paths["progress"],
+                {
+                    "stage": "evaluating",
+                    "completed_months": completed_months,
+                    "completed_epochs": int(train_state.get("completed_epochs", 0)),
+                },
+            )
             continue
         x_month = x_all[mask]
         y_month = y_all[mask]
         preds = predict(model, x_month, device=device)
         metrics = compute_metrics(y_month, preds)
+        directional_metrics = compute_directional_metrics(y_month, preds)
         port = compute_portfolio_returns(preds, y_month)
-        # 根据实验类型选择关注的损失（MSE 或 MedSE）
-        loss_value = metrics["mse"] if loss_name == "mse" else metrics["medse"]
-        month_records.append(
+        month_record = (
             {
-                "month": format_period(period),
+                "month": month_str,
                 "sample_size": int(mask.sum()),
-                label.lower(): loss_value,
+                "mse": metrics["mse"],
+                "medse": metrics["medse"],
                 "r2": metrics["r2"],
+                "directional_accuracy": directional_metrics["directional_accuracy"],
+                "sign_mismatch_large_y": directional_metrics["sign_mismatch_large_y"],
                 "long_return": port["long"],
                 "short_return": port["short"],
                 "long_short_return": port["long_short"],
             }
         )
+        if df_result.empty:
+            df_result = pd.DataFrame([month_record])
+        else:
+            df_result = pd.concat([df_result, pd.DataFrame([month_record])], ignore_index=True)
+        df_result = sort_and_recompute_metrics(df_result, ordered_months)
+        write_dataframe_csv_atomic(csv_path, df_result)
+        metrics_completed.add(month_str)
+        completed_months.append(month_str)
+        save_progress(
+            resume_paths["progress"],
+            {
+                "stage": "evaluating",
+                "completed_months": completed_months,
+                "completed_epochs": int(train_state.get("completed_epochs", 0)),
+            },
+        )
         print(
-            f"Month {format_period(period)} | {label} {loss_value:.6f} | "
+            f"Month {month_str} | {loss_name.upper()} | "
+            f"MSE {metrics['mse']:.6f} | MedSE {metrics['medse']:.6f} | "
             f"R2 {metrics['r2']:.4f} | Long {port['long']:.4f} | "
             f"Short {port['short']:.4f} | Long-Short {port['long_short']:.4f}"
         )
 
-    if not month_records:
+    if df_result.empty:
         print(f"No monthly results recorded for {loss_name}.")
         return
 
-    df_result = pd.DataFrame(month_records)
-    long_short_returns = df_result["long_short_return"].astype(float)
-    df_result["cumulative_long_short_return"] = (
-        (1.0 + long_short_returns.fillna(0.0)).cumprod() - 1.0
-    )
-    ls_stats = compute_long_short_stats(long_short_returns)
-    csv_path = Path(args.output_dir) / f"sanity_metrics_{loss_name}.csv"
-    df_result.to_csv(csv_path, index=False)
-    print(f"Saved metrics for {label} to {csv_path}")
+    df_result = sort_and_recompute_metrics(df_result, ordered_months)
+    write_dataframe_csv_atomic(csv_path, df_result)
+    print(f"Saved metrics for {loss_name.upper()} to {csv_path}")
 
-    avg_key = label.lower()
-    summary = {
-        "loss": loss_name,
-        f"avg_{avg_key}": float(df_result[avg_key].mean()),
-        "avg_r2": float(df_result["r2"].mean()),  # R^2 体现解释度
-        "avg_long_short": float(df_result["long_short_return"].mean()),
-        "long_short_cumulative_return": ls_stats["cumulative_return"],
-        "long_short_std": ls_stats["std"],
-        "long_short_sharpe": ls_stats["sharpe"],
-    }
+    summary = summarize_results(loss_name, df_result)
     summary_path = output_dir / f"sanity_summary_{loss_name}.json"
-    summary_path.write_text(json.dumps(summary, indent=2))
+    write_json_atomic(summary_path, summary)
+    save_progress(
+        resume_paths["progress"],
+        {
+            "stage": "completed",
+            "completed_months": completed_months,
+            "completed_epochs": int(train_state.get("completed_epochs", 0)),
+        },
+    )
     print(f"Wrote summary to {summary_path}")
     print(
         "Long-Short stats | Cumulative "
-        f"{ls_stats['cumulative_return']:.4f} | "
-        f"Std {ls_stats['std']:.4f} | Sharpe {ls_stats['sharpe']:.4f}"
+        f"{summary['long_short_cumulative_return']:.4f} | "
+        f"Std {summary['long_short_std']:.4f} | Sharpe {summary['long_short_sharpe']:.4f}"
     )
     plot_curves(df_result, loss_name, output_dir)
-    if loss_name == "mse":
-        print("MSE 实验完成。")
-    else:
-        print("MedSE 实验完成。")
+    archive_dir = archive_loss_outputs(loss_name, output_dir, archive_root)
+    if archive_dir is not None:
+        print(f"Archived {loss_name.upper()} outputs to {archive_dir}")
+    print(f"{loss_name.upper()} 实验完成。")
     print(
-        "\n提示：若要比较 MSE 与 MedSE，请分别运行对应脚本（run_sanity_check_mse.py / run_sanity_check_medse.py）。"
+        "\n提示：批量比较 7 个 loss 时，请使用对应 runner 或 run_all_experiments.py。"
     )

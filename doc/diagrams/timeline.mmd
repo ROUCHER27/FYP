@@ -1,0 +1,6 @@
+flowchart LR
+    T1["Setup<br/>2026-04-21 → 2026-04-28"] --> T2["Sanity check<br/>2-3 epochs / one loss at a time<br/>2026-04-29 → 2026-05-05"]
+    T2 --> T3["Batch run (local)<br/>all core losses<br/>2026-05-06 → 2026-05-12"]
+    T3 --> T4["Colab smoke<br/>single loss + checkpoint save<br/>2026-05-13 → 2026-05-19"]
+    T4 --> T5["Full run<br/>24-month test window<br/>2026-05-20 → 2026-06-02"]
+    T5 --> T6["Wrap-up<br/>tables / plots / write-up<br/>2026-06-03 → 2026-06-10"]

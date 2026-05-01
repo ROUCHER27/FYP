@@ -1,0 +1,5 @@
+{
+  "checkpoint_file": "train_checkpoint.pt",
+  "completed_epochs": 20,
+  "max_epochs": 20
+}
