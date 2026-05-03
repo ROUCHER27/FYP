@@ -73,3 +73,7 @@ sanity_outputs/
 
 # Draft exports not needed for repo/Colab workflow
 doc/draft*.pdf
+
+# Phase 2 experiment data directories
+doc/phase2-fix/phase2_1b/
+doc/phase2-fix/phase2_2/
