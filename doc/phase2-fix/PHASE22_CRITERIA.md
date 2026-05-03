@@ -42,19 +42,31 @@ Phase 2.2 的核心目标是在 Phase 2 P0 成功的基础上，通过精调和�
 
 ## Phase 2.1b Alignment 成功标准
 
+**重要说明**: Phase 2.1b alignment 发现 Phase 2 M2 (λ_dir=2.0) 与 Phase 1.5 M2 (λ_dir=5.0) 是不同的 loss variants，不应强行对齐。
+
 ### 最低标准（必须达到）
 - ✅ 成功运行 IMADL, GMADL, hybrid_mul × 3 seeds
 - ✅ 无技术错误（9 runs 全部完成）
 
 ### 目标标准（期望达到）
-- 🎯 **对齐误差 < 15%**:
+- 🎯 **IMADL 和 GMADL 对齐误差 < 15%**（前提：loss 配置严格等价）:
   - IMADL Sharpe: 0.464 ± 15% = [0.39, 0.53]
   - GMADL Sharpe: 0.307 ± 15% = [0.26, 0.35]
-  - M2 Sharpe: 0.914 ± 15% = [0.78, 1.05]
 - 🎯 证明 Phase 2 runner 与 Phase 1.5 一致
 
+**M2 对齐说明**：
+- Phase 1.5 M2 使用 λ_dir=5.0，Sharpe=0.914
+- Phase 2 M2 使用 λ_dir=2.0，这是一个新的 loss variant
+- Phase 2.1b hybrid_mul 使用 λ_dir=1.0（默认值）
+- **这三个是不同的 loss functions，不应直接比较**
+
+**重要**：在判断 alignment 失败前，必须先确认：
+1. Phase 1.5 target 数字的来源（lambda sweep / robustness / cap/no-cap）
+2. Phase 2.1b 跑的 loss 配置与 Phase 1.5 严格等价（例如 M2 的 lambda_dir 参数）
+3. 只有确认同口径、同配置后，偏差 >15% 才判定为 runner bug
+
 ### 理想标准（最佳情况）
-- 🌟 对齐误差 < 10%（几乎完美复现）
+- 🌟 IMADL 和 GMADL 对齐误差 < 10%（几乎完美复现）
 - 🌟 CV 也在合理范围内（与 Phase 1.5 接近）
 
 ## 失败标准（触发重新评估）
@@ -73,10 +85,17 @@ Phase 2.2 的核心目标是在 Phase 2 P0 成功的基础上，通过精调和�
 **后果**: 必须实现归一化版本，重跑实验
 
 ### Alignment 失败
-- ❌ 对齐误差 > 15%
-- ❌ 任何 baseline loss 的 Sharpe 偏离 Phase 1.5 超过 15%
+- ❌ 确认同口径、同配置后，IMADL 或 GMADL 对齐误差仍 > 15%
 
-**后果**: 修复 runner bug，重跑所有 Phase 2 实验
+**后果**: 
+1. 先检查 Phase 1.5 target 来源和 loss 配置是否严格等价
+2. 如果配置不等价，修正 alignment 实验配置，重跑 Phase 2.1b
+3. 如果配置等价但仍偏差 >15%，则判定为 runner bug，修复后重跑所有 Phase 2 实验
+
+**M2 对齐失败说明**：
+- Phase 2.1b 发现 Phase 2 M2 (λ_dir=2.0) 与 Phase 1.5 M2 (λ_dir=5.0) 参数不同
+- 这不是 runner bug，而是不同的 loss variants
+- Phase 2 M2 应被视为新的 loss 探索，不应强行对齐 Phase 1.5 M2
 
 ## 决策规则
 
@@ -102,11 +121,23 @@ ELSE IF 量级比率 > 10x:
 
 ### Alignment 后的决策
 ```
-IF 对齐误差 < 15%:
+IF IMADL 和 GMADL 对齐误差 < 15% (且配置严格等价):
     → Runner 可信，继续 Phase 2.2
-ELSE:
+ELSE IF 配置不等价（例如 lambda_dir 不同）:
+    → 修正 alignment 配置，重跑 Phase 2.1b
+ELSE IF 配置等价但偏差 > 15%:
     → 修复 runner，重跑所有 Phase 2 实验
 ```
+
+**Phase 2.2 结果使用原则**：
+- Gamma refinement 和 loss-scale diagnostics 可以继续跑（内部可比性有效）
+- 但在 alignment cleanup 完成前，Phase 2.2 结果只能作为"Phase 2 runner 内部探索"
+- 只有 alignment 通过后，才能声称"相对 Phase 1.5 的确定提升"
+
+**M2 特殊说明**：
+- Phase 2 M2 (λ_dir=2.0) 是新的 loss variant，不需要对齐 Phase 1.5 M2 (λ_dir=5.0)
+- Phase 2.2 的 m2_robust_gamma07 结果有效，但应描述为"新 M2 variant 的探索"
+- 不应声称"Phase 2 M2 超越 Phase 1.5 M2"（因为参数不同）
 
 ## 时间预算
 
