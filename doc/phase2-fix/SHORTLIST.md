@@ -62,12 +62,18 @@
 
 ## 与 Phase 1.5 对比
 
-| Loss | Phase 1.5 Sharpe | Phase 2 Sharpe | 提升 |
-|------|------------------|----------------|------|
-| IMADL | 0.464 | - | - |
-| M2 (hybrid_mul) | 0.914 | - | - |
-| **m2_robust_gamma10** | - | **1.0043** | **+10%** |
-| **m2_robust_gamma01** | - | **0.7470** | - |
-| **imadl_m2_alpha06** | - | **0.6895** | - |
+**重要说明**: Phase 2 的 M2 使用 λ_dir=2.0，而 Phase 1.5 的 M2 使用 λ_dir=5.0，这是两个不同的 loss variants，不应直接比较。
 
-**结论**: Phase 2 P0 修复成功，m2_robust_gamma10 超越 Phase 1.5 最佳结果。
+| Loss | Phase 1.5 Sharpe | Phase 2 Sharpe | 说明 |
+|------|------------------|----------------|------|
+| IMADL | 0.464 | - | Phase 1.5 baseline |
+| M2 (λ_dir=5.0) | 0.914 | - | Phase 1.5 M2 |
+| M2 (λ_dir=2.0) | - | - | Phase 2 M2（新 variant） |
+| **m2_robust_gamma10** | - | **1.0043** | Phase 2 最高 Sharpe |
+| **m2_robust_gamma01** | - | **0.7470** | Phase 2 稳定选择 |
+| **imadl_m2_alpha06** | - | **0.6895** | Phase 2 最稳定 |
+
+**结论**: 
+- Phase 2 P0 修复成功，探索了新的 M2 variant (λ_dir=2.0) + robustness penalty
+- Phase 2.2 推荐 m2_robust_gamma07 (Sharpe 0.92, CV 0.18) 作为最佳平衡
+- 由于 λ_dir 参数不同，Phase 2 M2 与 Phase 1.5 M2 不可直接比较
