@@ -203,21 +203,71 @@ def custom_loss(
 # ============================================================================
 
 
+def m2_lambda5_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """
+    Phase 1.5 M2 baseline with lambda_dir=5.0.
+
+    This is the original M2 loss from Phase 1.5 lambda sweep experiments.
+    Performance: Sharpe 1.0316, Cumulative Return 54.28% (seed=42, cap=0.05).
+    """
+    return hybrid_dir_huber_mul_loss(
+        y_true, y_pred, lambda_dir=5.0, reduction=reduction
+    )
+
+
+def m2_lambda2_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """
+    Phase 2 M2 variant with lambda_dir=2.0.
+
+    This is a NEW loss variant explored in Phase 2, NOT aligned with Phase 1.5 M2.
+    Phase 1.5 M2 used lambda_dir=5.0. This uses lambda_dir=2.0 for moderate
+    directional penalty. Phase 2 Variant 1 and Variant 4 depend on this baseline.
+    """
+    return hybrid_dir_huber_mul_loss(
+        y_true, y_pred, lambda_dir=2.0, reduction=reduction
+    )
+
+
+def m2_lambda1_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """
+    Phase 2.1b hybrid_mul baseline with lambda_dir=1.0 (default).
+
+    This is the default hybrid_mul loss used in Phase 2.1b alignment tests.
+    It uses the default lambda_dir=1.0 parameter.
+    """
+    return hybrid_dir_huber_mul_loss(
+        y_true, y_pred, lambda_dir=1.0, reduction=reduction
+    )
+
+
 def m2_loss(
     y_true: torch.Tensor,
     y_pred: torch.Tensor,
     reduction: Reduction = "mean",
 ) -> torch.Tensor:
     """
-    Phase 2 M2 baseline, aligned with the Phase 1.5 hybrid_mul M2.
+    Phase 2 M2 baseline (alias for m2_lambda2_loss).
 
-    This intentionally delegates to hybrid_dir_huber_mul_loss with
-    lambda_dir=2.0. Do not replace it with the older signed squared-error
-    approximation; Phase 2 Variant 1 and Variant 4 depend on this baseline.
+    IMPORTANT: This uses lambda_dir=2.0, which is DIFFERENT from Phase 1.5 M2 (lambda_dir=5.0).
+    For Phase 1.5 M2, use m2_lambda5_loss() instead.
+
+    This intentionally delegates to hybrid_dir_huber_mul_loss with lambda_dir=2.0.
+    Do not replace it with the older signed squared-error approximation;
+    Phase 2 Variant 1 and Variant 4 depend on this baseline.
     """
-    return hybrid_dir_huber_mul_loss(
-        y_true, y_pred, lambda_dir=2.0, reduction=reduction
-    )
+    return m2_lambda2_loss(y_true, y_pred, reduction=reduction)
 
 
 def imadl_loss(
@@ -525,6 +575,9 @@ EXPERIMENT_LOSS_NAMES = (
 
 _PHASE2_LOSS_FNS: Dict[str, Callable[..., torch.Tensor]] = {
     "m2": m2_loss,
+    "m2_lambda5": m2_lambda5_loss,
+    "m2_lambda2": m2_lambda2_loss,
+    "m2_lambda1": m2_lambda1_loss,
     "imadl_m2_alpha02": imadl_m2_alpha02_loss,
     "imadl_m2_alpha03": imadl_m2_alpha03_loss,
     "imadl_m2_alpha04": imadl_m2_alpha04_loss,
@@ -597,6 +650,9 @@ __all__ = [
     "hybrid_dir_huber_add_loss",
     "hybrid_dir_huber_mul_loss",
     "m2_loss",
+    "m2_lambda5_loss",
+    "m2_lambda2_loss",
+    "m2_lambda1_loss",
     "imadl_loss",
     "imadl_m2_linear_loss",
     "imadl_m2_alpha02_loss",
