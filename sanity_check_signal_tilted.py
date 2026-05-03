@@ -887,9 +887,14 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         df_result = sort_and_recompute_metrics(df_result, ordered_months)
         write_dataframe_csv_atomic(csv_path, df_result)
     metrics_completed = set(df_result["month"].astype(str).tolist()) if not df_result.empty else set()
-    empty_completed = {
-        month for month in completed_months if month not in metrics_completed
-    }
+    # Only trust completed_months if we have actual metrics data in the CSV.
+    # When CSV is empty/0-byte (e.g. previous write failed), treat all months
+    # as pending so they get re-evaluated instead of silently skipped.
+    empty_completed = (
+        {month for month in completed_months if month not in metrics_completed}
+        if not df_result.empty
+        else set()
+    )
     print("Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.")
     for period in test_periods:
         month_str = format_period(period)
