@@ -491,6 +491,81 @@ def m2_robust_gamma15_loss(
     return m2_robustness_enhanced_loss(y_true, y_pred, gamma=1.5, reduction=reduction)
 
 
+def m2_robustness_enhanced_normalized_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    gamma: float = 0.1,
+    eps: float = 1e-8,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """
+    Normalized version of M2 + robustness penalty.
+
+    Each component is divided by its batch mean before combination,
+    ensuring balanced contribution regardless of original scale.
+
+    Formula: L = M2/mean(M2) + gamma * var(y_pred)/mean(M2)
+    """
+    m2 = m2_loss(y_true, y_pred, reduction="none")
+    m2_mean = m2.mean().detach() + eps
+    m2_norm = m2 / m2_mean
+    variance_penalty = y_pred.var()
+    var_norm = variance_penalty / m2_mean
+    combined = m2_norm + gamma * var_norm
+    return _reduce(combined, reduction)
+
+
+def m2_robust_gamma07_normalized_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """Normalized M2 + robustness with gamma=0.7."""
+    return m2_robustness_enhanced_normalized_loss(y_true, y_pred, gamma=0.7, reduction=reduction)
+
+
+def m2_robust_gamma10_normalized_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """Normalized M2 + robustness with gamma=1.0."""
+    return m2_robustness_enhanced_normalized_loss(y_true, y_pred, gamma=1.0, reduction=reduction)
+
+
+def imadl_m2_linear_normalized_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    alpha: float = 0.5,
+    temperature: float = 25.0,
+    eps: float = 1e-8,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """
+    Normalized linear combination of IMADL and M2.
+
+    Each component is divided by its batch mean before combination,
+    ensuring balanced contribution regardless of original scale.
+
+    Formula: L = alpha * IMADL/mean(IMADL) + (1-alpha) * M2/mean(M2)
+    """
+    imadl = imadl_loss(y_true, y_pred, temperature, reduction="none")
+    m2 = m2_loss(y_true, y_pred, reduction="none")
+    imadl_norm = imadl / (imadl.mean().detach() + eps)
+    m2_norm = m2 / (m2.mean().detach() + eps)
+    combined = alpha * imadl_norm + (1 - alpha) * m2_norm
+    return _reduce(combined, reduction)
+
+
+def imadl_m2_alpha06_normalized_loss(
+    y_true: torch.Tensor,
+    y_pred: torch.Tensor,
+    reduction: Reduction = "mean",
+) -> torch.Tensor:
+    """Normalized IMADL + M2 with alpha=0.6 (60% IMADL, 40% M2)."""
+    return imadl_m2_linear_normalized_loss(y_true, y_pred, alpha=0.6, reduction=reduction)
+
+
 def adaptive_hybrid_loss(
     y_true: torch.Tensor,
     y_pred: torch.Tensor,
@@ -567,6 +642,9 @@ EXPERIMENT_LOSS_NAMES = (
     "m2_robust_gamma07",
     "m2_robust_gamma10",
     "m2_robust_gamma15",
+    "m2_robust_gamma07_normalized",
+    "m2_robust_gamma10_normalized",
+    "imadl_m2_alpha06_normalized",
     "adaptive_lambda10",
     "adaptive_lambda50",
     "adaptive_lambda100",
@@ -595,6 +673,9 @@ _PHASE2_LOSS_FNS: Dict[str, Callable[..., torch.Tensor]] = {
     "m2_robust_gamma07": m2_robust_gamma07_loss,
     "m2_robust_gamma10": m2_robust_gamma10_loss,
     "m2_robust_gamma15": m2_robust_gamma15_loss,
+    "m2_robust_gamma07_normalized": m2_robust_gamma07_normalized_loss,
+    "m2_robust_gamma10_normalized": m2_robust_gamma10_normalized_loss,
+    "imadl_m2_alpha06_normalized": imadl_m2_alpha06_normalized_loss,
     "adaptive_lambda10": adaptive_lambda10_loss,
     "adaptive_lambda50": adaptive_lambda50_loss,
     "adaptive_lambda100": adaptive_lambda100_loss,
@@ -674,6 +755,11 @@ __all__ = [
     "m2_robust_gamma07_loss",
     "m2_robust_gamma10_loss",
     "m2_robust_gamma15_loss",
+    "m2_robustness_enhanced_normalized_loss",
+    "m2_robust_gamma07_normalized_loss",
+    "m2_robust_gamma10_normalized_loss",
+    "imadl_m2_linear_normalized_loss",
+    "imadl_m2_alpha06_normalized_loss",
     "adaptive_hybrid_loss",
     "adaptive_lambda10_loss",
     "adaptive_lambda50_loss",
