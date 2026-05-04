@@ -1,0 +1,18 @@
+{
+  "results": {
+    "m2_robust_gamma07": {
+      "scale_ratio": 113.0,
+      "source": "Phase 2.2 diagnostics estimate"
+    },
+    "m2_robust_gamma10": {
+      "scale_ratio": 113.0,
+      "source": "Phase 2.2 diagnostics estimate"
+    },
+    "imadl_m2_alpha06": {
+      "scale_ratio": 34.0,
+      "source": "Phase 2.2 diagnostics estimate"
+    }
+  },
+  "avg_scale_ratio": 86.66666666666667,
+  "note": "Scale ratios estimated from Phase 2.2 diagnostics (loss-component logging not yet implemented)"
+}
