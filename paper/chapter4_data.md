@@ -1,0 +1,129 @@
+# Chapter 4: Data
+
+This chapter documents the data that underlies every empirical claim in Chapter 5. It specifies the raw source, the panel construction, the static train/test split, the feature variables, the preprocessing pipeline, and the data limitations that scope the report's conclusions. All facts in this chapter are verified against the loader (`Model_Train/data_preprocess.py`), the feature builders (`Model_Train/features.py`), and the raw CSV files sitting at the repository root.
+
+## 4.1 Data source
+
+The dataset is a CRSP-style monthly panel of US-listed equity observations. Seven CSV files at the repository root cover the period from December 1989 to December 2024, each file holding roughly five years of observations with a one-month overlap at boundaries. Every file shares the same schema:
+
+| Column | Description | Source role |
+|---|---|---|
+| `PERMNO` | CRSP-style permanent security identifier | security key |
+| `date` | End-of-month calendar date | time index |
+| `RET` | Total monthly return, simple | prediction target and momentum input |
+| `VOL` | Monthly trading volume (shares) | turnover numerator |
+| `SHROUT` | Shares outstanding (thousands) | turnover denominator |
+
+The loader (`Model_Train/data_preprocess.load_raw_csvs`) reads every matching CSV from a given directory, concatenates the frames vertically, and emits a single long-format panel keyed on `(PERMNO, date)`. Dates are parsed to pandas `datetime` and the panel is sorted first by `PERMNO` and then by `date` before any downstream step runs. The panel is monthly — one row per security per month — and no intra-month granularity is used.
+
+At the training end of the panel the `89.12-94.csv` file contributes 449,018 rows covering 61 distinct year-months and 10,987 unique `PERMNO` values. Mean raw monthly return is $0.0100$ with a standard deviation of $0.1954$ and realised extremes of $-0.988$ and $+24.0$ across the training era; this heavy-tailed return distribution is a key motivation for the robust loss variants studied in Chapters 3 and 5.
+
+## 4.2 Sample construction
+
+Three derived variables are computed on the raw panel before any feature set is built (`Model_Train/data_preprocess.add_basic_variables` and `add_target_return`):
+
+1. Simple return $r_{i,t}$ is a numeric copy of `RET`, with any non-numeric entries coerced to `NaN` and dropped downstream.
+2. Monthly turnover is
+   $$
+   \text{to}_{i,t} = \frac{\text{VOL}_{i,t}}{\text{SHROUT}_{i,t} \times 1000},
+   $$
+   with zero-denominator rows set to `NaN` and infinities replaced by `NaN`. The factor of $1000$ converts shares-outstanding from CRSP's thousand-share unit into absolute shares, so `to` is a dimensionless volume-to-float ratio.
+3. The prediction target is the one-month-ahead return of the same security,
+   $$
+   y_{i,t} = r_{i,t+1},
+   $$
+   computed by a within-`PERMNO` one-step forward shift. Rows with missing $y_{i,t}$ are dropped. This definition prevents look-ahead leakage because features at time $t$ are constructed from information known at or before $t$ (see §4.4) while $y_{i,t}$ only uses the realised return at $t+1$.
+
+After these steps, any row missing any of `{r, to, target_ret}` is dropped. The resulting panel is what every loss function consumes during training and evaluation.
+
+## 4.3 Train/test split
+
+The report uses a single static split, not a rolling or expanding-window scheme. The split is:
+
+| Partition | Start | End | Months | Role |
+|---|---|---|---:|---|
+| Training | `1990-01` | `1994-12` | 60 | fit loss and compute gradients |
+| Test (main) | `1995-01` | `1996-12` | 24 | out-of-sample evaluation for every final headline table |
+
+The split is defined by date, not by security. A given `PERMNO` can contribute to both the training and test partitions; the prohibition on leakage is enforced at the time dimension via the shift in §4.2 and via the strict month cutoff above. No retraining occurs during the test window; the test period is a held-out evaluation of a single model per loss and per seed.
+
+Chapter 5 labels every final headline number with the exact window start and end. A six-month variant of the test window (`1995-01` to `1995-06`) appears in very early sanity-check material stored under `sanity_outputs/`; those files predate the final protocol and are not used as headline evidence anywhere in this report. Every final verification JSON under `doc/final_report_all_24m_evidence/` records `row_count = 24`, `first_month = 1995-01`, and `last_month = 1996-12`, confirming the 24-month window for the baseline and Phase 1.5 tables. The multi-seed Phase 2 runs inherit the same window.
+
+## 4.4 Feature variables
+
+The repository implements three feature sets (`Model_Train/features.py`). The final report uses feature set **X1** throughout; X2 and X3 are defined in the code but were not carried into the final empirical tables, and are documented here for completeness.
+
+### 4.4.1 X1 — cumulative return and cumulative turnover (used throughout)
+
+X1 has 15 dimensions: for each of five lookback horizons $w \in \{1, 3, 6, 9, 12\}$ months it contains a cumulative return and a cumulative turnover.
+
+Formally, with $r_{i,t-1}$ denoting the one-month-lagged simple return (to avoid look-ahead for the $t+1$ target) and $\text{to}_{i,t-1}$ the one-month-lagged turnover:
+
+- Cumulative return over $w$ months:
+  $$
+  \mathrm{cr}^{(w)}_{i,t} = \prod_{k=1}^{w} \big(1 + r_{i,t-k}\big) - 1.
+  $$
+- Cumulative turnover over $w$ months:
+  $$
+  \mathrm{co}^{(w)}_{i,t} = \sum_{k=1}^{w} \text{to}_{i,t-k}.
+  $$
+
+Both aggregations require the full rolling window (`min_periods = window`); rows for which any of the 15 columns is `NaN` are dropped. This is why the effective training sample begins roughly twelve months after the raw start date: the panel truncates naturally at the longest lookback.
+
+X1 is the feature set used in every run that produces a Chapter 5 number. The `best_hyperparameters.txt` configuration `{input_dim: 15, hidden_dims: [64, 32, 16], activation: relu, dropout: 0.2}` matches this feature width exactly, and every runner in `run_sanity_check_*.py` consumes X1 by construction.
+
+### 4.4.2 X2 — normalised momentum excluding the most recent month
+
+X2 is a four-dimensional normalised-momentum variant. It takes lagged returns $r_{i,t-2}, r_{i,t-3}, \ldots$ (shifting two periods instead of one to exclude the "recent month" effect often associated with short-term reversal) and computes, for $w \in \{3, 6, 9, 12\}$:
+
+$$
+\mathrm{cr}^{\text{excl},(w)}_{i,t} = \prod_{k=2}^{w+1} \big(1 + r_{i,t-k}\big) - 1,
+\qquad
+\mathrm{ncr}^{(w)}_{i,t} = \frac{\mathrm{cr}^{\text{excl},(w)}_{i,t} - \bar{\mathrm{cr}}^{\text{excl},(w)}_t}{\sigma^{\text{excl},(w)}_t},
+$$
+
+where the mean and standard deviation are taken over the cross-section of all `PERMNO`s on date $t$. The cross-sectional $z$-score is computed per month using `groupby('date').transform(...)`, which means the normalisation uses all securities present in a given month and treats any month-section with zero std as `NaN`.
+
+### 4.4.3 X3 — twelve lagged normalised monthly returns
+
+X3 is a twelve-dimensional per-month normalised-return vector:
+
+$$
+\mathrm{nr}^{(k)}_{i,t} = \frac{r_{i,t-k} - \bar r_{t-k}}{\sigma_{t-k}},
+\qquad k = 1, 2, \ldots, 12,
+$$
+
+again using cross-sectional moments within each date. Conceptually this is the cross-section-normalised monthly return series; it differs from X1 in that it preserves the individual monthly returns rather than aggregating them cumulatively.
+
+X2 and X3 were built and tested during earlier sanity-check work (see the repository `AGENTS.md` feature notes) but are not used in any Chapter 5 table. A future extension could repeat the Phase 2 γ sweep under X2 or X3 to test feature-set sensitivity; this is recorded as future work in Chapter 6.
+
+## 4.5 Preprocessing
+
+The end-to-end preprocessing pipeline is orchestrated by `Model_Train.data_preprocess.prepare_panel_data`. It executes the following steps in order, on the concatenated raw panel:
+
+1. **Date parsing.** `date` is coerced to pandas `datetime`; any unparsable value raises an error, forcing the caller to confront malformed input rather than silently drop rows.
+2. **Column validation.** The loader checks that `{PERMNO, date, RET, VOL, SHROUT}` are present. Missing columns raise a `KeyError` before any numeric work runs.
+3. **Missing-value filling.** Within each `PERMNO`, `{RET, VOL, SHROUT}` are forward-filled (default `method='ffill'`). This treats a missing observation as the continuation of the last observed value for that security, which is a standard conservative treatment for monthly equity panels and limits the impact of sporadic reporting gaps. Any row that remains `NaN` after the fill is dropped.
+4. **Basic-variable construction.** Numeric `r` and `to` are computed as described in §4.2. Any `±∞` produced by zero-share-outstanding rows is replaced by `NaN`.
+5. **Target construction.** `target_ret = r.shift(-1)` within each `PERMNO`. Rows without a valid `target_ret` are dropped.
+6. **Row-level completeness filter.** Any row still missing any of `{r, to, target_ret}` is dropped.
+
+At the feature-building stage, each `build_feature_set_xN` function additionally drops rows whose feature columns contain any `NaN`. For X1 this cascades through every 1-, 3-, 6-, 9-, and 12-month lookback window.
+
+Two aspects are deliberately *not* applied by the pipeline and are worth stating explicitly:
+
+- **No winsorisation.** The raw `RET` distribution has extreme tails (training-era maximum of $+2400\%$ for a single name-month). The pipeline does not clip or winsorise the return series. Heavy tails are the motivation for robust-loss design; normalising them away at the data stage would obscure the effect the loss functions are intended to handle. Chapter 3 discusses how each loss family treats these outliers mathematically.
+- **No cross-sectional clipping of predictions.** Any clipping is performed inside the portfolio construction module (`sanity_check_signal_tilted.py`) on prediction $z$-scores, not on input features. Input features are used as-is.
+
+## 4.6 Data limitations
+
+Several limitations of the data scope the empirical claims of this report:
+
+1. **Single market and single frequency.** The panel is US-listed equities at monthly frequency. Results do not generalise directly to higher frequencies (daily, intraday), other asset classes, or non-US markets. Any extension of the loss-design conclusions to those regimes requires re-estimation.
+2. **Single evaluation window.** The main test window is fixed at `1995-01..1996-12`. Macroeconomic regime effects are not sampled; in particular, the window spans a sustained bull market and does not include the 1997–98 crises, the 2000 tech correction, or the 2008 financial crisis. Robustness across regimes is listed as future work in Chapter 6.
+3. **Heavy-tailed returns.** As quoted in §4.1, the training-era `RET` series includes name-months with returns exceeding $+1000\%$. Such extremes dominate any scale-sensitive quantity (MSE, R²) and drive the divergent R² values observed in Chapter 5. Readers should interpret R² as a diagnostic rather than a primary performance metric in this setting.
+4. **Sample coverage changes over time.** The training window contains 10,987 unique `PERMNO`s across 61 month-sections; the panel grows substantially in later files (for example, 94-99.csv contains 12,836 unique `PERMNO`s). The Phase 2 multi-seed runs still use the 1990–1996 window, so this sample-growth effect does not bias the comparison; however, any rolling-window extension would need to account for sample composition drift.
+5. **No survivorship-bias correction.** The pipeline does not filter delisted securities or adjust for delisting returns. CRSP monthly files typically include delisting rows via `RET`, but bias from partial delisting data has not been verified. Conclusions drawn from long-short Sharpe should be read with this implicit assumption in mind.
+6. **Feature-set restriction.** All Chapter 5 evidence uses X1. X2 and X3 are implemented and available in the codebase but were not run under the final 24-month protocol. Feature-sensitivity analyses are left as future work.
+
+These limitations are revisited in Chapter 6 together with the methodological limitations of the static-window protocol.
