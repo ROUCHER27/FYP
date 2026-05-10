@@ -155,16 +155,19 @@ def draw_histogram(ax, ret: pd.Series) -> None:
     )
 
     ax.set_yscale("log")
-    ax.axvline(q_lo, color=C_DYN, linestyle="--", linewidth=1.2, zorder=4,
+    # Shortened quantile lines: stop at 78% of axes height so they do not
+    # intersect the upper-left quantile legend or the upper-right stats box.
+    ax.axvline(q_lo, color=C_DYN, linestyle="--", linewidth=1.2, ymax=0.78, zorder=4,
                label=f"0.1% quantile = {q_lo:+.3f}")
-    ax.axvline(q_hi, color=C_DYN, linestyle="--", linewidth=1.2, zorder=4,
+    ax.axvline(q_hi, color=C_DYN, linestyle="--", linewidth=1.2, ymax=0.78, zorder=4,
                label=f"99.9% quantile = {q_hi:+.3f}")
     ax.axvline(0, color="#777", linewidth=0.7, linestyle=":", zorder=2)
 
-    # Stats box anchored at upper-right (away from the peak near RET=0).
+    # Stats box moved inward so its right edge does not cross the right
+    # quantile line (at axes x ≈ 0.88).
     ax.text(
-        0.98,
-        0.92,
+        0.72,
+        0.96,
         f"n = {len(vals):,}\n"
         f"mean = {vals.mean():+.4f}   std = {vals.std():+.4f}\n"
         f"min = {vals.min():+.3f}   max = {vals.max():+.3f}\n"
@@ -175,6 +178,7 @@ def draw_histogram(ax, ret: pd.Series) -> None:
         ha="right",
         color="#222",
         bbox=dict(facecolor="white", edgecolor="#C8C8C8", boxstyle="round,pad=0.4"),
+        zorder=6,
     )
 
     ax.set_xlim(-1.0, 2.0)
