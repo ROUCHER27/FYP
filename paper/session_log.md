@@ -7,6 +7,46 @@ Track what each writing session completed so the next session can resume cleanly
 - Keep entries short: date, tasks completed, files touched, open follow-ups, and the next task to pick up.
 - When a session ends near the context limit, before `/chat save`: commit on `main`, record the commit hash here, and list the first task the next session should run.
 
+## 2026-05-11 — Session 2 (figures + audit + references expansion)
+
+Continuation session. Added the three Chapter 5 figures, expanded `references.md` with auxiliary entries, embedded figure blocks into Chapter 5, and ran a formal audit against `SCHEMA.md` high-risk claims.
+
+### Commits on main added this session
+
+1. `b10946f` paper: embed figures 5.3/5.4/5.5 into Chapter 5 with full captions
+2. `a45b03a` paper: add figures 5.3 (gamma refinement), 5.4 (IMADL alpha sweep), 5.5 (normalisation probe) and their scripts
+3. `89b729a` paper: expand references.md with auxiliary entries (Huber, Adam, Dropout, CRSP, PyTorch, NumPy, pandas, Matplotlib)
+
+### New paper artifacts
+
+- `paper/figures/fig5_3_gamma_refinement.png` (γ sweep mean Sharpe ± std + CV)
+- `paper/figures/fig5_4_imadl_alpha_sweep.png` (IMADL-m2 α sweep vs γ07/γ10 reference)
+- `paper/figures/fig5_5_normalisation_probe.png` (original vs normalised Sharpe + per-seed dots)
+- `paper/figures/plot_gamma_refinement.py`, `plot_integrated_sweep.py`, `plot_normalisation_probe.py`
+- `references.md` extended with `[A1]`–`[A8]` auxiliary entries for Huber (1964), Adam (Kingma & Ba, 2014), Dropout (Srivastava et al., 2014), CRSP data source, PyTorch, NumPy, pandas, and Matplotlib.
+
+### Formal audit against `SCHEMA.md` high-risk claims
+
+| Check | Target | Result |
+|---|---|---|
+| Stale MedSE 2.68 / MSE 0.37 as headline | Chapters 1–6 | no hits |
+| Stale gamma07 CV 0.0356 / gamma10 CV 0.1151 | Chapters 1–6 | no hits |
+| LSTM as architecture / batch 256 / 50 epochs / 27 features / tanh as activation | Chapters 1–6 | no hits (tanh occurrences are all inside MADL/GMADL math blocks; LSTM is a single literature-background word in Ch2 §2.1) |
+| Phase-report framing (Semester 1, previous report, exact replication, Phase 2.5 proves) | Chapters 1–6 | no hits |
+| Absolute wording "normalisation failed across all losses" | Chapters 1–6 | no hits |
+| 6-month window treated as headline | Chapters 1–6 | three hits, all explicit negation/labelling as preliminary sanity check (per SCHEMA.md §2.2.1) |
+| Every Table 5.N carries window, seed set, and source path | Ch5 | Tables 5.1–5.5 all pass |
+| Final recommendation is tiered with caveats | Ch5 §5.8, Ch6 §6.1 | primary / high-return alt / stable fallback all present with seed-sensitivity caveats |
+| Numeric consistency for headline values | across chapters + source-of-truth | 0.9156 (14), 0.1808 (10), 0.2799 (5), 1.0043 (13), 0.5613 (9), 0.6895 (12), 0.2443 (9), 0.3042 (3), 0.9112 (5), 0.4072 (4), -0.0161 (4) |
+
+No SCHEMA violations detected. No changes required in the chapter prose.
+
+### Remaining optional follow-ups
+
+- Figure polish: Chapter 5 §5.2 and §5.3 currently have only tables; adding a baseline-vs-Phase-1.5 Sharpe bar chart would help the reader but is not required by SCHEMA.
+- Reviewer pass by Codex (auditor role per `AGENTS.md` skills section) when available.
+- LaTeX conversion after the thesis template is selected.
+
 ## 2026-05-10 — Session 1 (complete)
 
 **Status:** Initial full draft of all six chapters plus references, scaffolding, and source-of-truth committed to `main`. Report is internally consistent; evidence gate (`SCHEMA.md`, writing-rules) scan passes — all flagged terms are either math (`tanh` in MADL formulas), literature-context mentions (`LSTM` among ML architectures), explicit negations (`no early stopping`, "older 6-month window … not used as headline"), or meta reminder lists in `README.md` / `evidence_map.md` / `results_source_of_truth.md`.
