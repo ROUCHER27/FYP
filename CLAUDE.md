@@ -2,7 +2,7 @@
 
 ## Required Project Context
 
-Before writing, reviewing, or reorganizing the final report, read:
+Before writing, auditing, or reorganizing the final report, read:
 
 1. `SCHEMA.md`
 2. `doc/agent_handoff.md`
@@ -11,13 +11,13 @@ Before writing, reviewing, or reorganizing the final report, read:
 
 Treat `SCHEMA.md` as the highest-level evidence and claim-boundary contract.
 
-For the writing phase, use Kiro as the primary writing workflow. The local skills below should be read before drafting, revising, reviewing, or generating figures. If `.kiro` is missing, restore/install the Kiro skill bundle before substantial writing work; use `SCHEMA.md` and `doc/agent_handoff.md` only as the continuity fallback.
+For the writing phase, use Kiro as the primary drafting and figure-generation workflow. The local skills below should be read before drafting, revising, planning chapter structure, or generating figures. Kiro is not the final reviewer; after Kiro produces a draft, Codex should audit it against `SCHEMA.md`, `doc/agent_handoff.md`, and the evidence files. If `.kiro` is missing, restore/install the Kiro skill bundle before substantial writing work; use `SCHEMA.md` and `doc/agent_handoff.md` only as the continuity fallback.
 
 ## Skills
 
 The following Kiro skill files are the preferred writing-stage tools. Read them when the relevant task arises.
 
-### Scientific Writing Review
+### Scientific Writing / Manuscript Editing
 @.kiro/skills/sciwrite/SKILL.md
 
 ### Plot From Data (paper-quality matplotlib figures)
@@ -29,7 +29,6 @@ The following Kiro skill files are the preferred writing-stage tools. Read them 
 ### Research & Experiment Skills (EvoSkills)
 @.kiro/skills/EvoSkills/skills/paper-writing/SKILL.md
 @.kiro/skills/EvoSkills/skills/paper-navigator/SKILL.md
-@.kiro/skills/EvoSkills/skills/paper-review/SKILL.md
 @.kiro/skills/EvoSkills/skills/paper-planning/SKILL.md
 @.kiro/skills/EvoSkills/skills/paper-rebuttal/SKILL.md
 @.kiro/skills/EvoSkills/skills/academic-slides/SKILL.md

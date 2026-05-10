@@ -28,16 +28,15 @@
 
 For final-report work, the hard project contract is `SCHEMA.md`; read it before `doc/thesis/*`, experiment reports, or old phase notes. `doc/agent_handoff.md` gives the current source-of-truth evidence map and cross-branch lookup commands.
 
-For the writing phase, Kiro is the primary working interface. Use the local `.kiro` writing/review/plot skills below when drafting, revising, reviewing, or generating figures. If `.kiro` is missing, restore/install the Kiro skill bundle before substantial writing work; use `SCHEMA.md` and `doc/agent_handoff.md` only as the project evidence contract and fallback continuity layer.
+For the writing phase, Kiro is the primary drafting and figure-generation interface. Use the local `.kiro` writing/plot skills below when drafting, revising, planning chapter structure, or generating figures. Kiro should not be treated as the final reviewer; after Kiro produces a draft, Codex should audit it against `SCHEMA.md`, `doc/agent_handoff.md`, and the evidence files. If `.kiro` is missing, restore/install the Kiro skill bundle before substantial writing work; use `SCHEMA.md` and `doc/agent_handoff.md` only as the project evidence contract and fallback continuity layer.
 
 | Task | Skill file |
 |------|-----------|
-| Scientific writing review / manuscript editing | `.kiro/skills/sciwrite/SKILL.md` |
+| Scientific writing / manuscript editing | `.kiro/skills/sciwrite/SKILL.md` |
 | Generate paper-quality matplotlib figure from data | `.kiro/skills/paper-plot-skills/plot-from-data/SKILL.md` |
 | Reproduce a paper figure from an image | `.kiro/skills/paper-plot-skills/plot-from-image/SKILL.md` |
 | Paper writing | `.kiro/skills/EvoSkills/skills/paper-writing/SKILL.md` |
 | Paper navigation / reading | `.kiro/skills/EvoSkills/skills/paper-navigator/SKILL.md` |
-| Paper review | `.kiro/skills/EvoSkills/skills/paper-review/SKILL.md` |
 | Paper planning | `.kiro/skills/EvoSkills/skills/paper-planning/SKILL.md` |
 | Rebuttal writing | `.kiro/skills/EvoSkills/skills/paper-rebuttal/SKILL.md` |
 | Academic slides | `.kiro/skills/EvoSkills/skills/academic-slides/SKILL.md` |

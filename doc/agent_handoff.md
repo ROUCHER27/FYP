@@ -22,10 +22,9 @@ This repo is intended to let a new agent continue from `main` without switching 
 
 ## Writing Workflow
 
-The next phase should use Kiro as the primary writing environment.
+The next phase should use Kiro as the primary drafting and figure-generation environment. Kiro should not be the final reviewer; after each Kiro-written section, Codex should audit the draft against `SCHEMA.md`, this handoff file, and the cited evidence.
 
 - Drafting/revision: `.kiro/skills/EvoSkills/skills/paper-writing/SKILL.md` and `.kiro/skills/sciwrite/SKILL.md`
-- Review: `.kiro/skills/EvoSkills/skills/paper-review/SKILL.md`
 - Planning/navigation: `.kiro/skills/EvoSkills/skills/paper-planning/SKILL.md` and `.kiro/skills/EvoSkills/skills/paper-navigator/SKILL.md`
 - Figures: `.kiro/skills/paper-plot-skills/plot-from-data/SKILL.md`
 
