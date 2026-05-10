@@ -136,14 +136,18 @@ def main() -> None:
         yhat,
         [(medse_curve(e), "squared residual (batch median reduction)", C_DYN, 2.0, False)],
     )
+    # Annotation placed in the central clear region (curve is low around y=0.05).
     axs[0, 1].text(
-        0.02,
-        0.95,
-        "Batch reduction is median(squared residual);\nthe per-observation curve matches MSE.",
+        0.50,
+        0.50,
+        "Batch reduction is median(squared residual);\n"
+        "the per-observation curve matches MSE.",
         transform=axs[0, 1].transAxes,
-        fontsize=8.5,
-        va="top",
+        fontsize=9,
+        ha="center",
+        va="center",
         color="#333",
+        bbox=dict(facecolor="white", edgecolor="#C8C8C8", boxstyle="round,pad=0.4"),
     )
 
     # (c) MADL vs GMADL
