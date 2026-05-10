@@ -131,13 +131,29 @@ def draw_sharpe(ax, df: pd.DataFrame) -> None:
         linewidth=1.8,
         zorder=5,
     )
-    ax.text(
-        x[idx_06] + 0.08,
-        means[idx_06] - 0.12,
-        f"peak α=0.6\nmean={means[idx_06]:.3f}",
-        fontsize=9,
+    # Annotation placed clear of the red ring, connected by an arrow.
+    ax.annotate(
+        f"peak  α = 0.6\nmean = {means[idx_06]:.3f}\nCV = {float(df.loc['imadl_m2_alpha06', 'sharpe_cv']):.3f}",
+        xy=(x[idx_06] + 0.08, means[idx_06] + 0.04),
+        xytext=(x[idx_06] - 1.35, means[idx_06] - 0.55),
+        fontsize=8.8,
         color="#8B0000",
         fontweight="bold",
+        ha="left",
+        va="top",
+        bbox=dict(
+            boxstyle="round,pad=0.3",
+            facecolor="white",
+            edgecolor="#8B0000",
+            linewidth=0.9,
+        ),
+        arrowprops=dict(
+            arrowstyle="->",
+            color="#8B0000",
+            linewidth=1.1,
+            connectionstyle="arc3,rad=-0.2",
+        ),
+        zorder=6,
     )
 
     ax.axhline(0, color="#888", lw=0.7, ls=":", zorder=1)
