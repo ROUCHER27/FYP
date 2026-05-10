@@ -1,16 +1,21 @@
 """
-Figure 5.4 — IMADL-m2 α sweep (multi-seed, integrated Phase 2 summary).
+Figure 5.4 — IMADL-m2 α sweep vs γ reference.
 
-Inputs : `git show phase2.2-fix:doc/phase2-fix/reports/phase2_grouped_summary.csv`
-         (read via subprocess because the file lives on the `phase2.2-fix` branch).
+Paper-plot-skills style: `line_confidence_band` (Type B, discrete scaling
+curve). Equi-spaced x positions with manual tick labels, marker-per-point,
+open-axis style (only left/bottom spines visible), STIX serif, framealpha=0
+legend.
 
-Output : paper/figures/fig5_4_imadl_alpha_sweep.png
+Left  : α sweep mean annualised Sharpe with ±1 std shaded band and markers;
+        dashed horizontal reference lines for γ07 and γ10 (distinct colours).
+Right : coefficient of variation on a log y-axis for the same α values with
+        γ07 / γ10 reference lines, exposing the wide CV range of β / λ-style
+        families (here: only the α sweep + γ refs to keep the chart focused).
 
-Left panel  : mean annualised Sharpe with ±1 std error bars across 3 seeds for
-              α ∈ {0.2, 0.3, ..., 0.8}. gamma07 and gamma10 plotted for reference.
-Right panel : coefficient of variation (log y-axis to compare strong vs unstable rows).
-
-Evaluation window 1995-01..1996-12, cap05 portfolio, 3 seeds per row.
+Inputs : integrated summary `phase2.2-fix:doc/phase2-fix/reports/phase2_grouped_summary.csv`
+         and local `doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_grouped_summary.csv`
+         (for γ07 reference row).
+Output : paper/figures/fig5_4_imadl_alpha_sweep.png (dpi=300)
 """
 from __future__ import annotations
 
@@ -21,6 +26,16 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
+import _style
+from _style import (
+    C_LINE_ALT,
+    C_LINE_BASE,
+    C_LINE_MAIN,
+    C_REF_HLINE,
+    apply_paper_style,
+    style_open_axes,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "paper/figures/fig5_4_imadl_alpha_sweep.png"
@@ -34,18 +49,18 @@ ALPHA_ORDER = [
     "imadl_m2_alpha07",
     "imadl_m2_alpha08",
 ]
-ALPHA_LABEL = {
-    f"imadl_m2_alpha0{d}": rf"$\alpha$=0.{d}" for d in range(2, 9)
-}
+ALPHA_TICK = [r"$\alpha$=0.2", r"$\alpha$=0.3", r"$\alpha$=0.4",
+              r"$\alpha$=0.5", r"$\alpha$=0.6", r"$\alpha$=0.7", r"$\alpha$=0.8"]
 
 GAMMA_REF = ["m2_robust_gamma07", "m2_robust_gamma10"]
 GAMMA_LABEL = {
-    "m2_robust_gamma07": r"$\gamma$=0.07 (ref)",
-    "m2_robust_gamma10": r"$\gamma$=0.10 (ref)",
+    "m2_robust_gamma07": r"m2-robust $\gamma$=0.07 (ref)",
+    "m2_robust_gamma10": r"m2-robust $\gamma$=0.10 (ref)",
 }
+COLOURS_REF = {"m2_robust_gamma07": C_REF_HLINE, "m2_robust_gamma10": "#E58C00"}
 
 
-def load_branch_csv() -> pd.DataFrame:
+def load_data() -> pd.DataFrame:
     out = subprocess.check_output(
         [
             "git",
@@ -56,121 +71,162 @@ def load_branch_csv() -> pd.DataFrame:
         ],
         text=True,
     )
-    return pd.read_csv(io.StringIO(out))
-
-
-def load_local_gamma() -> pd.DataFrame:
-    return pd.read_csv(
+    integrated = pd.read_csv(io.StringIO(out))
+    local = pd.read_csv(
         ROOT / "doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_grouped_summary.csv"
     )
+    df = pd.concat([integrated, local], ignore_index=True)
+    df = df[df["cap_tag"] == "cap05"].drop_duplicates(
+        subset=["loss", "cap_tag"], keep="last"
+    )
+    keep = ALPHA_ORDER + GAMMA_REF
+    return df[df["loss"].isin(keep)].set_index("loss").reindex(keep)
+
+
+def draw_sharpe(ax, df: pd.DataFrame) -> None:
+    x = np.arange(len(ALPHA_ORDER))
+    means = df.loc[ALPHA_ORDER, "sharpe_mean"].to_numpy()
+    stds = df.loc[ALPHA_ORDER, "sharpe_std"].to_numpy()
+
+    # Confidence band + main curve (main = alpha sweep, green)
+    ax.fill_between(
+        x,
+        means - stds,
+        means + stds,
+        color=C_LINE_MAIN,
+        alpha=0.15,
+        zorder=2,
+    )
+    ax.plot(
+        x,
+        means,
+        marker="o",
+        markersize=7,
+        color=C_LINE_MAIN,
+        linewidth=1.8,
+        zorder=3,
+        label=r"IMADL-m2 $\alpha$ sweep (mean ± 1 std, 3 seeds)",
+    )
+
+    # Reference horizontal lines for gamma07 / gamma10 mean Sharpe
+    for name in GAMMA_REF:
+        val = float(df.loc[name, "sharpe_mean"])
+        ax.axhline(
+            val,
+            color=COLOURS_REF[name],
+            lw=1.4,
+            ls="--",
+            zorder=2,
+            label=f"{GAMMA_LABEL[name]}  = {val:.3f}",
+        )
+
+    # Highlight alpha06 with a ring and a bold label
+    idx_06 = ALPHA_ORDER.index("imadl_m2_alpha06")
+    ax.scatter(
+        [x[idx_06]],
+        [means[idx_06]],
+        s=190,
+        facecolor="none",
+        edgecolor="#8B0000",
+        linewidth=1.8,
+        zorder=5,
+    )
+    ax.text(
+        x[idx_06] + 0.08,
+        means[idx_06] - 0.12,
+        f"peak α=0.6\nmean={means[idx_06]:.3f}",
+        fontsize=9,
+        color="#8B0000",
+        fontweight="bold",
+    )
+
+    ax.axhline(0, color="#888", lw=0.7, ls=":", zorder=1)
+    ax.set_xticks(x)
+    ax.set_xticklabels(ALPHA_TICK, fontsize=10)
+    ax.set_xlabel(r"IMADL-m2 directional-rebalancing weight $\alpha$", fontsize=11, fontweight="bold")
+    ax.set_ylabel("Annualised Sharpe", fontsize=11, fontweight="bold")
+    ax.set_title(r"(a) IMADL-m2 $\alpha$ sweep vs $\gamma$ reference", fontsize=12, pad=6)
+    style_open_axes(ax)
+    leg = ax.legend(
+        fontsize=9,
+        loc="upper left",
+        frameon=False,
+    )
+    for text in leg.get_texts():
+        if r"$\alpha$ sweep" in text.get_text():
+            text.set_fontweight("bold")
+    ax.tick_params(labelsize=9.5)
+
+
+def draw_cv(ax, df: pd.DataFrame) -> None:
+    x = np.arange(len(ALPHA_ORDER))
+    cvs = df.loc[ALPHA_ORDER, "sharpe_cv"].to_numpy()
+
+    ax.plot(
+        x,
+        cvs,
+        marker="s",
+        markersize=6,
+        color=C_LINE_ALT,
+        linewidth=1.8,
+        zorder=3,
+        label=r"IMADL-m2 $\alpha$ sweep CV",
+    )
+
+    for name in GAMMA_REF:
+        val = float(df.loc[name, "sharpe_cv"])
+        ax.axhline(
+            val,
+            color=COLOURS_REF[name],
+            lw=1.4,
+            ls="--",
+            zorder=2,
+            label=f"{GAMMA_LABEL[name]}  = {val:.3f}",
+        )
+
+    idx_06 = ALPHA_ORDER.index("imadl_m2_alpha06")
+    ax.scatter(
+        [x[idx_06]],
+        [cvs[idx_06]],
+        s=170,
+        facecolor="none",
+        edgecolor="#8B0000",
+        linewidth=1.8,
+        zorder=5,
+    )
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(ALPHA_TICK, fontsize=10)
+    ax.set_xlabel(r"IMADL-m2 directional-rebalancing weight $\alpha$", fontsize=11, fontweight="bold")
+    ax.set_ylabel(r"CV = $\sigma_S / |\mu_S|$  (log scale)", fontsize=11, fontweight="bold")
+    ax.set_title(r"(b) Seed-stability of the IMADL-m2 $\alpha$ sweep", fontsize=12, pad=6)
+    ax.set_yscale("log")
+    ax.set_ylim(0.1, max(cvs) * 2.2)
+    style_open_axes(ax)
+    ax.tick_params(labelsize=9.5)
+    ax.legend(fontsize=9, loc="upper left", frameon=False)
 
 
 def main() -> None:
-    df_int = load_branch_csv()
-    df_int = df_int[df_int["cap_tag"] == "cap05"]
-    df_loc = load_local_gamma()
-    df_loc = df_loc[df_loc["cap_tag"] == "cap05"]
-    df = pd.concat([df_int, df_loc], ignore_index=True)
-    # Deduplicate on (loss, cap_tag); local gamma07 wins over any same-loss row.
-    df = df.drop_duplicates(subset=["loss", "cap_tag"], keep="last")
+    apply_paper_style()
+    df = load_data()
+    assert (df["runs"] == 3).all(), "Expected 3 seeds per row"
 
-    keep = ALPHA_ORDER + GAMMA_REF
-    df = df[df["loss"].isin(keep)].set_index("loss").reindex(keep)
-    assert (df["runs"] == 3).all(), f"Expected 3 seeds per row, got {df['runs'].to_dict()}"
+    fig, (ax_s, ax_cv) = plt.subplots(1, 2, figsize=(12.0, 4.7))
+    fig.subplots_adjust(left=0.07, right=0.985, bottom=0.14, top=0.86, wspace=0.28)
 
-    x_alpha = np.arange(len(ALPHA_ORDER))
-
-    fig, (ax_s, ax_cv) = plt.subplots(1, 2, figsize=(11, 4.2), constrained_layout=True)
-
-    # --- Left: Sharpe mean ± std ---
-    means = df.loc[ALPHA_ORDER, "sharpe_mean"].to_numpy()
-    stds = df.loc[ALPHA_ORDER, "sharpe_std"].to_numpy()
-    mins = df.loc[ALPHA_ORDER, "sharpe_min"].to_numpy()
-    maxs = df.loc[ALPHA_ORDER, "sharpe_max"].to_numpy()
-
-    ax_s.errorbar(
-        x_alpha,
-        means,
-        yerr=stds,
-        fmt="o",
-        color="#1f4e79",
-        ecolor="#1f4e79",
-        capsize=5,
-        elinewidth=1.4,
-        markersize=7,
-        label="IMADL-m2 α sweep (mean ± 1 std)",
-        zorder=3,
-    )
-    for i, (lo, hi) in enumerate(zip(mins, maxs)):
-        ax_s.vlines(x_alpha[i], lo, hi, color="#9ab7d9", linewidth=3, alpha=0.55, zorder=2)
-
-    # Reference horizontal lines for gamma07 / gamma10 mean Sharpe.
-    colours = {"m2_robust_gamma07": "#c0392b", "m2_robust_gamma10": "#f39c12"}
-    for name in GAMMA_REF:
-        val = df.loc[name, "sharpe_mean"]
-        ax_s.axhline(
-            val,
-            color=colours[name],
-            linewidth=1.1,
-            linestyle="--",
-            label=f"{GAMMA_LABEL[name]} = {val:.3f}",
-        )
-
-    # Highlight alpha06.
-    idx_06 = ALPHA_ORDER.index("imadl_m2_alpha06")
-    ax_s.scatter(
-        [x_alpha[idx_06]],
-        [means[idx_06]],
-        s=170,
-        facecolor="none",
-        edgecolor="#c0392b",
-        linewidth=1.8,
-        zorder=4,
-        label=r"fallback pick ($\alpha$=0.6)",
-    )
-
-    ax_s.axhline(0, color="#666", linewidth=0.8, linestyle=":")
-    ax_s.set_xticks(x_alpha)
-    ax_s.set_xticklabels([ALPHA_LABEL[n] for n in ALPHA_ORDER])
-    ax_s.set_xlabel("IMADL-m2 α (directional rebalancing weight)")
-    ax_s.set_ylabel(r"Annualised Sharpe")
-    ax_s.set_title("IMADL-m2 α sweep vs γ reference")
-    ax_s.grid(alpha=0.25)
-    ax_s.legend(frameon=False, loc="lower right", fontsize=8)
-
-    # --- Right: CV bars on log scale (some α rows have huge CVs) ---
-    cvs = df.loc[ALPHA_ORDER, "sharpe_cv"].to_numpy()
-    bar_colors = ["#b5b5b5"] * len(ALPHA_ORDER)
-    bar_colors[idx_06] = "#c0392b"
-    ax_cv.bar(x_alpha, cvs, color=bar_colors, edgecolor="#333", linewidth=0.6)
-    for i, v in enumerate(cvs):
-        ax_cv.text(i, v * 1.08, f"{v:.3f}", ha="center", fontsize=8.5)
-    # Reference CVs for gamma07 / gamma10.
-    for name in GAMMA_REF:
-        ax_cv.axhline(
-            df.loc[name, "sharpe_cv"],
-            color=colours[name],
-            linestyle="--",
-            linewidth=1.1,
-            label=f"{GAMMA_LABEL[name]} CV = {df.loc[name, 'sharpe_cv']:.3f}",
-        )
-    ax_cv.set_xticks(x_alpha)
-    ax_cv.set_xticklabels([ALPHA_LABEL[n] for n in ALPHA_ORDER])
-    ax_cv.set_xlabel("IMADL-m2 α")
-    ax_cv.set_ylabel(r"CV = $\sigma_S / |\mu_S|$  (log scale)")
-    ax_cv.set_yscale("log")
-    ax_cv.set_ylim(0.1, max(cvs) * 2.0)
-    ax_cv.set_title("Seed-stability of the IMADL-m2 α sweep")
-    ax_cv.grid(axis="y", alpha=0.25, which="both")
-    ax_cv.legend(frameon=False, loc="upper left", fontsize=8)
+    draw_sharpe(ax_s, df)
+    draw_cv(ax_cv, df)
 
     fig.suptitle(
-        "Figure 5.4 — IMADL-m2 α sweep (Phase 2 integrated summary; 3 seeds per row, cap05)",
-        fontsize=11,
+        "Figure 5.4 — IMADL-m2 α sweep (Phase 2 integrated summary · cap05 · 3 seeds per row)",
+        fontsize=12,
+        fontweight="bold",
+        y=0.99,
     )
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(OUT, dpi=220)
+    fig.savefig(OUT, dpi=300, bbox_inches="tight")
     print(f"Wrote {OUT.relative_to(ROOT)}")
 
 
