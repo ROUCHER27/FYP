@@ -1,0 +1,61 @@
+# Chapter 6: Conclusion
+
+## 6.1 Summary of findings
+
+This report conducted a controlled, single-factor study of loss-function design for cross-sectional stock-return prediction with a multi-layer perceptron. Data, features, architecture, training protocol, portfolio construction, and evaluation metrics were held fixed across every run; only the loss function was varied. Under this protocol, the empirical evidence in Chapter 5 supports the following direct answers to the three research questions posed in Chapter 1.
+
+**RQ1: How do prediction-level and portfolio-level metrics change when only the loss function is altered?** At the single-seed baseline (Chapter 5 §5.2), the two classes of metric decouple substantially. Traditional regression losses (MSE, MedSE) produce interpretable R² values but fail to generate a robust positive Sharpe at seed 42. The absolute-loss family (MADL, GMADL) yields extremely negative R² values ($-4.15 \times 10^9$ and $-7.02 \times 10^9$ respectively) while nevertheless producing portfolio Sharpes that are competitive with the regression baselines (GMADL at $0.2025$). The explanation is that the portfolio depends on cross-sectional *ranks*, not on the calibrated magnitude of the predictions, and the absolute-loss family drives prediction scale away from the realised-return scale during training without affecting the ranking signal. R² is therefore a scale diagnostic rather than a primary performance metric in this setting. The hybrid multiplicative variant `hybrid_mul_m1` (Sharpe $0.4435$) produces the best single-seed Sharpe in the baseline table, motivating the hybrid-loss design direction that Phase 1.5 and Phase 2 extend.
+
+**RQ2: Within the hybrid-loss design space, which combination of directional and robust components dominates in multi-seed Sharpe and stability?** The multi-seed evidence (Chapter 5 §5.4 and §5.5, three seeds per row) identifies the M2-robust γ family as the productive region of the loss space. Within that family, `m2_robust_gamma07` achieves mean Sharpe $0.9156$ with coefficient of variation $0.1808$ and mean cumulative return $+27.99\%$ over 24 months. `m2_robust_gamma10` has a higher mean Sharpe ($1.0043$) but three times the CV, and its per-seed Sharpe range is wide ($0.4587$ to $1.5847$). The integrated sweep shows that the IMADL-m2 α family peaks at $\alpha = 0.6$ (mean Sharpe $0.6895$, CV $0.2443$), that the IMADL-GMADL β family does not produce robust positive Sharpes (CV values in single to triple digits), and that the adaptive-λ family underperforms both on Sharpe and on stability. `m2_robust_gamma07` emerges as the single best candidate on the joint Sharpe-stability criterion; `imadl_m2_alpha06` corroborates the multiplicative-hybrid direction from an independent parameterisation.
+
+**RQ3: Are the observed winners robust to loss-component normalisation?** The Phase 2.2-fix1 probe (Chapter 5 §5.6) applies component normalisation to the three strongest candidates. `m2_robust_gamma07` is approximately flat under normalisation (mean Sharpe $0.9156 \to 0.9112$, a change smaller than the per-seed dispersion). Both `m2_robust_gamma10` ($1.0043 \to 0.4072$) and `imadl_m2_alpha06` ($0.6895 \to -0.0161$) degrade materially. The operational conclusion is that component normalisation is *not* a universal fix, and that `m2_robust_gamma07` is the only one of the three candidates whose signal is robust to the two different scale regimes tested. The probe itself acknowledges that its scale ratios are diagnostics-estimated rather than measured by a fully instrumented per-component logger; that limitation is recorded as a future-work item.
+
+**Final recommendation.** Combining the answers to RQ1–RQ3, the report's final loss recommendation has three tiers:
+
+- **Primary: `m2_robust_gamma07`.** Mean Sharpe $0.9156$, CV $0.1808$, mean cumulative return $+27.99\%$. Robust to the component-normalisation probe. No seed in the run produces a negative Sharpe. This is the best-supported single choice.
+- **High-return alternative with explicit caveat: `m2_robust_gamma10`.** Mean Sharpe $1.0043$, CV $0.5613$. Appropriate only where the user knowingly accepts seed-sensitivity in exchange for best-case Sharpe.
+- **Stable fallback: `imadl_m2_alpha06`.** Mean Sharpe $0.6895$, CV $0.2443$, mean cumulative return $+30.42\%$. Provides independent corroboration that the multiplicative-hybrid region is the productive one.
+
+## 6.2 Limitations
+
+Several limitations scope the findings.
+
+**Single market and single frequency.** The study uses a CRSP-style US equity monthly panel. Generalisation to non-US markets, non-equity asset classes, or higher/lower frequencies is not tested.
+
+**Single static evaluation window.** The main test window is `1995-01` to `1996-12` (24 months), fixed and non-rolling. This window spans a sustained bull market and does not include any major macroeconomic crisis. Regime-coverage robustness is untested. The project originally planned a rolling-window extension; it was paused when the static-window results revealed the seed-sensitivity patterns that motivated Phase 2, and the rolling-window runner has not been resumed.
+
+**Seed depth.** Multi-seed evaluations use three seeds per row. Three seeds are sufficient to distinguish CVs at the order-of-magnitude level (as between `gamma07` CV $0.18$ and `gamma10` CV $0.56$) but are too thin to pin CV to the second decimal. A larger seed depth — ten or more per row — would give tighter confidence intervals on both mean Sharpe and CV, and would either confirm or revise the 3-seed ordering.
+
+**Scale-ratio diagnostics are estimates.** The normalisation probe in Chapter 5 §5.6 uses scale ratios that were estimated from Phase 2.2 diagnostics rather than measured by a fully instrumented per-component logger. The conclusion that normalisation is not a universal fix is supported by the empirical degradation of `gamma10` and `alpha06`, but a precise quantitative accounting of the directional-vs-magnitude balance awaits a per-component logger implementation.
+
+**Static training protocol.** The single-training-run setup measures loss-function *design* effects cleanly (RQ1–RQ3 are answered under internally valid conditions) but does not reproduce a realistic deployment schedule in which the model would be retrained periodically. Any deployment implication should be checked under a rolling-retraining design.
+
+**Cross-phase alignment.** Phase 1.5 and Phase 2 runners differ in λ settings, IMADL formulations, and some implementation details (documented in `doc/phase2.5/*.md`). Within-phase comparisons are strong; cross-phase improvement claims are used as motivation chains rather than as direct claims.
+
+**Gross-of-cost portfolio.** Transaction costs, financing costs, and borrow costs are not modelled. A high-turnover long-short strategy would see its empirical Sharpe reduced materially once costs are included. The *relative ordering* across loss functions is likely preserved under reasonable cost assumptions (because costs apply roughly uniformly to every variant at the same portfolio cap and bucket threshold), but absolute levels should be interpreted accordingly.
+
+**Architecture is not ablated.** The MLP[64, 32, 16] with ReLU and dropout $0.2$ was selected on pre-test data for an earlier research question and then frozen. The report conditions on this architecture rather than arguing for it; a larger or smaller network could change the magnitude of the loss-function effects documented here.
+
+**Feature set restriction.** All Chapter 5 numbers use X1 (15-dimensional cumulative-return and turnover features). X2 (normalised momentum excluding the recent month) and X3 (twelve lagged normalised monthly returns) are implemented in the codebase but were not run under the final protocol. Loss–feature interactions are untested.
+
+## 6.3 Future work
+
+Five extensions would materially strengthen or broaden the report's conclusions.
+
+**1. Rolling-window evaluation.** Re-running the Phase 2 γ sweep and the IMADL-m2 α sweep under a rolling-window retraining scheme — for example, a five-year training window with a one-year test window advanced annually — would test whether the `m2_robust_gamma07` recommendation holds across macroeconomic regimes. This is the single highest-impact extension because it simultaneously addresses the single-window and the static-training-protocol limitations.
+
+**2. Larger seed depth.** Increasing the per-row seed count from three to ten or more would allow calibrated confidence intervals on mean Sharpe and CV. If the 3-seed Sharpe ordering `gamma07 > alpha06 > gamma10_stable_zone` is robust at higher seed depth, the report's recommendation strengthens; if not, the ordering would require revision. This extension is computationally modest and should be a short follow-up run.
+
+**3. Per-component loss logger.** Instrumenting the directional and magnitude components of each hybrid loss to log their per-batch contributions would replace the diagnostics-estimated scale ratios used in Chapter 5 §5.6 with measured values. This would make the normalisation probe quantitatively tight and could lead to an improved variant in which the components are normalised adaptively during training.
+
+**4. Feature-set sensitivity.** Repeating the Phase 2 γ refinement under the X2 and X3 feature sets defined in the codebase would quantify how the loss-function conclusions depend on the specific X1 construction. If `m2_robust_gamma07` continues to dominate across feature sets, the conclusion generalises; if not, the result points at an interaction between feature normalisation and loss-component scaling that would itself be an interesting phenomenon.
+
+**5. Other asset classes and frequencies.** Extending the pipeline to daily-frequency equity data, to international equity markets, or to cross-sectional currency and rates portfolios would test the external validity of the loss-design conclusions. The heavy-tail motivation for robust hybrid losses is more pronounced at higher frequencies, so a daily-frequency study is a natural first extension.
+
+A smaller but related set of implementation extensions would also be valuable: explicit CUDA-determinism flags for exact reproduction across hardware, alignment diagnostics that produce a single binary pass/fail per loss family, and a combined report that stitches all phases into one end-to-end run script.
+
+## 6.4 Closing statement
+
+Within the static 24-month protocol studied here, a hybrid-multiplicative loss with a tuned robust component — concretely, the M2-robust loss at $\gamma = 0.07$ — outperforms both traditional regression losses and pure directional losses on cross-sectional long-short portfolio Sharpe, achieves the lowest coefficient of variation across seeds among the competitive γ values, and is robust to the loss-component normalisation probe. The fallback `imadl_m2_alpha06` from an independent parameterisation corroborates the broader finding that the productive region of the loss-function space is the multiplicative-hybrid region. The empirical recommendation is scoped to US equity monthly data and a single static window; the five future-work extensions above describe how the claim can be broadened.
+
+The deeper point of the report is not a specific γ value. It is that the loss function, which is almost always treated as a fixed component in the financial machine-learning literature, is a high-leverage design choice whose impact becomes visible only when architecture and features are held constant and when multi-seed stability is measured alongside mean performance. The evidence gate documented in Chapter 3 §3.8 and the source-of-truth table in `paper/results_source_of_truth.md` are part of the contribution: they make it possible to audit every number in this report and to re-use the controlled protocol in any follow-up study.
