@@ -51,7 +51,7 @@ from Model_Train.features import (
     assemble_feature_matrix,
     build_feature_set_x1,
 )
-from Model_Train.losses import medse_loss, mse_loss
+from Model_Train.losses import get_experiment_loss_fn
 from Model_Train.models import MLP, MLPConfig
 
 
@@ -225,7 +225,7 @@ def train_model(
 ) -> MLP:
     """
     单次训练流程：DataLoader -> 前向 -> 反向 -> 更新。
-    loss_name 决定使用 MSE 还是 MedSE。
+    loss_name 决定使用哪个单损失训练目标。
     """
     dataset = TensorDataset(
         torch.from_numpy(x_train).float(), torch.from_numpy(y_train).float()
@@ -234,12 +234,7 @@ def train_model(
     model = MLP(config).to(device)
     optimizer = torch.optim.Adam(model.parameters())
 
-    if loss_name == "mse":
-        criterion = lambda a, b: mse_loss(a, b, reduction="mean")
-    elif loss_name == "medse":
-        criterion = lambda a, b: medse_loss(a, b, reduction="median")
-    else:
-        raise ValueError(f"Unsupported loss for sanity check: {loss_name}")
+    criterion = get_experiment_loss_fn(loss_name)
 
     model.train()
     for epoch in range(max_epochs):
@@ -504,7 +499,6 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         max_epochs=args.max_epochs,
     )
 
-    label = "MSE" if loss_name == "mse" else "MedSE"
     month_records: List[Dict[str, object]] = []
     print("Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.")
     for period in test_periods:
@@ -518,13 +512,12 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         preds = predict(model, x_month, device=device)
         metrics = compute_metrics(y_month, preds)
         port = compute_portfolio_returns(preds, y_month)
-        # 根据实验类型选择关注的损失（MSE 或 MedSE）
-        loss_value = metrics["mse"] if loss_name == "mse" else metrics["medse"]
         month_records.append(
             {
                 "month": format_period(period),
                 "sample_size": int(mask.sum()),
-                label.lower(): loss_value,
+                "mse": metrics["mse"],
+                "medse": metrics["medse"],
                 "r2": metrics["r2"],
                 "long_return": port["long"],
                 "short_return": port["short"],
@@ -532,7 +525,8 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
             }
         )
         print(
-            f"Month {format_period(period)} | {label} {loss_value:.6f} | "
+            f"Month {format_period(period)} | MSE {metrics['mse']:.6f} | "
+            f"MedSE {metrics['medse']:.6f} | "
             f"R2 {metrics['r2']:.4f} | Long {port['long']:.4f} | "
             f"Short {port['short']:.4f} | Long-Short {port['long_short']:.4f}"
         )
@@ -549,12 +543,12 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
     ls_stats = compute_long_short_stats(long_short_returns)
     csv_path = Path(args.output_dir) / f"sanity_metrics_{loss_name}.csv"
     df_result.to_csv(csv_path, index=False)
-    print(f"Saved metrics for {label} to {csv_path}")
+    print(f"Saved metrics for {loss_name} to {csv_path}")
 
-    avg_key = label.lower()
     summary = {
         "loss": loss_name,
-        f"avg_{avg_key}": float(df_result[avg_key].mean()),
+        "avg_mse": float(df_result["mse"].mean()),
+        "avg_medse": float(df_result["medse"].mean()),
         "avg_r2": float(df_result["r2"].mean()),  # R^2 体现解释度
         "avg_long_short": float(df_result["long_short_return"].mean()),
         "long_short_cumulative_return": ls_stats["cumulative_return"],
@@ -570,10 +564,7 @@ def run_sanity_check(loss_name: str, args: argparse.Namespace) -> None:
         f"Std {ls_stats['std']:.4f} | Sharpe {ls_stats['sharpe']:.4f}"
     )
     plot_curves(df_result, loss_name, output_dir)
-    if loss_name == "mse":
-        print("MSE 实验完成。")
-    else:
-        print("MedSE 实验完成。")
+    print(f"{loss_name} 实验完成。")
     print(
-        "\n提示：若要比较 MSE 与 MedSE，请分别运行对应脚本（run_sanity_check_mse.py / run_sanity_check_medse.py）。"
+        "\n提示：若要比较多个损失，请分别运行对应 run_sanity_check_*.py 脚本。"
     )
