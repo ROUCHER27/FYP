@@ -97,16 +97,18 @@ def main() -> None:
             ls="--",
             zorder=4,
         )
-        # Vertical arrow from baseline top to method top.
-        y_start = bl + (0.02 if me > bl else -0.02)
-        y_end = me + (-0.02 if me > bl else 0.02)
-        ax1.annotate(
-            "",
-            xy=(x[i] + (BAR_W + GAP) / 2, y_end),
-            xytext=(x[i] + (BAR_W + GAP) / 2, y_start),
-            arrowprops=dict(arrowstyle="->", color="black", lw=1.2),
-            zorder=5,
-        )
+        # Only draw a directed arrow when the change is material (≥ 0.06 in
+        # absolute Sharpe). Below that, the tiny delta produces messy glyphs.
+        if abs(me - bl) >= 0.06:
+            y_start = bl + (-0.02 if me < bl else 0.02)
+            y_end = me + (0.02 if me < bl else -0.02)
+            ax1.annotate(
+                "",
+                xy=(x[i] + (BAR_W + GAP) / 2, y_end),
+                xytext=(x[i] + (BAR_W + GAP) / 2, y_start),
+                arrowprops=dict(arrowstyle="->", color="black", lw=1.2),
+                zorder=5,
+            )
         # Red delta label
         y_label = max(bl, me) + 0.06
         ax1.text(
@@ -119,7 +121,8 @@ def main() -> None:
             fontsize=10,
             fontweight="bold",
         )
-        # Underlying value labels
+        # Underlying value labels (original above bar, normalised inside if tall
+        # enough, below the tiny negative bar otherwise).
         ax1.text(
             x[i] - (BAR_W + GAP) / 2,
             bl + (0.03 if bl >= 0 else -0.05),
@@ -131,10 +134,10 @@ def main() -> None:
         )
         ax1.text(
             x[i] + (BAR_W + GAP) / 2,
-            me + (0.03 if me >= 0 else -0.05),
+            me + (0.03 if me >= 0.04 else -0.05),
             f"{me:.3f}",
             ha="center",
-            va="bottom" if me >= 0 else "top",
+            va="bottom" if me >= 0.04 else "top",
             fontsize=8.5,
             color="white" if me >= 0.25 else "black",
             fontweight="bold",
@@ -182,10 +185,11 @@ def main() -> None:
         for j, v in zip(jitter, vals):
             ax2.text(
                 i + j,
-                v + 0.06,
+                v + (0.06 if v >= 0 else -0.06),
                 f"{v:.3f}",
                 fontsize=7.8,
                 ha="center",
+                va="bottom" if v >= 0 else "top",
                 color="#444",
             )
 
@@ -197,9 +201,10 @@ def main() -> None:
     style_open_axes(ax2)
     _style.y_grid_only(ax2)
     ax2.tick_params(labelsize=9.5)
+    ax2.set_ylim(-1.1, 1.7)
     ax2.legend(
         fontsize=9,
-        loc="lower right",
+        loc="upper right",
         framealpha=1.0,
         edgecolor="#C8C8C8",
         fancybox=False,
