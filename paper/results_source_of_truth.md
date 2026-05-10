@@ -12,7 +12,7 @@ All numbers allowed to appear in the final report are listed here with provenanc
 - Feature set: X1 (cumulative returns + cumulative turnover, 15 dimensions).
 - Training: `max_epochs=20`, `batch_size=1024`, no retraining during test period.
 - Portfolio: cross-sectional top 10% long / bottom 10% short, signal-tilted weights (z within bucket clipped to ±3), capped-simplex projection at 5% per stock.
-- Evaluation metrics: monthly long-short return, cumulative return over 24 months, monthly-Sharpe (mean/std of monthly long-short returns, no annualisation factor), average R² across months.
+- Evaluation metrics: monthly long-short return, cumulative return over 24 months, annualised Sharpe computed as $\text{Sharpe} = \sqrt{12} \cdot \bar r / \sigma_r$ with $\bar r, \sigma_r$ the sample mean and standard deviation of the monthly long-short portfolio return series (`compute_long_short_stats` in `sanity_check_signal_tilted.py` uses `periods_per_year=12`), and average R² across months.
 - Training source: `best_hyperparameters.txt`; runner scripts under repo root `run_sanity_check_*.py`.
 
 ## 1. Baseline Losses — 24-month, seed 42

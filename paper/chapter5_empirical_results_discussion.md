@@ -14,7 +14,7 @@ All experiments reported below share a static, non-rolling training and evaluati
 - Model: `MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='relu', dropout=0.2)`.
 - Training: `max_epochs=20`, `batch_size=1024`, full-batch training on a single static window; no early stopping.
 - Portfolio construction: cross-sectional top 10% long / bottom 10% short per month, signal-tilted weights using within-bucket $z$-scores clipped to $\pm 3$, projected onto a capped simplex with a 5% per-name cap.
-- Reported Sharpe is the monthly-frequency mean-to-standard-deviation ratio of the long-short portfolio return; no annualisation factor has been applied. Treat the magnitudes accordingly.
+- Reported Sharpe is the annualised Sharpe computed from monthly portfolio returns: $\text{Sharpe} = \sqrt{12} \cdot \bar r / \sigma_r$, where $\bar r$ and $\sigma_r$ are the sample mean and standard deviation of the monthly long-short return series (`compute_long_short_stats` uses `periods_per_year=12`).
 - Single-seed tables in §5.2–§5.3 use seed 42. Multi-seed tables in §5.4–§5.6 use three seeds per row and all run with the 5% portfolio cap (`cap05`).
 
 The same-window baseline and Phase 1.5 evidence was run from `main` at commit `6c0fbde` and is stored under `doc/final_report_all_24m_evidence/`. Every summary JSON has a matching `*_verification.json` confirming the 24-row window, and every runner command is recorded under `*_command.txt`. The multi-seed evidence (Phase 2.2 gamma refinement and the integrated Phase 2 summary) lives under `doc/phase2-fix/`, with the integrated summary on branch `phase2.2-fix`.
@@ -73,7 +73,7 @@ The additive family is not carried further into multi-seed robustness in this re
 
 Phase 2 introduces an explicit robustness parameter $\gamma$ into the multiplicative hybrid M2 variant, producing the family of `m2_robust_gamma{0.03, 0.05, 0.07, 0.10, 0.15}` losses. Each variant is run across three random seeds using the same 24-month static window and the 5% per-name portfolio cap (`cap05`). The purpose is to decouple the seed-42 ranking of §5.3 from a claim about the expected performance of the loss under seed perturbation.
 
-Sharpe stability is reported as the coefficient of variation $\mathrm{CV} = \sigma_S / |\mu_S|$, where $\mu_S$ and $\sigma_S$ are the cross-seed mean and standard deviation of monthly Sharpe. Lower CV implies that the variant's seed-42 result is more representative of what would be observed with other random seeds.
+Sharpe stability is reported as the coefficient of variation $\mathrm{CV} = \sigma_S / |\mu_S|$, where $\mu_S$ and $\sigma_S$ are the cross-seed mean and standard deviation of the annualised Sharpe (same $\sqrt{12}$-annualised convention as §5.1 and §5.2). Lower CV implies that the variant's seed-42 result is more representative of what would be observed with other random seeds.
 
 **Table 5.3 — Phase 2.2 gamma refinement, multi-seed (3 seeds per row).** Static train `1990-01..1994-12`, test `1995-01..1996-12`, `cap05` portfolio cap. Each row aggregates three seeds. Source: `doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_grouped_summary.csv`.
 
@@ -182,7 +182,7 @@ The chapter's findings should be read with the following scope limits, all of wh
 - **Market coverage.** All tables use a single equity universe and monthly frequency. Generalisation to higher frequencies, different asset classes, or other markets is not tested.
 - **Evaluation window.** The 24-month main window (`1995-01..1996-12`) is fixed and non-rolling. Robustness across macroeconomic regimes has not been assessed; the rolling-window experiments were paused in the project schedule.
 - **Seed depth.** Multi-seed results use three seeds. This is sufficient to differentiate CV at the order-of-magnitude level (as between `gamma07` and `gamma10`) but is too thin to bound CV to the second decimal.
-- **Sharpe convention.** All Sharpes are monthly-frequency and not annualised. Comparisons with external literature should apply the appropriate scaling.
+- **Sharpe convention.** All Sharpes are annualised by $\sqrt{12}$ from monthly means and standard deviations; the underlying return series is monthly long-short with no transaction-cost adjustment.
 - **Portfolio construction.** Results use a fixed 5% per-name cap with top/bottom 10% buckets. Sensitivity to alternative caps and bucket thresholds has not been systematically ablated in this report.
 - **R² interpretation.** Across the absolute-loss family (MADL, GMADL) and several hybrid variants, average R² diverges to extremely negative values while portfolio Sharpe remains positive. The report treats ranked portfolio metrics as primary and treats R² as diagnostic, but users of the trained model for point-prediction tasks should note the lack of calibration.
 
