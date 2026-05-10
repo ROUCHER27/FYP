@@ -20,6 +20,17 @@ This repo is intended to let a new agent continue from `main` without switching 
 - Phase 2.2 normalization check: `doc/phase2-fix/phase2.2-fix1/`
 - Phase 2.5 alignment diagnostics: `doc/phase2.5/` and `phase2.5-对齐失败完整诊断报告.md`
 
+## Writing Workflow
+
+The next phase should use Kiro as the primary writing environment.
+
+- Drafting/revision: `.kiro/skills/EvoSkills/skills/paper-writing/SKILL.md` and `.kiro/skills/sciwrite/SKILL.md`
+- Review: `.kiro/skills/EvoSkills/skills/paper-review/SKILL.md`
+- Planning/navigation: `.kiro/skills/EvoSkills/skills/paper-planning/SKILL.md` and `.kiro/skills/EvoSkills/skills/paper-navigator/SKILL.md`
+- Figures: `.kiro/skills/paper-plot-skills/plot-from-data/SKILL.md`
+
+If `.kiro` is absent in a fresh environment, restore or install the Kiro skill bundle before substantive writing. Do not treat missing Kiro skills as a reason to ignore `SCHEMA.md`; `SCHEMA.md` remains the evidence contract.
+
 ## Cross-Branch Evidence
 
 The local gamma-refinement grouped summary is a 5-row gamma-only table. The `imadl_m2_alpha06` fallback result comes from the integrated Phase 2 summary on `phase2.2-fix`.

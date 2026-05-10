@@ -9,11 +9,13 @@ Before writing, reviewing, or reorganizing the final report, read:
 3. `doc/thesis/*`
 4. The evidence files referenced by `SCHEMA.md`
 
-Treat `SCHEMA.md` as the highest-level contract. The local skills below are optional helpers; if a skill path is missing, continue from `SCHEMA.md` and `doc/agent_handoff.md`.
+Treat `SCHEMA.md` as the highest-level evidence and claim-boundary contract.
+
+For the writing phase, use Kiro as the primary writing workflow. The local skills below should be read before drafting, revising, reviewing, or generating figures. If `.kiro` is missing, restore/install the Kiro skill bundle before substantial writing work; use `SCHEMA.md` and `doc/agent_handoff.md` only as the continuity fallback.
 
 ## Skills
 
-The following skill files may be available locally. Read them when the relevant task arises.
+The following Kiro skill files are the preferred writing-stage tools. Read them when the relevant task arises.
 
 ### Scientific Writing Review
 @.kiro/skills/sciwrite/SKILL.md

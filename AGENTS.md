@@ -28,7 +28,7 @@
 
 For final-report work, the hard project contract is `SCHEMA.md`; read it before `doc/thesis/*`, experiment reports, or old phase notes. `doc/agent_handoff.md` gives the current source-of-truth evidence map and cross-branch lookup commands.
 
-The following local skill files are optional helpers. Use them when present, but do not block if they are missing; `SCHEMA.md` and `doc/agent_handoff.md` are sufficient for FYP continuity.
+For the writing phase, Kiro is the primary working interface. Use the local `.kiro` writing/review/plot skills below when drafting, revising, reviewing, or generating figures. If `.kiro` is missing, restore/install the Kiro skill bundle before substantial writing work; use `SCHEMA.md` and `doc/agent_handoff.md` only as the project evidence contract and fallback continuity layer.
 
 | Task | Skill file |
 |------|-----------|
