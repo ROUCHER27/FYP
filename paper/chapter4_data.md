@@ -18,6 +18,28 @@ The loader (`Model_Train/data_preprocess.load_raw_csvs`) reads every matching CS
 
 At the training end of the panel the `89.12-94.csv` file contributes 449,018 rows covering 61 distinct year-months and 10,987 unique `PERMNO` values. Mean raw monthly return is $0.0100$ with a standard deviation of $0.1954$ and realised extremes of $-0.988$ and $+24.0$ across the training era; this heavy-tailed return distribution is a key motivation for the robust loss variants studied in Chapters 3 and 5.
 
+<!-- FIGURE PLACEHOLDER: Fig 4.1
+  TYPE: two-panel figure
+    (a) Horizontal timeline (Gantt-style). Seven horizontal bars for the seven CSV files:
+         89.12-94, 94-99, 99-04, 04-09, 09-14, 14.12-19.12, 19.12-24.12
+         Each bar spans its covered date range on a shared x-axis from 1989 to 2025.
+         Overlay two coloured shaded vertical bands marking the training window
+         (1990-01..1994-12, orange) and the main test window (1995-01..1996-12, red).
+    (b) Histogram of raw monthly RET values in the training window (89.12-94.csv restricted to
+         1990-01..1994-12). Log y-axis to visualise heavy tails; vertical lines at the 0.1% and
+         99.9% sample quantiles; annotate min (-0.988) and max (+24.0).
+  DATA SOURCES:
+    (a) File names and date ranges from the CSV head rows (inspect with
+        `pandas.read_csv(path, usecols=['date'])` and extract min/max dates).
+    (b) Column `RET` from `89.12-94.csv` restricted to `1990-01..1994-12`.
+  CAPTION:
+    Figure 4.1 — Data coverage and heavy-tail motivation. Left: temporal coverage of the seven
+    CSV files with the static training and main test windows shaded. Right: log-scale histogram
+    of monthly `RET` values in the training window; tails extend well beyond any Gaussian band
+    and motivate the robust-loss design studied in Chapters 2 and 3.
+-->
+**Figure 4.1 — Data coverage and training-era return distribution (placeholder; see comment for data sources and chart spec).**
+
 ## 4.2 Sample construction
 
 Three derived variables are computed on the raw panel before any feature set is built (`Model_Train/data_preprocess.add_basic_variables` and `add_target_return`):

@@ -72,6 +72,26 @@ The directional-loss family has three theoretical attractions that directly addr
 
 Several limitations of the pure directional family have also been documented:
 
+<!-- FIGURE PLACEHOLDER: Fig 2.1
+  TYPE: four-panel didactic loss-shape comparison
+    Each panel plots a 1D loss profile L(y, ŷ) as a function of (ŷ - y) in [-0.5, 0.5]
+    with the realised return y held at a representative value (e.g. y = 0.05).
+    Panel 1: MSE (quadratic) and Huber with delta=0.01 overlaid.
+    Panel 2: MedSE (flat-in-median) illustrative shape.
+    Panel 3: MADL (tanh-based) and GMADL (sigmoid-based with |y|^2) overlaid;
+             mark the "weak-gradient-near-zero" region with a shaded band around ŷ=0.
+    Panel 4: Hybrid multiplicative loss L_mul(y, ŷ) with lambda_dir = 2 (M1) overlaid on the Huber
+             backbone; emphasise the gating effect when the directional penalty grows.
+  DATA SOURCES:
+    None (synthetic evaluation of the closed-form loss expressions in Chapter 3 §3.3).
+    Use numpy to evaluate over a dense ŷ grid at fixed y.
+  CAPTION:
+    Figure 2.1 — Conceptual shape of MSE, Huber, MedSE, MADL, GMADL, and the multiplicative
+    hybrid loss at a fixed realised return y = 0.05. Illustrative only; no training data
+    is used. Formulas match those in Chapter 3 §3.3.
+-->
+**Figure 2.1 — Conceptual loss-function shape comparison (placeholder; see comment for chart spec and formulas).**
+
 1. **Symmetric asymmetry.** The reward for a correct large-magnitude prediction equals the penalty for an incorrect large-magnitude prediction. The loss encodes no preference for avoiding losses over capturing gains, which is a mismatch with the risk-averse nature of most trading applications.
 2. **Weak gradients near $\hat y \approx 0$.** When the prediction is close to zero, $y \hat y$ is close to zero, and the sigmoid or $\tanh$ derivative is close to its peak but the overall loss derivative with respect to $\hat y$ remains proportional to $|y|$ (or $|y|^b$). For small $|y|$ this can produce uninformative training signal, slowing convergence.
 3. **No notion of prediction precision beyond sign.** A prediction of $+0.01$ and a prediction of $+1.00$ receive essentially the same directional reward if the realised return is positive. In a ranking context this is a feature rather than a bug — the model focuses on the ordering — but in a calibrated forecasting context it would be a liability.

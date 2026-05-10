@@ -162,6 +162,25 @@ Each experiment runs the following deterministic protocol (`sanity_check_signal_
 
 ## 3.5 Portfolio construction
 
+<!-- FIGURE PLACEHOLDER: Fig 3.1
+  TYPE: flow diagram (block-and-arrow)
+    Five blocks left-to-right (or top-to-bottom):
+      1. "Prediction vector ŷ_t (N stocks)"
+      2. "Top/bottom 10% bucket selection (k = max(1, floor(0.1 N)))"
+      3. "Within-bucket z-score, clipped to [-3, 3]"
+      4. "Sign-consistent positive weights + bucket normalisation"
+      5. "Capped-simplex projection (max 5% per stock, iterative up to 10 rounds)"
+      6. "Long bucket return + Short bucket return -> long-short return r_t"
+    Arrows between consecutive blocks; small annotations below each arrow with the shape of the
+    tensor at that stage (e.g. "N", "k", "k", "k", "k", "scalar").
+  DATA SOURCES: None (this is a schematic of the `compute_portfolio_returns` pipeline).
+  CAPTION:
+    Figure 3.1 — Portfolio construction pipeline per test month. The same five-step pipeline
+    applies to every loss function and every seed; only the prediction vector ŷ_t varies.
+-->
+**Figure 3.1 — Portfolio construction pipeline (placeholder; see comment for chart spec).**
+
+
 Portfolio construction is implemented in `compute_portfolio_returns` within `sanity_check_signal_tilted.py`. It takes the cross-sectional prediction vector $\hat y_t = \{\hat y_{i,t}\}_i$ and the corresponding realised-target vector $y_{t+1} = \{y_{i,t+1}\}_i$ for a single month and returns the long, short, and long-short portfolio returns.
 
 **Step 1 — bucket selection.** Let $n = |\hat y_t|$ be the cross-section size and $k = \max(1, \lfloor 0.1 \, n \rfloor)$. The long bucket $\mathcal{L}$ is the set of indices with the $k$ largest predictions; the short bucket $\mathcal{S}$ is the set with the $k$ smallest predictions. The bucket size is therefore always 10% of the cross-section (rounded down) per month.

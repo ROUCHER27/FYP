@@ -45,6 +45,27 @@ Third, among baseline losses, `hybrid_mul_m1` yields the best single-seed Sharpe
 
 It is important to emphasise that Table 5.1 is a same-window single-seed comparison. It is informative for ranking loss families at a fixed seed but cannot support statements about robustness to seed perturbation. Seed-sensitivity claims are reserved for §5.4 and §5.5.
 
+<!-- FIGURE PLACEHOLDER: Fig 5.1
+  TYPE: two-panel static chart
+    (a) Line chart — cumulative long-short return over the 24 test months (1995-01..1996-12)
+        for each of the seven baseline losses (MSE, MedSE, MADL, GMADL, IMADL, hybrid_mul_m1,
+        hybrid_mul_m2). Seven line series, distinct colours, shared x-axis = month, shared
+        y-axis = cumulative return; zero line dashed; legend with loss names.
+    (b) Horizontal bar chart — annualised Sharpe for the same seven losses, sorted descending.
+        Highlight hybrid_mul_m1 (best single-seed Sharpe) with a contrast colour.
+  DATA SOURCES:
+    - 24-row per-month CSVs: doc/final_report_all_24m_evidence/results/baseline/{loss}/sanity_metrics_{loss}.csv
+      (columns: month, long_short_return — take cumulative product).
+    - Summary JSONs: doc/final_report_all_24m_evidence/results/baseline/{loss}/sanity_summary_{loss}.json
+      (field: long_short_sharpe).
+  CAPTION:
+    Figure 5.1 — Baseline loss comparison over 1995-01..1996-12, seed 42, cap05 portfolio.
+    Left: monthly cumulative long-short return per loss. Right: annualised Sharpe
+    (sqrt(12)-scaled monthly mean/std). Shared MLP[64,32,16]+ReLU+dropout 0.2, X1 features,
+    batch 1024, 20 epochs. Same runner for every series.
+-->
+**Figure 5.1 — Baseline loss comparison (placeholder; see comment for data sources and chart spec).**
+
 ## 5.3 Phase 1.5 variant sweep (24 months, seed 42)
 
 Phase 1.5 extends the two hybrid multiplicative variants of §5.2 into a parameterised family. The additive variants A1–A5 (`hybrid_add_a{1..5}`) vary the weighting of a directional-accuracy term added to an MSE backbone, while the multiplicative variants M1–M4 (`hybrid_mul_m{1..4}`) vary the weighting of a robust monotone component multiplied into a base prediction error. All nine runs use the same static window, feature set, and portfolio construction as Table 5.1; only the loss specification changes.
@@ -68,6 +89,23 @@ The additive family peaks at A3 with Sharpe $0.5738$ and cumulative return $+8.1
 A few interpretive notes matter for later sections. (i) At seed 42, A3 slightly outperforms M1 on Sharpe and cumulative return, yet the multiplicative family is the one that Phase 2 chose to extend into the M2-robust γ parameterisation. The rationale for that design choice is discussed in Chapter 3; the empirical support is that A3's high R² magnitude (tens or hundreds of thousands in absolute value, driven by the additive MSE term being dominated by a scale-insensitive accuracy term) offers less interpretable control than the M-family, whose R² remains within a small single-digit range. (ii) Seed-42 peaks do not survive seed perturbation uniformly. In §5.4 the M2-robust γ sweep is evaluated across three seeds and the ordering of mean Sharpe does not match the single-seed ordering in this table. Consequently, the Phase 1.5 rows should be read as *motivation* for the Phase 2 design, not as a final variant ranking.
 
 The additive family is not carried further into multi-seed robustness in this report. The final recommendation in §5.8 draws on the multi-seed evidence for the M2-robust family (§5.4) and on the integrated cross-variant sweep (§5.5).
+
+<!-- FIGURE PLACEHOLDER: Fig 5.2
+  TYPE: grouped horizontal bar chart
+    Two groups side-by-side on the y-axis:
+      Group 1 = additive A1..A5 (light-blue bars)
+      Group 2 = multiplicative M1..M4 (navy bars)
+    x-axis = annualised Sharpe. Zero line dashed vertical.
+    Highlight A3 and M1 (best in each family) with a contrast colour or outline.
+  DATA SOURCES:
+    doc/final_report_all_24m_evidence/results/phase15/{A1..A5,M1..M4}/sanity_summary_*.json
+    (field: long_short_sharpe).
+  CAPTION:
+    Figure 5.2 — Phase 1.5 additive and multiplicative hybrid variants, single-seed Sharpe
+    (1995-01..1996-12, seed 42, cap05). A3 is the additive peak, M1 the multiplicative peak.
+    Same runner / feature / portfolio / architecture as Table 5.1.
+-->
+**Figure 5.2 — Phase 1.5 hybrid variants (placeholder; see comment for data sources and chart spec).**
 
 ## 5.4 Phase 2: multi-seed robustness of the M2-robust family
 
