@@ -1,0 +1,10 @@
+{
+  "loss": "hybrid_mul_m3",
+  "avg_mse": 0.04047096388724943,
+  "avg_medse": 0.004101757435516144,
+  "avg_r2": -0.43526800473531085,
+  "avg_long_short": -0.003845100002975189,
+  "long_short_cumulative_return": -0.09031174936835695,
+  "long_short_std": 0.01374488933551015,
+  "long_short_sharpe": -0.9690741631699111
+}

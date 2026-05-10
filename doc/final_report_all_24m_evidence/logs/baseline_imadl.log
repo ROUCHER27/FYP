@@ -1,0 +1,57 @@
+group=baseline
+run_id=imadl
+runner_stem=imadl
+artifact_stem=imadl
+branch=main
+commit=6c0fbde558b9d79208e9f21c438753be6f7bfa31
+started_at_utc=2026-05-10T06:32:47Z
+output_dir=/content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/imadl
+command=python run_sanity_check_imadl.py --data-dir . --pattern \*.csv --train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --max-epochs 20 --batch-size 1024 --best-config-path best_hyperparameters.txt --output-dir /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/imadl --seed 42 
+
+/content/FYP/Model_Train/data_preprocess.py:63: UserWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  parsed_dates = pd.to_datetime(
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='relu', dropout=0.2)
+Epoch 1/20 finished for IMADL.
+Epoch 5/20 finished for IMADL.
+Epoch 10/20 finished for IMADL.
+Epoch 15/20 finished for IMADL.
+Epoch 20/20 finished for IMADL.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | MSE 0.589030 | MedSE 0.007108 | R2 -12.4281 | Long 0.0567 | Short 0.0492 | Long-Short 0.0075
+Month 1995-02 | MSE 11.671189 | MedSE 0.009001 | R2 -498.8036 | Long 0.0229 | Short 0.0149 | Long-Short 0.0079
+Month 1995-03 | MSE 0.553835 | MedSE 0.007427 | R2 -21.0946 | Long -0.0134 | Short 0.0435 | Long-Short -0.0569
+Month 1995-04 | MSE 0.625513 | MedSE 0.007427 | R2 -20.7559 | Long 0.0355 | Short 0.0327 | Long-Short 0.0028
+Month 1995-05 | MSE 1.979132 | MedSE 0.007427 | R2 -61.8202 | Long 0.0609 | Short 0.0683 | Long-Short -0.0074
+Month 1995-06 | MSE 1.435610 | MedSE 0.007427 | R2 -46.5722 | Long 0.0493 | Short 0.0682 | Long-Short -0.0189
+Month 1995-07 | MSE 1.693935 | MedSE 0.008425 | R2 -49.0891 | Long 0.0291 | Short -0.0052 | Long-Short 0.0343
+Month 1995-08 | MSE 2.934203 | MedSE 0.007427 | R2 -121.5085 | Long 0.0339 | Short 0.1414 | Long-Short -0.1075
+Month 1995-09 | MSE 0.913751 | MedSE 0.015415 | R2 -47.1831 | Long -0.0148 | Short -0.0450 | Long-Short 0.0302
+Month 1995-10 | MSE 0.462505 | MedSE 0.007427 | R2 -19.0933 | Long 0.0548 | Short 0.0748 | Long-Short -0.0200
+Month 1995-11 | MSE 2.274432 | MedSE 0.009427 | R2 -82.0097 | Long -0.0200 | Short 0.0064 | Long-Short -0.0265
+Month 1995-12 | MSE 0.990942 | MedSE 0.009001 | R2 -30.6472 | Long -0.0167 | Short 0.0213 | Long-Short -0.0380
+Month 1996-01 | MSE 0.682959 | MedSE 0.008769 | R2 -21.9474 | Long 0.0048 | Short 0.0152 | Long-Short -0.0104
+Month 1996-02 | MSE 3.401541 | MedSE 0.009125 | R2 -144.9012 | Long 0.0218 | Short 0.0279 | Long-Short -0.0062
+Month 1996-03 | MSE 2.512857 | MedSE 0.009315 | R2 -71.8185 | Long 0.0492 | Short 0.0499 | Long-Short -0.0007
+Month 1996-04 | MSE 0.723345 | MedSE 0.008418 | R2 -11.4040 | Long 0.0285 | Short 0.0621 | Long-Short -0.0336
+Month 1996-05 | MSE 0.676638 | MedSE 0.012537 | R2 -35.7970 | Long -0.0407 | Short -0.0385 | Long-Short -0.0022
+Month 1996-06 | MSE 18.061647 | MedSE 0.021498 | R2 -901.0291 | Long -0.0896 | Short -0.1006 | Long-Short 0.0109
+Month 1996-07 | MSE 1.367071 | MedSE 0.006476 | R2 -63.4225 | Long 0.0269 | Short 0.0198 | Long-Short 0.0072
+Month 1996-08 | MSE 2.580276 | MedSE 0.007427 | R2 -122.5813 | Long 0.0362 | Short 0.0043 | Long-Short 0.0319
+Month 1996-09 | MSE 0.614176 | MedSE 0.010693 | R2 -28.3764 | Long -0.0148 | Short -0.0480 | Long-Short 0.0332
+Month 1996-10 | MSE 1.245087 | MedSE 0.007427 | R2 -52.1508 | Long 0.0775 | Short 0.0495 | Long-Short 0.0281
+Month 1996-11 | MSE 0.861891 | MedSE 0.010160 | R2 -36.5303 | Long -0.0326 | Short -0.0471 | Long-Short 0.0146
+Month 1996-12 | MSE 2.185414 | MedSE 0.007967 | R2 -55.3108 | Long 0.0901 | Short 0.0562 | Long-Short 0.0339
+Saved metrics for imadl to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/imadl/sanity_metrics_imadl.csv
+Wrote summary to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/imadl/sanity_summary_imadl.json
+Long-Short stats | Cumulative -0.0944 | Std 0.0332 | Sharpe -0.3732
+Loss curve saved to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/imadl/imadl_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/imadl/imadl_returns_curve.png
+imadl 实验完成。
+
+提示：若要比较多个损失，请分别运行对应 run_sanity_check_*.py 脚本。
+
+ended_at_utc=2026-05-10T06:38:14Z
+exit_status=0
+Verified baseline/imadl: 24 rows, 1995-01 to 1996-12

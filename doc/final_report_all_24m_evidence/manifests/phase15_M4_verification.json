@@ -1,0 +1,17 @@
+{
+  "group": "phase15",
+  "run_id": "M4",
+  "artifact_stem": "hybrid_mul_m4",
+  "result_dir": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/phase15/M4",
+  "metrics_csv": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/phase15/M4/sanity_metrics_hybrid_mul_m4.csv",
+  "summary_json": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/phase15/M4/sanity_summary_hybrid_mul_m4.json",
+  "row_count": 24,
+  "first_month": "1995-01",
+  "last_month": "1996-12",
+  "expected_row_count": 24,
+  "expected_first_month": "1995-01",
+  "expected_last_month": "1996-12",
+  "verified_at_utc": "2026-05-10T07:37:34Z",
+  "status": "completed",
+  "problems": []
+}

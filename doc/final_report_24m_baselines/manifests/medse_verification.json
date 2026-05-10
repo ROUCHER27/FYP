@@ -1,0 +1,13 @@
+{
+  "metric": "medse",
+  "metrics_csv": "/content/drive/MyDrive/FYP/final_report_24m_baselines/results/medse/sanity_metrics_medse.csv",
+  "summary_json": "/content/drive/MyDrive/FYP/final_report_24m_baselines/results/medse/sanity_summary_medse.json",
+  "row_count": 24,
+  "first_month": "1995-01",
+  "last_month": "1996-12",
+  "expected_row_count": 24,
+  "expected_first_month": "1995-01",
+  "expected_last_month": "1996-12",
+  "status": "completed",
+  "problems": []
+}

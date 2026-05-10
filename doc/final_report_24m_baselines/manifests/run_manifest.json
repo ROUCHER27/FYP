@@ -1,0 +1,24 @@
+{
+  "started_at_utc": "2026-05-09T13:48:52Z",
+  "branch": "main",
+  "commit": "6e2f7f83ce4b97196659c3217212d6ba32f8128b",
+  "output_root": "/content/drive/MyDrive/FYP/final_report_24m_baselines",
+  "subdirs": {
+    "results": "/content/drive/MyDrive/FYP/final_report_24m_baselines/results",
+    "logs": "/content/drive/MyDrive/FYP/final_report_24m_baselines/logs",
+    "reports": "/content/drive/MyDrive/FYP/final_report_24m_baselines/reports",
+    "manifests": "/content/drive/MyDrive/FYP/final_report_24m_baselines/manifests"
+  },
+  "parameters": {
+    "data_dir": ".",
+    "pattern": "*.csv",
+    "best_config_path": "best_hyperparameters.txt",
+    "train_start": "1990-01",
+    "train_end": "1994-12",
+    "test_start": "1995-01",
+    "test_months": 24,
+    "max_epochs": 20,
+    "batch_size": 1024,
+    "seed": 42
+  }
+}

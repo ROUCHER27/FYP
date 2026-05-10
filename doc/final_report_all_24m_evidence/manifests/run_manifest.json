@@ -1,0 +1,122 @@
+{
+  "started_at_utc": "2026-05-10T06:10:46Z",
+  "branch": "main",
+  "commit": "6c0fbde558b9d79208e9f21c438753be6f7bfa31",
+  "output_root": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence",
+  "subdirs": {
+    "results": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence/results",
+    "logs": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence/logs",
+    "reports": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence/reports",
+    "manifests": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence/manifests"
+  },
+  "parameters": {
+    "data_dir": ".",
+    "pattern": "*.csv",
+    "best_config_path": "best_hyperparameters.txt",
+    "train_start": "1990-01",
+    "train_end": "1994-12",
+    "test_start": "1995-01",
+    "test_months": 24,
+    "max_epochs": 20,
+    "batch_size": 1024,
+    "seed": 42
+  },
+  "runs": [
+    {
+      "group": "baseline",
+      "run_id": "mse",
+      "runner_stem": "mse",
+      "artifact_stem": "mse"
+    },
+    {
+      "group": "baseline",
+      "run_id": "medse",
+      "runner_stem": "medse",
+      "artifact_stem": "medse"
+    },
+    {
+      "group": "baseline",
+      "run_id": "madl",
+      "runner_stem": "madl",
+      "artifact_stem": "madl"
+    },
+    {
+      "group": "baseline",
+      "run_id": "gmadl",
+      "runner_stem": "gmadl",
+      "artifact_stem": "gmadl"
+    },
+    {
+      "group": "baseline",
+      "run_id": "imadl",
+      "runner_stem": "imadl",
+      "artifact_stem": "imadl"
+    },
+    {
+      "group": "baseline",
+      "run_id": "hybrid_mul_m1",
+      "runner_stem": "hybrid_mul_m1",
+      "artifact_stem": "hybrid_mul_m1"
+    },
+    {
+      "group": "baseline",
+      "run_id": "hybrid_mul_m2",
+      "runner_stem": "hybrid_mul_m2",
+      "artifact_stem": "hybrid_mul_m2"
+    },
+    {
+      "group": "phase15",
+      "run_id": "A1",
+      "runner_stem": "hybrid_add_a1",
+      "artifact_stem": "hybrid_add_a1"
+    },
+    {
+      "group": "phase15",
+      "run_id": "A2",
+      "runner_stem": "hybrid_add_a2",
+      "artifact_stem": "hybrid_add_a2"
+    },
+    {
+      "group": "phase15",
+      "run_id": "A3",
+      "runner_stem": "hybrid_add_a3",
+      "artifact_stem": "hybrid_add_a3"
+    },
+    {
+      "group": "phase15",
+      "run_id": "A4",
+      "runner_stem": "hybrid_add_a4",
+      "artifact_stem": "hybrid_add_a4"
+    },
+    {
+      "group": "phase15",
+      "run_id": "A5",
+      "runner_stem": "hybrid_add_a5",
+      "artifact_stem": "hybrid_add_a5"
+    },
+    {
+      "group": "phase15",
+      "run_id": "M1",
+      "runner_stem": "hybrid_mul_m1",
+      "artifact_stem": "hybrid_mul_m1"
+    },
+    {
+      "group": "phase15",
+      "run_id": "M2",
+      "runner_stem": "hybrid_mul_m2",
+      "artifact_stem": "hybrid_mul_m2"
+    },
+    {
+      "group": "phase15",
+      "run_id": "M3",
+      "runner_stem": "hybrid_mul_m3",
+      "artifact_stem": "hybrid_mul_m3"
+    },
+    {
+      "group": "phase15",
+      "run_id": "M4",
+      "runner_stem": "hybrid_mul_m4",
+      "artifact_stem": "hybrid_mul_m4"
+    }
+  ]
+}

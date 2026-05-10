@@ -1,0 +1,10 @@
+{
+  "loss": "imadl",
+  "avg_mse": 2.5432074641187987,
+  "avg_medse": 0.009281209340163818,
+  "avg_r2": -106.51144270102183,
+  "avg_long_short": -0.003578029202621947,
+  "long_short_cumulative_return": -0.09444099169355724,
+  "long_short_std": 0.033211491719382535,
+  "long_short_sharpe": -0.3732038549951402
+}

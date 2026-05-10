@@ -1,0 +1,57 @@
+group=phase15
+run_id=M3
+runner_stem=hybrid_mul_m3
+artifact_stem=hybrid_mul_m3
+branch=main
+commit=6c0fbde558b9d79208e9f21c438753be6f7bfa31
+started_at_utc=2026-05-10T07:27:11Z
+output_dir=/content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/phase15/M3
+command=python run_sanity_check_hybrid_mul_m3.py --data-dir . --pattern \*.csv --train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --max-epochs 20 --batch-size 1024 --best-config-path best_hyperparameters.txt --output-dir /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/phase15/M3 --seed 42 
+
+/content/FYP/Model_Train/data_preprocess.py:63: UserWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  parsed_dates = pd.to_datetime(
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='relu', dropout=0.2)
+Epoch 1/20 finished for HYBRID_MUL_M3.
+Epoch 5/20 finished for HYBRID_MUL_M3.
+Epoch 10/20 finished for HYBRID_MUL_M3.
+Epoch 15/20 finished for HYBRID_MUL_M3.
+Epoch 20/20 finished for HYBRID_MUL_M3.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | MSE 0.043963 | MedSE 0.003030 | R2 -0.0022 | Long 0.0469 | Short 0.0293 | Long-Short 0.0176
+Month 1995-02 | MSE 0.024728 | MedSE 0.003810 | R2 -0.0590 | Long 0.0136 | Short 0.0130 | Long-Short 0.0006
+Month 1995-03 | MSE 0.025164 | MedSE 0.003043 | R2 -0.0039 | Long 0.0317 | Short 0.0313 | Long-Short 0.0004
+Month 1995-04 | MSE 0.028957 | MedSE 0.003360 | R2 -0.0071 | Long 0.0286 | Short 0.0147 | Long-Short 0.0139
+Month 1995-05 | MSE 0.031665 | MedSE 0.003397 | R2 -0.0051 | Long 0.0344 | Short 0.0590 | Long-Short -0.0246
+Month 1995-06 | MSE 0.139232 | MedSE 0.003547 | R2 -3.6138 | Long 0.0490 | Short 0.0617 | Long-Short -0.0126
+Month 1995-07 | MSE 0.033844 | MedSE 0.003616 | R2 -0.0008 | Long 0.0298 | Short 0.0515 | Long-Short -0.0216
+Month 1995-08 | MSE 0.025432 | MedSE 0.002914 | R2 -0.0618 | Long 0.0231 | Short 0.0316 | Long-Short -0.0085
+Month 1995-09 | MSE 0.028906 | MedSE 0.006573 | R2 -0.5242 | Long -0.0429 | Short -0.0472 | Long-Short 0.0043
+Month 1995-10 | MSE 0.023436 | MedSE 0.003540 | R2 -0.0182 | Long 0.0312 | Short 0.0156 | Long-Short 0.0155
+Month 1995-11 | MSE 0.028058 | MedSE 0.004275 | R2 -0.0240 | Long 0.0048 | Short 0.0070 | Long-Short -0.0022
+Month 1995-12 | MSE 0.104618 | MedSE 0.004395 | R2 -2.3411 | Long 0.0179 | Short 0.0460 | Long-Short -0.0281
+Month 1996-01 | MSE 0.102639 | MedSE 0.003725 | R2 -2.4487 | Long 0.0269 | Short 0.0331 | Long-Short -0.0062
+Month 1996-02 | MSE 0.023407 | MedSE 0.003804 | R2 -0.0040 | Long 0.0273 | Short 0.0250 | Long-Short 0.0023
+Month 1996-03 | MSE 0.034822 | MedSE 0.004303 | R2 -0.0091 | Long 0.0529 | Short 0.0509 | Long-Short 0.0020
+Month 1996-04 | MSE 0.059042 | MedSE 0.003647 | R2 -0.0125 | Long 0.0545 | Short 0.0684 | Long-Short -0.0139
+Month 1996-05 | MSE 0.022441 | MedSE 0.004794 | R2 -0.2204 | Long -0.0198 | Short -0.0346 | Long-Short 0.0148
+Month 1996-06 | MSE 0.033517 | MedSE 0.009782 | R2 -0.6739 | Long -0.0599 | Short -0.0711 | Long-Short 0.0112
+Month 1996-07 | MSE 0.021270 | MedSE 0.002718 | R2 -0.0023 | Long 0.0426 | Short 0.0384 | Long-Short 0.0041
+Month 1996-08 | MSE 0.024908 | MedSE 0.003153 | R2 -0.1929 | Long 0.0297 | Short 0.0308 | Long-Short -0.0010
+Month 1996-09 | MSE 0.023691 | MedSE 0.004726 | R2 -0.1331 | Long -0.0317 | Short -0.0116 | Long-Short -0.0201
+Month 1996-10 | MSE 0.023487 | MedSE 0.003649 | R2 -0.0026 | Long 0.0250 | Short 0.0245 | Long-Short 0.0005
+Month 1996-11 | MSE 0.024451 | MedSE 0.004303 | R2 -0.0647 | Long -0.0169 | Short 0.0045 | Long-Short -0.0214
+Month 1996-12 | MSE 0.039627 | MedSE 0.004339 | R2 -0.0211 | Long 0.0547 | Short 0.0738 | Long-Short -0.0192
+Saved metrics for hybrid_mul_m3 to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/phase15/M3/sanity_metrics_hybrid_mul_m3.csv
+Wrote summary to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/phase15/M3/sanity_summary_hybrid_mul_m3.json
+Long-Short stats | Cumulative -0.0903 | Std 0.0137 | Sharpe -0.9691
+Loss curve saved to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/phase15/M3/hybrid_mul_m3_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/phase15/M3/hybrid_mul_m3_returns_curve.png
+hybrid_mul_m3 实验完成。
+
+提示：若要比较多个损失，请分别运行对应 run_sanity_check_*.py 脚本。
+
+ended_at_utc=2026-05-10T07:32:22Z
+exit_status=0
+Verified phase15/M3: 24 rows, 1995-01 to 1996-12

@@ -1,0 +1,1 @@
+python run_sanity_check_hybrid_mul_m2.py --data-dir . --pattern \*.csv --train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --max-epochs 20 --batch-size 1024 --best-config-path best_hyperparameters.txt --output-dir /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/hybrid_mul_m2 --seed 42 

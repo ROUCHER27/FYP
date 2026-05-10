@@ -1,0 +1,10 @@
+{
+  "loss": "madl",
+  "avg_mse": 106614041.66666667,
+  "avg_medse": 1101698.5104166667,
+  "avg_r2": -4145108192.0,
+  "avg_long_short": -0.0027938480590051773,
+  "long_short_cumulative_return": -0.07561298542130024,
+  "long_short_std": 0.03165344022189796,
+  "long_short_sharpe": -0.30575424048075256
+}

@@ -1,0 +1,54 @@
+metric=mse
+branch=main
+commit=6e2f7f83ce4b97196659c3217212d6ba32f8128b
+started_at_utc=2026-05-09T13:48:52Z
+output_dir=/content/drive/MyDrive/FYP/final_report_24m_baselines/results/mse
+command=python run_sanity_check_mse.py --data-dir . --pattern \*.csv --train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --max-epochs 20 --batch-size 1024 --best-config-path best_hyperparameters.txt --output-dir /content/drive/MyDrive/FYP/final_report_24m_baselines/results/mse --seed 42 
+
+/content/FYP/Model_Train/data_preprocess.py:63: UserWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  parsed_dates = pd.to_datetime(
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='relu', dropout=0.2)
+Epoch 1/20 finished for MSE.
+Epoch 5/20 finished for MSE.
+Epoch 10/20 finished for MSE.
+Epoch 15/20 finished for MSE.
+Epoch 20/20 finished for MSE.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | MSE 0.558272 | R2 -11.7269 | Long 0.0569 | Short 0.0473 | Long-Short 0.0097
+Month 1995-02 | MSE 12.269547 | R2 -524.4276 | Long 0.0232 | Short 0.0149 | Long-Short 0.0084
+Month 1995-03 | MSE 0.495379 | R2 -18.7626 | Long -0.0151 | Short 0.0398 | Long-Short -0.0550
+Month 1995-04 | MSE 0.557070 | R2 -18.3754 | Long 0.0344 | Short 0.0326 | Long-Short 0.0018
+Month 1995-05 | MSE 2.025598 | R2 -63.2951 | Long 0.0620 | Short 0.0675 | Long-Short -0.0054
+Month 1995-06 | MSE 1.426315 | R2 -46.2642 | Long 0.0423 | Short 0.0708 | Long-Short -0.0285
+Month 1995-07 | MSE 1.394308 | R2 -40.2292 | Long 0.0304 | Short -0.0055 | Long-Short 0.0358
+Month 1995-08 | MSE 2.786253 | R2 -115.3313 | Long 0.0341 | Short 0.1400 | Long-Short -0.1059
+Month 1995-09 | MSE 0.845508 | R2 -43.5846 | Long -0.0144 | Short -0.0446 | Long-Short 0.0302
+Month 1995-10 | MSE 0.386416 | R2 -15.7876 | Long 0.0522 | Short 0.0759 | Long-Short -0.0238
+Month 1995-11 | MSE 2.091839 | R2 -75.3456 | Long -0.0211 | Short 0.0061 | Long-Short -0.0272
+Month 1995-12 | MSE 1.085503 | R2 -33.6672 | Long -0.0155 | Short 0.0216 | Long-Short -0.0371
+Month 1996-01 | MSE 0.647546 | R2 -20.7576 | Long 0.0049 | Short 0.0156 | Long-Short -0.0106
+Month 1996-02 | MSE 3.900533 | R2 -166.3043 | Long 0.0194 | Short 0.0276 | Long-Short -0.0083
+Month 1996-03 | MSE 1.864015 | R2 -53.0161 | Long 0.0472 | Short 0.0511 | Long-Short -0.0039
+Month 1996-04 | MSE 0.571990 | R2 -8.8085 | Long 0.0277 | Short 0.0607 | Long-Short -0.0330
+Month 1996-05 | MSE 0.601169 | R2 -31.6928 | Long -0.0407 | Short -0.0395 | Long-Short -0.0012
+Month 1996-06 | MSE 17.201138 | R2 -858.0538 | Long -0.0908 | Short -0.1011 | Long-Short 0.0103
+Month 1996-07 | MSE 1.133281 | R2 -52.4053 | Long 0.0219 | Short 0.0211 | Long-Short 0.0008
+Month 1996-08 | MSE 2.378115 | R2 -112.8989 | Long 0.0355 | Short 0.0002 | Long-Short 0.0352
+Month 1996-09 | MSE 0.514013 | R2 -23.5855 | Long -0.0154 | Short -0.0472 | Long-Short 0.0318
+Month 1996-10 | MSE 1.094393 | R2 -45.7179 | Long 0.0755 | Short 0.0487 | Long-Short 0.0268
+Month 1996-11 | MSE 0.659440 | R2 -27.7147 | Long -0.0328 | Short -0.0479 | Long-Short 0.0151
+Month 1996-12 | MSE 1.767244 | R2 -44.5359 | Long 0.0854 | Short 0.0576 | Long-Short 0.0278
+Saved metrics for MSE to /content/drive/MyDrive/FYP/final_report_24m_baselines/results/mse/sanity_metrics_mse.csv
+Wrote summary to /content/drive/MyDrive/FYP/final_report_24m_baselines/results/mse/sanity_summary_mse.json
+Long-Short stats | Cumulative -0.1125 | Std 0.0330 | Sharpe -0.4643
+Loss curve saved to /content/drive/MyDrive/FYP/final_report_24m_baselines/results/mse/mse_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/final_report_24m_baselines/results/mse/mse_returns_curve.png
+MSE 实验完成。
+
+提示：若要比较 MSE 与 MedSE，请分别运行对应脚本（run_sanity_check_mse.py / run_sanity_check_medse.py）。
+
+ended_at_utc=2026-05-09T13:54:45Z
+exit_status=0
+Verified mse: 24 rows, 1995-01 to 1996-12

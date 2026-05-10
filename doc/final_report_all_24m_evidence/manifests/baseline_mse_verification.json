@@ -1,0 +1,17 @@
+{
+  "group": "baseline",
+  "run_id": "mse",
+  "artifact_stem": "mse",
+  "result_dir": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/mse",
+  "metrics_csv": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/mse/sanity_metrics_mse.csv",
+  "summary_json": "/content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/mse/sanity_summary_mse.json",
+  "row_count": 24,
+  "first_month": "1995-01",
+  "last_month": "1996-12",
+  "expected_row_count": 24,
+  "expected_first_month": "1995-01",
+  "expected_last_month": "1996-12",
+  "verified_at_utc": "2026-05-10T06:16:31Z",
+  "status": "completed",
+  "problems": []
+}

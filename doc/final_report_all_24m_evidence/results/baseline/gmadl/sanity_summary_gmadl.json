@@ -1,0 +1,10 @@
+{
+  "loss": "gmadl",
+  "avg_mse": 180305115.66666666,
+  "avg_medse": 1945885.25,
+  "avg_r2": -7016727381.333333,
+  "avg_long_short": 0.0014290309388044432,
+  "long_short_cumulative_return": 0.027871817843825974,
+  "long_short_std": 0.024448932883689975,
+  "long_short_sharpe": 0.20247543754748792
+}

@@ -1,0 +1,20 @@
+Final-report all-gaps 24-month evidence status
+generated_at_utc=2026-05-10T07:37:35Z
+output_root=/content/drive/MyDrive/FYP/final_report_all_24m_evidence
+
+baseline/mse: completed, rows=24, months=1995-01..1996-12
+baseline/medse: completed, rows=24, months=1995-01..1996-12
+baseline/madl: completed, rows=24, months=1995-01..1996-12
+baseline/gmadl: completed, rows=24, months=1995-01..1996-12
+baseline/imadl: completed, rows=24, months=1995-01..1996-12
+baseline/hybrid_mul_m1: completed, rows=24, months=1995-01..1996-12
+baseline/hybrid_mul_m2: completed, rows=24, months=1995-01..1996-12
+phase15/A1: completed, rows=24, months=1995-01..1996-12
+phase15/A2: completed, rows=24, months=1995-01..1996-12
+phase15/A3: completed, rows=24, months=1995-01..1996-12
+phase15/A4: completed, rows=24, months=1995-01..1996-12
+phase15/A5: completed, rows=24, months=1995-01..1996-12
+phase15/M1: completed, rows=24, months=1995-01..1996-12
+phase15/M2: completed, rows=24, months=1995-01..1996-12
+phase15/M3: completed, rows=24, months=1995-01..1996-12
+phase15/M4: completed, rows=24, months=1995-01..1996-12

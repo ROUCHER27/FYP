@@ -1,0 +1,3 @@
+metric,status,row_count,first_month,last_month,metrics_csv,summary_json
+mse,completed,24,1995-01,1996-12,/content/drive/MyDrive/FYP/final_report_24m_baselines/results/mse/sanity_metrics_mse.csv,/content/drive/MyDrive/FYP/final_report_24m_baselines/results/mse/sanity_summary_mse.json
+medse,completed,24,1995-01,1996-12,/content/drive/MyDrive/FYP/final_report_24m_baselines/results/medse/sanity_metrics_medse.csv,/content/drive/MyDrive/FYP/final_report_24m_baselines/results/medse/sanity_summary_medse.json

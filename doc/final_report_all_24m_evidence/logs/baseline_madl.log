@@ -1,0 +1,57 @@
+group=baseline
+run_id=madl
+runner_stem=madl
+artifact_stem=madl
+branch=main
+commit=6c0fbde558b9d79208e9f21c438753be6f7bfa31
+started_at_utc=2026-05-10T06:21:51Z
+output_dir=/content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/madl
+command=python run_sanity_check_madl.py --data-dir . --pattern \*.csv --train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --max-epochs 20 --batch-size 1024 --best-config-path best_hyperparameters.txt --output-dir /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/madl --seed 42 
+
+/content/FYP/Model_Train/data_preprocess.py:63: UserWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  parsed_dates = pd.to_datetime(
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='relu', dropout=0.2)
+Epoch 1/20 finished for MADL.
+Epoch 5/20 finished for MADL.
+Epoch 10/20 finished for MADL.
+Epoch 15/20 finished for MADL.
+Epoch 20/20 finished for MADL.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | MSE 97493056.000000 | MedSE 869668.875000 | R2 -2222546688.0000 | Long 0.0201 | Short 0.0486 | Long-Short -0.0285
+Month 1995-02 | MSE 78091912.000000 | MedSE 896034.750000 | R2 -3344185344.0000 | Long 0.0271 | Short 0.0129 | Long-Short 0.0143
+Month 1995-03 | MSE 99762072.000000 | MedSE 976687.187500 | R2 -3979896064.0000 | Long 0.0342 | Short 0.0304 | Long-Short 0.0039
+Month 1995-04 | MSE 76950616.000000 | MedSE 858085.250000 | R2 -2676409856.0000 | Long 0.0474 | Short -0.0016 | Long-Short 0.0489
+Month 1995-05 | MSE 83968616.000000 | MedSE 1003490.125000 | R2 -2665270272.0000 | Long 0.0418 | Short 0.0373 | Long-Short 0.0045
+Month 1995-06 | MSE 93186112.000000 | MedSE 1045826.312500 | R2 -3087932928.0000 | Long 0.0404 | Short 0.0398 | Long-Short 0.0006
+Month 1995-07 | MSE 91293976.000000 | MedSE 993748.687500 | R2 -2699529984.0000 | Long 0.0050 | Short 0.0507 | Long-Short -0.0457
+Month 1995-08 | MSE 87141904.000000 | MedSE 1050697.375000 | R2 -3638338816.0000 | Long 0.0301 | Short 0.0359 | Long-Short -0.0058
+Month 1995-09 | MSE 84794024.000000 | MedSE 1050340.000000 | R2 -4471282176.0000 | Long -0.0086 | Short -0.0270 | Long-Short 0.0184
+Month 1995-10 | MSE 92004208.000000 | MedSE 992243.500000 | R2 -3997080064.0000 | Long 0.0400 | Short 0.0273 | Long-Short 0.0127
+Month 1995-11 | MSE 83417192.000000 | MedSE 1002450.562500 | R2 -3044467200.0000 | Long -0.0154 | Short 0.0081 | Long-Short -0.0235
+Month 1995-12 | MSE 102414384.000000 | MedSE 1119148.625000 | R2 -3270755584.0000 | Long 0.0199 | Short 0.0685 | Long-Short -0.0486
+Month 1996-01 | MSE 121643328.000000 | MedSE 1102312.875000 | R2 -4087221760.0000 | Long 0.0100 | Short 0.0293 | Long-Short -0.0193
+Month 1996-02 | MSE 97521968.000000 | MedSE 1176729.750000 | R2 -4182978560.0000 | Long 0.0067 | Short 0.0371 | Long-Short -0.0304
+Month 1996-03 | MSE 124642568.000000 | MedSE 1176895.000000 | R2 -3611936000.0000 | Long 0.0516 | Short 0.0387 | Long-Short 0.0129
+Month 1996-04 | MSE 116642584.000000 | MedSE 1230428.750000 | R2 -2000192768.0000 | Long 0.0209 | Short 0.0450 | Long-Short -0.0241
+Month 1996-05 | MSE 179551632.000000 | MedSE 1434122.500000 | R2 -9764378624.0000 | Long -0.0394 | Short 0.0129 | Long-Short -0.0523
+Month 1996-06 | MSE 110271104.000000 | MedSE 1204195.375000 | R2 -5507125248.0000 | Long -0.0738 | Short -0.0521 | Long-Short -0.0217
+Month 1996-07 | MSE 126529928.000000 | MedSE 1154689.250000 | R2 -5962661888.0000 | Long 0.0269 | Short 0.0423 | Long-Short -0.0155
+Month 1996-08 | MSE 132089696.000000 | MedSE 1109116.125000 | R2 -6326384128.0000 | Long 0.0742 | Short 0.0199 | Long-Short 0.0543
+Month 1996-09 | MSE 117354296.000000 | MedSE 1191320.000000 | R2 -5613123072.0000 | Long 0.0157 | Short -0.0063 | Long-Short 0.0220
+Month 1996-10 | MSE 126277696.000000 | MedSE 1291856.250000 | R2 -5390592000.0000 | Long 0.0953 | Short 0.0258 | Long-Short 0.0695
+Month 1996-11 | MSE 104922576.000000 | MedSE 1177603.875000 | R2 -4568763904.0000 | Long -0.0242 | Short -0.0033 | Long-Short -0.0209
+Month 1996-12 | MSE 130771552.000000 | MedSE 1333073.250000 | R2 -3369543680.0000 | Long 0.0658 | Short 0.0583 | Long-Short 0.0075
+Saved metrics for madl to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/madl/sanity_metrics_madl.csv
+Wrote summary to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/madl/sanity_summary_madl.json
+Long-Short stats | Cumulative -0.0756 | Std 0.0317 | Sharpe -0.3058
+Loss curve saved to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/madl/madl_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/final_report_all_24m_evidence/results/baseline/madl/madl_returns_curve.png
+madl 实验完成。
+
+提示：若要比较多个损失，请分别运行对应 run_sanity_check_*.py 脚本。
+
+ended_at_utc=2026-05-10T06:27:17Z
+exit_status=0
+Verified baseline/madl: 24 rows, 1995-01 to 1996-12

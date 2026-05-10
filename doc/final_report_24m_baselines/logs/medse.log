@@ -1,0 +1,54 @@
+metric=medse
+branch=main
+commit=6e2f7f83ce4b97196659c3217212d6ba32f8128b
+started_at_utc=2026-05-09T13:54:45Z
+output_dir=/content/drive/MyDrive/FYP/final_report_24m_baselines/results/medse
+command=python run_sanity_check_medse.py --data-dir . --pattern \*.csv --train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --max-epochs 20 --batch-size 1024 --best-config-path best_hyperparameters.txt --output-dir /content/drive/MyDrive/FYP/final_report_24m_baselines/results/medse --seed 42 
+
+/content/FYP/Model_Train/data_preprocess.py:63: UserWarning: The argument 'infer_datetime_format' is deprecated and will be removed in a future version. A strict version of it is now the default, see https://pandas.pydata.org/pdeps/0004-consistent-to-datetime-parsing.html. You can safely remove this argument.
+  parsed_dates = pd.to_datetime(
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='relu', dropout=0.2)
+Epoch 1/20 finished for MEDSE.
+Epoch 5/20 finished for MEDSE.
+Epoch 10/20 finished for MEDSE.
+Epoch 15/20 finished for MEDSE.
+Epoch 20/20 finished for MEDSE.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | MedSE 0.026843 | R2 -582921.3125 | Long 0.0132 | Short 0.0252 | Long-Short -0.0120
+Month 1995-02 | MedSE 0.025439 | R2 -592408.0625 | Long 0.0392 | Short 0.0451 | Long-Short -0.0059
+Month 1995-03 | MedSE 0.034366 | R2 -1308284.5000 | Long 0.0452 | Short 0.0089 | Long-Short 0.0363
+Month 1995-04 | MedSE 0.028726 | R2 -866115.6250 | Long 0.0294 | Short 0.0248 | Long-Short 0.0046
+Month 1995-05 | MedSE 0.047889 | R2 -1871704.8750 | Long 0.1236 | Short 0.0188 | Long-Short 0.1047
+Month 1995-06 | MedSE 0.052590 | R2 -1528496.3750 | Long 0.0875 | Short 0.0636 | Long-Short 0.0239
+Month 1995-07 | MedSE 0.044922 | R2 -2204822.5000 | Long -0.0013 | Short 0.0012 | Long-Short -0.0024
+Month 1995-08 | MedSE 0.046863 | R2 -2246318.5000 | Long 0.0400 | Short 0.0371 | Long-Short 0.0029
+Month 1995-09 | MedSE 0.042592 | R2 -2043047.8750 | Long -0.0522 | Short -0.0285 | Long-Short -0.0238
+Month 1995-10 | MedSE 0.044916 | R2 -2771356.0000 | Long 0.0175 | Short 0.0173 | Long-Short 0.0002
+Month 1995-11 | MedSE 0.047889 | R2 -2913360.5000 | Long -0.0689 | Short -0.0101 | Long-Short -0.0587
+Month 1995-12 | MedSE 0.077358 | R2 -2109432.0000 | Long -0.0642 | Short 0.0188 | Long-Short -0.0830
+Month 1996-01 | MedSE 0.074956 | R2 -3020175.2500 | Long 0.0253 | Short 0.0446 | Long-Short -0.0193
+Month 1996-02 | MedSE 0.067381 | R2 -2678813.7500 | Long -0.0052 | Short -0.0053 | Long-Short 0.0000
+Month 1996-03 | MedSE 0.067387 | R2 -2347583.7500 | Long 0.1320 | Short 0.0468 | Long-Short 0.0852
+Month 1996-04 | MedSE 0.133011 | R2 -1106417.2500 | Long 0.0355 | Short 0.0220 | Long-Short 0.0135
+Month 1996-05 | MedSE 0.298208 | R2 -6214282.5000 | Long -0.1283 | Short -0.0497 | Long-Short -0.0786
+Month 1996-06 | MedSE 0.066181 | R2 -2297198.5000 | Long -0.1369 | Short -0.1152 | Long-Short -0.0217
+Month 1996-07 | MedSE 0.044740 | R2 -2822679.2500 | Long 0.0636 | Short 0.0504 | Long-Short 0.0132
+Month 1996-08 | MedSE 0.028037 | R2 -1994848.3750 | Long 0.1198 | Short 0.0327 | Long-Short 0.0871
+Month 1996-09 | MedSE 0.042028 | R2 -4072543.2500 | Long -0.0135 | Short -0.0128 | Long-Short -0.0007
+Month 1996-10 | MedSE 0.051967 | R2 -3335714.5000 | Long 0.0776 | Short 0.0829 | Long-Short -0.0054
+Month 1996-11 | MedSE 0.043170 | R2 -2195274.7500 | Long -0.0363 | Short -0.0295 | Long-Short -0.0069
+Month 1996-12 | MedSE 0.094223 | R2 -2005215.6250 | Long 0.0778 | Short 0.1023 | Long-Short -0.0245
+Saved metrics for MedSE to /content/drive/MyDrive/FYP/final_report_24m_baselines/results/medse/sanity_metrics_medse.csv
+Wrote summary to /content/drive/MyDrive/FYP/final_report_24m_baselines/results/medse/sanity_summary_medse.json
+Long-Short stats | Cumulative 0.0060 | Std 0.0451 | Sharpe 0.0932
+Loss curve saved to /content/drive/MyDrive/FYP/final_report_24m_baselines/results/medse/medse_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/final_report_24m_baselines/results/medse/medse_returns_curve.png
+MedSE 实验完成。
+
+提示：若要比较 MSE 与 MedSE，请分别运行对应脚本（run_sanity_check_mse.py / run_sanity_check_medse.py）。
+
+ended_at_utc=2026-05-09T14:00:12Z
+exit_status=0
+Verified medse: 24 rows, 1995-01 to 1996-12
