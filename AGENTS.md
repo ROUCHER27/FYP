@@ -24,9 +24,31 @@
 - Use `pytest` as the default test runner: `pytest -q`.
 - For new loss functions, add numeric sanity tests (direction correctness, symmetry, extreme values, and gradient behaviour).
 
+## Skills
+
+For final-report work, the hard project contract is `SCHEMA.md`; read it before `doc/thesis/*`, experiment reports, or old phase notes. `doc/agent_handoff.md` gives the current source-of-truth evidence map and cross-branch lookup commands.
+
+The following local skill files are optional helpers. Use them when present, but do not block if they are missing; `SCHEMA.md` and `doc/agent_handoff.md` are sufficient for FYP continuity.
+
+| Task | Skill file |
+|------|-----------|
+| Scientific writing review / manuscript editing | `.kiro/skills/sciwrite/SKILL.md` |
+| Generate paper-quality matplotlib figure from data | `.kiro/skills/paper-plot-skills/plot-from-data/SKILL.md` |
+| Reproduce a paper figure from an image | `.kiro/skills/paper-plot-skills/plot-from-image/SKILL.md` |
+| Paper writing | `.kiro/skills/EvoSkills/skills/paper-writing/SKILL.md` |
+| Paper navigation / reading | `.kiro/skills/EvoSkills/skills/paper-navigator/SKILL.md` |
+| Paper review | `.kiro/skills/EvoSkills/skills/paper-review/SKILL.md` |
+| Paper planning | `.kiro/skills/EvoSkills/skills/paper-planning/SKILL.md` |
+| Rebuttal writing | `.kiro/skills/EvoSkills/skills/paper-rebuttal/SKILL.md` |
+| Academic slides | `.kiro/skills/EvoSkills/skills/academic-slides/SKILL.md` |
+| Experiment design | `.kiro/skills/EvoSkills/skills/experiment-craft/SKILL.md` |
+| Experiment pipeline | `.kiro/skills/EvoSkills/skills/experiment-pipeline/SKILL.md` |
+| Iterative coding for experiments | `.kiro/skills/EvoSkills/skills/experiment-iterative-coder/SKILL.md` |
+| Research ideation | `.kiro/skills/EvoSkills/skills/research-ideation/SKILL.md` |
+| Literature survey | `.kiro/skills/EvoSkills/skills/research-survey/SKILL.md` |
+
 ## Commit & Pull Request Guidelines
 - Write concise commit messages in the form `area: summary`, e.g., `loss: add gmadl heatmap notebook`.
 - Keep each commit focused on a single logical change.
 - Pull requests should describe purpose, key changes, how to run code/tests, and reference related assignment phases or issues.
 - Attach or link key figures (heatmaps, comparison plots) when they are central to the change.
-

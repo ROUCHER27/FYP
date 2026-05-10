@@ -61,3 +61,21 @@ env/
 # Output directories (keep structure but ignore some outputs)
 # sanity_outputs/*.png
 # sanity_outputs/*.csv
+
+# Local agent/app state
+.claude/
+.kiro/
+.obsidian/
+
+# Codex desktop / browser spillover files
+avatar-overlay-*.js
+avatar-overlay-page-*.js
+personalization-settings-*.js
+package.json
+
+# Personal scratch notes not part of FYP handoff
+1.md
+
+# Regenerable experiment/cache artifacts
+**/fontlist-v*.json
+**/train_checkpoint.pt
