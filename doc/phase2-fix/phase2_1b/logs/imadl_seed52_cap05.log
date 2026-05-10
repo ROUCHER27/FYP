@@ -1,0 +1,45 @@
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='tanh', dropout=0.0)
+Epoch 1/20 finished for IMADL.
+Epoch 5/20 finished for IMADL.
+Epoch 10/20 finished for IMADL.
+Epoch 15/20 finished for IMADL.
+Epoch 20/20 finished for IMADL.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | IMADL | MSE 0.047285 | MedSE 0.006691 | R2 -0.0780 | Long 0.0435 | Short -0.0074 | Long-Short 0.0509
+Month 1995-02 | IMADL | MSE 0.028526 | MedSE 0.008993 | R2 -0.2216 | Long 0.0535 | Short 0.0734 | Long-Short -0.0199
+Month 1995-03 | IMADL | MSE 0.029242 | MedSE 0.008074 | R2 -0.1666 | Long 0.0289 | Short 0.0379 | Long-Short -0.0090
+Month 1995-04 | IMADL | MSE 0.033452 | MedSE 0.008074 | R2 -0.1635 | Long 0.0363 | Short -0.0058 | Long-Short 0.0421
+Month 1995-05 | IMADL | MSE 0.033334 | MedSE 0.008074 | R2 -0.0581 | Long 0.0627 | Short 0.1078 | Long-Short -0.0451
+Month 1995-06 | IMADL | MSE 0.031737 | MedSE 0.007881 | R2 -0.0517 | Long 0.0541 | Short 0.1134 | Long-Short -0.0593
+Month 1995-07 | IMADL | MSE 0.037066 | MedSE 0.008403 | R2 -0.0960 | Long 0.0462 | Short 0.0058 | Long-Short 0.0403
+Month 1995-08 | IMADL | MSE 0.027977 | MedSE 0.007911 | R2 -0.1681 | Long 0.0274 | Short 0.0264 | Long-Short 0.0010
+Month 1995-09 | IMADL | MSE 0.036288 | MedSE 0.015829 | R2 -0.9135 | Long -0.0600 | Short -0.0689 | Long-Short 0.0089
+Month 1995-10 | IMADL | MSE 0.028675 | MedSE 0.008073 | R2 -0.2458 | Long 0.0264 | Short 0.0428 | Long-Short -0.0164
+Month 1995-11 | IMADL | MSE 0.033855 | MedSE 0.009243 | R2 -0.2356 | Long 0.0069 | Short -0.0114 | Long-Short 0.0184
+Month 1995-12 | IMADL | MSE 0.034347 | MedSE 0.008915 | R2 -0.0969 | Long 0.0664 | Short -0.0165 | Long-Short 0.0829
+Month 1996-01 | IMADL | MSE 0.033251 | MedSE 0.009028 | R2 -0.1172 | Long 0.0436 | Short 0.0848 | Long-Short -0.0412
+Month 1996-02 | IMADL | MSE 0.027384 | MedSE 0.009127 | R2 -0.1746 | Long 0.0304 | Short -0.0043 | Long-Short 0.0346
+Month 1996-03 | IMADL | MSE 0.036045 | MedSE 0.009360 | R2 -0.0445 | Long 0.0646 | Short 0.1206 | Long-Short -0.0560
+Month 1996-04 | IMADL | MSE 0.059071 | MedSE 0.008571 | R2 -0.0130 | Long 0.0760 | Short 0.0679 | Long-Short 0.0081
+Month 1996-05 | IMADL | MSE 0.031930 | MedSE 0.012716 | R2 -0.7364 | Long -0.0145 | Short -0.1274 | Long-Short 0.1130
+Month 1996-06 | IMADL | MSE 0.046733 | MedSE 0.022241 | R2 -1.3339 | Long -0.0937 | Short -0.1612 | Long-Short 0.0675
+Month 1996-07 | IMADL | MSE 0.023564 | MedSE 0.006363 | R2 -0.1104 | Long 0.0794 | Short 0.0897 | Long-Short -0.0103
+Month 1996-08 | IMADL | MSE 0.024880 | MedSE 0.007881 | R2 -0.1916 | Long 0.0520 | Short 0.0718 | Long-Short -0.0198
+Month 1996-09 | IMADL | MSE 0.032476 | MedSE 0.010542 | R2 -0.5533 | Long -0.0222 | Short -0.0691 | Long-Short 0.0469
+Month 1996-10 | IMADL | MSE 0.027357 | MedSE 0.007249 | R2 -0.1678 | Long 0.0401 | Short 0.0223 | Long-Short 0.0178
+Month 1996-11 | IMADL | MSE 0.031742 | MedSE 0.010280 | R2 -0.3822 | Long -0.0040 | Short -0.0206 | Long-Short 0.0166
+Month 1996-12 | IMADL | MSE 0.039561 | MedSE 0.008074 | R2 -0.0193 | Long 0.0624 | Short 0.1171 | Long-Short -0.0547
+Saved metrics for IMADL to /content/drive/MyDrive/FYP/phase2_1b/results/imadl_seed52_cap05/sanity_metrics_imadl.csv
+Wrote summary to /content/drive/MyDrive/FYP/phase2_1b/results/imadl_seed52_cap05/sanity_summary_imadl.json
+Long-Short stats | Cumulative 0.2132 | Std 0.0453 | Sharpe 0.6917
+Loss curve saved to /content/drive/MyDrive/FYP/phase2_1b/results/imadl_seed52_cap05/imadl_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/phase2_1b/results/imadl_seed52_cap05/imadl_returns_curve.png
+IMADL 实验完成。
+
+提示：批量比较 7 个 loss 时，请使用对应 runner 或 run_all_experiments.py。
+run_id=imadl_seed52_cap05
+started_at=2026-04-30T09:03:13.569743+00:00
+command=/usr/bin/python3 run_sanity_check_imadl.py --data-dir /content/FYP --pattern *.csv --lookback-months 12 --train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --best-config-path best_hyperparameters.txt --max-epochs 20 --batch-size 1024 --seed 52 --max-weight 0.05 --output-dir /content/drive/MyDrive/FYP/phase2_1b/results/imadl_seed52_cap05 --checkpoint-dir /content/drive/MyDrive/FYP/phase2_1b/checkpoints/imadl_seed52_cap05 --resume-mode auto
+

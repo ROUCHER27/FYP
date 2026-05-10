@@ -1,0 +1,10 @@
+loss,seed,cap_tag,target_sharpe,observed_sharpe,deviation_pct,flag_gt_15pct,status,summary_file
+imadl,42,cap05,0.464,0.7771824766482486,67.49622341557081,True,ok,doc/phase2-fix/phase2_1b/results/imadl_seed42_cap05/sanity_summary_imadl.json
+imadl,52,cap05,0.464,0.691668805613399,49.0665529339222,True,ok,doc/phase2-fix/phase2_1b/results/imadl_seed52_cap05/sanity_summary_imadl.json
+imadl,62,cap05,0.464,0.16864066706024441,-63.655028650809385,True,ok,doc/phase2-fix/phase2_1b/results/imadl_seed62_cap05/sanity_summary_imadl.json
+gmadl,42,cap05,0.307,0.7662803997149067,149.60273606348753,True,ok,doc/phase2-fix/phase2_1b/results/gmadl_seed42_cap05/sanity_summary_gmadl.json
+gmadl,52,cap05,0.307,0.5843502980453125,90.34211662713761,True,ok,doc/phase2-fix/phase2_1b/results/gmadl_seed52_cap05/sanity_summary_gmadl.json
+gmadl,62,cap05,0.307,0.1449030675273348,-52.80030373702449,True,ok,doc/phase2-fix/phase2_1b/results/gmadl_seed62_cap05/sanity_summary_gmadl.json
+hybrid_mul,42,cap05,0.914,0.149484129924701,-83.64506237147691,True,ok,doc/phase2-fix/phase2_1b/results/hybrid_mul_seed42_cap05/sanity_summary_hybrid_mul.json
+hybrid_mul,52,cap05,0.914,0.8814321867823154,-3.5632180763331127,False,ok,doc/phase2-fix/phase2_1b/results/hybrid_mul_seed52_cap05/sanity_summary_hybrid_mul.json
+hybrid_mul,62,cap05,0.914,0.9398509735264869,2.828334083860712,False,ok,doc/phase2-fix/phase2_1b/results/hybrid_mul_seed62_cap05/sanity_summary_hybrid_mul.json

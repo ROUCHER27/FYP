@@ -1,0 +1,12 @@
+{
+  "avg_directional_accuracy": 0.5585182581297977,
+  "avg_long_short": 0.010258152177218448,
+  "avg_medse": 0.006592039950191975,
+  "avg_mse": 0.03731419425457716,
+  "avg_r2": -0.12685900926589966,
+  "avg_sign_mismatch_large_y": 0.38902755071528805,
+  "long_short_cumulative_return": 0.020615425194672188,
+  "long_short_sharpe": 10.16635285698041,
+  "long_short_std": 0.0034953814829506045,
+  "loss": "imadl"
+}

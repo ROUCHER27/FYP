@@ -1,0 +1,41 @@
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='tanh', dropout=0.0)
+Epoch 1/20 finished for IMADL_M2_ALPHA06_NORMALIZED.
+Epoch 5/20 finished for IMADL_M2_ALPHA06_NORMALIZED.
+Epoch 10/20 finished for IMADL_M2_ALPHA06_NORMALIZED.
+Epoch 15/20 finished for IMADL_M2_ALPHA06_NORMALIZED.
+Epoch 20/20 finished for IMADL_M2_ALPHA06_NORMALIZED.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.197236 | MedSE 0.140511 | R2 -3.4964 | Long 0.0284 | Short 0.0164 | Long-Short 0.0120
+Month 1995-02 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.167382 | MedSE 0.126405 | R2 -6.1679 | Long 0.0434 | Short 0.0160 | Long-Short 0.0274
+Month 1995-03 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.177283 | MedSE 0.134281 | R2 -6.0725 | Long 0.0352 | Short 0.0211 | Long-Short 0.0142
+Month 1995-04 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.182975 | MedSE 0.137719 | R2 -5.3640 | Long 0.0155 | Short 0.0086 | Long-Short 0.0068
+Month 1995-05 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.172471 | MedSE 0.130633 | R2 -4.4744 | Long 0.0657 | Short 0.0227 | Long-Short 0.0430
+Month 1995-06 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.171238 | MedSE 0.128724 | R2 -4.6744 | Long 0.0690 | Short 0.0307 | Long-Short 0.0383
+Month 1995-07 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.191848 | MedSE 0.137475 | R2 -4.6729 | Long 0.0280 | Short 0.0291 | Long-Short -0.0010
+Month 1995-08 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.185462 | MedSE 0.140396 | R2 -6.7434 | Long 0.0309 | Short 0.0314 | Long-Short -0.0005
+Month 1995-09 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.198586 | MedSE 0.141021 | R2 -9.4717 | Long -0.0595 | Short -0.0205 | Long-Short -0.0390
+Month 1995-10 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.171657 | MedSE 0.133112 | R2 -6.4576 | Long 0.0397 | Short -0.0044 | Long-Short 0.0441
+Month 1995-11 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.186317 | MedSE 0.134237 | R2 -5.8000 | Long 0.0116 | Short 0.0163 | Long-Short -0.0047
+Month 1995-12 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.179928 | MedSE 0.127006 | R2 -4.7463 | Long 0.0382 | Short 0.0306 | Long-Short 0.0076
+Month 1996-01 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.181987 | MedSE 0.134658 | R2 -5.1148 | Long 0.0421 | Short 0.0243 | Long-Short 0.0177
+Month 1996-02 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.181893 | MedSE 0.135016 | R2 -6.8019 | Long 0.0171 | Short 0.0174 | Long-Short -0.0003
+Month 1996-03 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.169922 | MedSE 0.122377 | R2 -3.9240 | Long 0.1005 | Short 0.0145 | Long-Short 0.0861
+Month 1996-04 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.205892 | MedSE 0.133712 | R2 -2.5306 | Long 0.1153 | Short 0.0690 | Long-Short 0.0463
+Month 1996-05 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.221483 | MedSE 0.161974 | R2 -11.0447 | Long -0.0592 | Short 0.0050 | Long-Short -0.0643
+Month 1996-06 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.228700 | MedSE 0.151923 | R2 -10.4217 | Long -0.1315 | Short -0.0318 | Long-Short -0.0997
+Month 1996-07 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.167829 | MedSE 0.135699 | R2 -6.9088 | Long 0.0722 | Short 0.0194 | Long-Short 0.0528
+Month 1996-08 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.166039 | MedSE 0.126727 | R2 -6.9524 | Long 0.0342 | Short 0.0196 | Long-Short 0.0146
+Month 1996-09 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.193042 | MedSE 0.141566 | R2 -8.2333 | Long -0.0622 | Short 0.0119 | Long-Short -0.0742
+Month 1996-10 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.180466 | MedSE 0.138174 | R2 -6.7038 | Long 0.0317 | Short 0.0187 | Long-Short 0.0130
+Month 1996-11 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.184475 | MedSE 0.132069 | R2 -7.0328 | Long -0.0104 | Short 0.0062 | Long-Short -0.0166
+Month 1996-12 | IMADL_M2_ALPHA06_NORMALIZED | MSE 0.173987 | MedSE 0.127360 | R2 -3.4831 | Long 0.0856 | Short 0.0435 | Long-Short 0.0421
+Saved metrics for IMADL_M2_ALPHA06_NORMALIZED to /content/drive/MyDrive/FYP/phase2.2-fix/results/imadl_m2_alpha06_normalized_seed42/sanity_metrics_imadl_m2_alpha06_normalized.csv
+Wrote summary to /content/drive/MyDrive/FYP/phase2.2-fix/results/imadl_m2_alpha06_normalized_seed42/sanity_summary_imadl_m2_alpha06_normalized.json
+Long-Short stats | Cumulative 0.1550 | Std 0.0425 | Sharpe 0.5628
+Loss curve saved to /content/drive/MyDrive/FYP/phase2.2-fix/results/imadl_m2_alpha06_normalized_seed42/imadl_m2_alpha06_normalized_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/phase2.2-fix/results/imadl_m2_alpha06_normalized_seed42/imadl_m2_alpha06_normalized_returns_curve.png
+IMADL_M2_ALPHA06_NORMALIZED 实验完成。
+
+提示：批量比较 7 个 loss 时，请使用对应 runner 或 run_all_experiments.py。

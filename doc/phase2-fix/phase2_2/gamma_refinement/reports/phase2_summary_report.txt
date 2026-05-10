@@ -1,0 +1,9 @@
+Phase 2 Results Summary
+================================================================================
+
+Top losses by mean Sharpe:
+- m2_robust_gamma10 (cap05): Sharpe 1.0043 +/- 0.5638, runs=3
+- m2_robust_gamma07 (cap05): Sharpe 0.9156 +/- 0.1655, runs=3
+- m2_robust_gamma15 (cap05): Sharpe 0.8163 +/- 0.3724, runs=3
+- m2_robust_gamma05 (cap05): Sharpe 0.7054 +/- 0.1488, runs=3
+- m2_robust_gamma03 (cap05): Sharpe 0.3234 +/- 0.3418, runs=3

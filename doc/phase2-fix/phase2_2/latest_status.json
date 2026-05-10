@@ -1,0 +1,8 @@
+{
+  "alignment_summaries": 9,
+  "diagnostic_summaries": 3,
+  "gamma_refinement_summaries": 15,
+  "alignment_reports": "/content/drive/MyDrive/FYP/phase2_1b/reports",
+  "diagnostics_reports": "/content/drive/MyDrive/FYP/phase2_2/loss_scale/reports",
+  "gamma_reports": "/content/drive/MyDrive/FYP/phase2_2/gamma_refinement/reports"
+}

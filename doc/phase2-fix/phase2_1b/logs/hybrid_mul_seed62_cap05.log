@@ -1,0 +1,45 @@
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='tanh', dropout=0.0)
+Epoch 1/20 finished for HYBRID_MUL.
+Epoch 5/20 finished for HYBRID_MUL.
+Epoch 10/20 finished for HYBRID_MUL.
+Epoch 15/20 finished for HYBRID_MUL.
+Epoch 20/20 finished for HYBRID_MUL.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | HYBRID_MUL | MSE 0.043888 | MedSE 0.003034 | R2 -0.0005 | Long 0.0385 | Short 0.0050 | Long-Short 0.0335
+Month 1995-02 | HYBRID_MUL | MSE 0.023781 | MedSE 0.003944 | R2 -0.0184 | Long 0.0455 | Short 0.0428 | Long-Short 0.0026
+Month 1995-03 | HYBRID_MUL | MSE 0.025223 | MedSE 0.003140 | R2 -0.0062 | Long 0.0612 | Short 0.0358 | Long-Short 0.0254
+Month 1995-04 | HYBRID_MUL | MSE 0.029028 | MedSE 0.003466 | R2 -0.0096 | Long 0.0327 | Short 0.0090 | Long-Short 0.0237
+Month 1995-05 | HYBRID_MUL | MSE 0.031643 | MedSE 0.003577 | R2 -0.0044 | Long 0.0859 | Short 0.0816 | Long-Short 0.0043
+Month 1995-06 | HYBRID_MUL | MSE 0.030407 | MedSE 0.003702 | R2 -0.0076 | Long 0.0899 | Short 0.0784 | Long-Short 0.0116
+Month 1995-07 | HYBRID_MUL | MSE 0.033824 | MedSE 0.003771 | R2 -0.0002 | Long 0.0243 | Short 0.0340 | Long-Short -0.0097
+Month 1995-08 | HYBRID_MUL | MSE 0.024072 | MedSE 0.003024 | R2 -0.0050 | Long 0.0401 | Short 0.0124 | Long-Short 0.0277
+Month 1995-09 | HYBRID_MUL | MSE 0.025250 | MedSE 0.006809 | R2 -0.3314 | Long -0.0693 | Short -0.0657 | Long-Short -0.0036
+Month 1995-10 | HYBRID_MUL | MSE 0.023568 | MedSE 0.003667 | R2 -0.0239 | Long 0.0649 | Short 0.0324 | Long-Short 0.0325
+Month 1995-11 | HYBRID_MUL | MSE 0.028179 | MedSE 0.004400 | R2 -0.0285 | Long -0.0015 | Short 0.0099 | Long-Short -0.0114
+Month 1995-12 | HYBRID_MUL | MSE 0.031303 | MedSE 0.004512 | R2 0.0003 | Long 0.0637 | Short 0.0382 | Long-Short 0.0255
+Month 1996-01 | HYBRID_MUL | MSE 0.029828 | MedSE 0.003833 | R2 -0.0022 | Long 0.0315 | Short 0.0308 | Long-Short 0.0006
+Month 1996-02 | HYBRID_MUL | MSE 0.023444 | MedSE 0.003946 | R2 -0.0056 | Long 0.0351 | Short 0.0365 | Long-Short -0.0014
+Month 1996-03 | HYBRID_MUL | MSE 0.034776 | MedSE 0.004507 | R2 -0.0078 | Long 0.0762 | Short 0.0798 | Long-Short -0.0036
+Month 1996-04 | HYBRID_MUL | MSE 0.058917 | MedSE 0.003741 | R2 -0.0103 | Long 0.0822 | Short 0.0668 | Long-Short 0.0154
+Month 1996-05 | HYBRID_MUL | MSE 0.022614 | MedSE 0.005046 | R2 -0.2298 | Long -0.0398 | Short -0.0242 | Long-Short -0.0156
+Month 1996-06 | HYBRID_MUL | MSE 0.032392 | MedSE 0.010327 | R2 -0.6177 | Long -0.1037 | Short -0.0994 | Long-Short -0.0044
+Month 1996-07 | HYBRID_MUL | MSE 0.021275 | MedSE 0.002785 | R2 -0.0026 | Long 0.0442 | Short 0.0615 | Long-Short -0.0172
+Month 1996-08 | HYBRID_MUL | MSE 0.021014 | MedSE 0.003288 | R2 -0.0065 | Long 0.0342 | Short 0.0393 | Long-Short -0.0051
+Month 1996-09 | HYBRID_MUL | MSE 0.023974 | MedSE 0.004930 | R2 -0.1467 | Long -0.0575 | Short -0.0307 | Long-Short -0.0268
+Month 1996-10 | HYBRID_MUL | MSE 0.023529 | MedSE 0.003686 | R2 -0.0044 | Long 0.0301 | Short 0.0344 | Long-Short -0.0043
+Month 1996-11 | HYBRID_MUL | MSE 0.024674 | MedSE 0.004526 | R2 -0.0744 | Long -0.0076 | Short -0.0071 | Long-Short -0.0005
+Month 1996-12 | HYBRID_MUL | MSE 0.039495 | MedSE 0.004455 | R2 -0.0177 | Long 0.0923 | Short 0.0831 | Long-Short 0.0092
+Saved metrics for HYBRID_MUL to /content/drive/MyDrive/FYP/phase2_1b/results/hybrid_mul_seed62_cap05/sanity_metrics_hybrid_mul.csv
+Wrote summary to /content/drive/MyDrive/FYP/phase2_1b/results/hybrid_mul_seed62_cap05/sanity_summary_hybrid_mul.json
+Long-Short stats | Cumulative 0.1107 | Std 0.0166 | Sharpe 0.9399
+Loss curve saved to /content/drive/MyDrive/FYP/phase2_1b/results/hybrid_mul_seed62_cap05/hybrid_mul_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/phase2_1b/results/hybrid_mul_seed62_cap05/hybrid_mul_returns_curve.png
+HYBRID_MUL 实验完成。
+
+提示：批量比较 7 个 loss 时，请使用对应 runner 或 run_all_experiments.py。
+run_id=hybrid_mul_seed62_cap05
+started_at=2026-04-30T09:36:43.642116+00:00
+command=/usr/bin/python3 run_sanity_check_hybrid_mul.py --data-dir /content/FYP --pattern *.csv --lookback-months 12 --train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --best-config-path best_hyperparameters.txt --max-epochs 20 --batch-size 1024 --seed 62 --max-weight 0.05 --output-dir /content/drive/MyDrive/FYP/phase2_1b/results/hybrid_mul_seed62_cap05 --checkpoint-dir /content/drive/MyDrive/FYP/phase2_1b/checkpoints/hybrid_mul_seed62_cap05 --resume-mode auto
+

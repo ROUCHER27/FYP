@@ -1,0 +1,41 @@
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='tanh', dropout=0.0)
+Epoch 1/20 finished for M2_ROBUST_GAMMA10_NORMALIZED.
+Epoch 5/20 finished for M2_ROBUST_GAMMA10_NORMALIZED.
+Epoch 10/20 finished for M2_ROBUST_GAMMA10_NORMALIZED.
+Epoch 15/20 finished for M2_ROBUST_GAMMA10_NORMALIZED.
+Epoch 20/20 finished for M2_ROBUST_GAMMA10_NORMALIZED.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.044070 | MedSE 0.003121 | R2 -0.0047 | Long 0.0426 | Short -0.0236 | Long-Short 0.0662
+Month 1995-02 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.024113 | MedSE 0.004401 | R2 -0.0326 | Long 0.0722 | Short 0.0557 | Long-Short 0.0164
+Month 1995-03 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.025471 | MedSE 0.003451 | R2 -0.0161 | Long 0.0340 | Short 0.0419 | Long-Short -0.0079
+Month 1995-04 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.029354 | MedSE 0.003762 | R2 -0.0209 | Long 0.0194 | Short -0.0074 | Long-Short 0.0268
+Month 1995-05 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.031523 | MedSE 0.003887 | R2 -0.0006 | Long 0.0710 | Short 0.1005 | Long-Short -0.0294
+Month 1995-06 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.030232 | MedSE 0.003977 | R2 -0.0018 | Long 0.0758 | Short 0.1225 | Long-Short -0.0467
+Month 1995-07 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.033981 | MedSE 0.004152 | R2 -0.0048 | Long 0.0362 | Short -0.0195 | Long-Short 0.0557
+Month 1995-08 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.024310 | MedSE 0.003319 | R2 -0.0150 | Long 0.0326 | Short 0.0180 | Long-Short 0.0146
+Month 1995-09 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.026505 | MedSE 0.007764 | R2 -0.3977 | Long -0.0482 | Short -0.0777 | Long-Short 0.0295
+Month 1995-10 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.023961 | MedSE 0.003909 | R2 -0.0410 | Long 0.0037 | Short 0.0374 | Long-Short -0.0337
+Month 1995-11 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.028682 | MedSE 0.004813 | R2 -0.0468 | Long 0.0045 | Short -0.0098 | Long-Short 0.0143
+Month 1995-12 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.031430 | MedSE 0.004841 | R2 -0.0038 | Long 0.0416 | Short -0.0282 | Long-Short 0.0699
+Month 1996-01 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.029960 | MedSE 0.004285 | R2 -0.0067 | Long 0.0432 | Short 0.0849 | Long-Short -0.0417
+Month 1996-02 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.023702 | MedSE 0.004375 | R2 -0.0166 | Long 0.0304 | Short 0.0054 | Long-Short 0.0250
+Month 1996-03 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.034572 | MedSE 0.004939 | R2 -0.0019 | Long 0.0727 | Short 0.1121 | Long-Short -0.0394
+Month 1996-04 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.058601 | MedSE 0.004101 | R2 -0.0049 | Long 0.0562 | Short 0.0838 | Long-Short -0.0275
+Month 1996-05 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.023758 | MedSE 0.005816 | R2 -0.2920 | Long -0.0309 | Short -0.1487 | Long-Short 0.1178
+Month 1996-06 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.034187 | MedSE 0.011618 | R2 -0.7074 | Long -0.0958 | Short -0.1778 | Long-Short 0.0820
+Month 1996-07 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.021241 | MedSE 0.002910 | R2 -0.0010 | Long 0.0491 | Short 0.0843 | Long-Short -0.0352
+Month 1996-08 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.021223 | MedSE 0.003615 | R2 -0.0165 | Long 0.0153 | Short 0.0764 | Long-Short -0.0610
+Month 1996-09 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.024867 | MedSE 0.005332 | R2 -0.1894 | Long -0.0335 | Short -0.0553 | Long-Short 0.0219
+Month 1996-10 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.023750 | MedSE 0.003758 | R2 -0.0138 | Long 0.0245 | Short 0.0139 | Long-Short 0.0106
+Month 1996-11 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.025342 | MedSE 0.005078 | R2 -0.1035 | Long -0.0116 | Short -0.0127 | Long-Short 0.0011
+Month 1996-12 | M2_ROBUST_GAMMA10_NORMALIZED | MSE 0.039155 | MedSE 0.004685 | R2 -0.0089 | Long 0.0884 | Short 0.1177 | Long-Short -0.0293
+Saved metrics for M2_ROBUST_GAMMA10_NORMALIZED to /content/drive/MyDrive/FYP/phase2.2-fix/results/m2_robust_gamma10_normalized_seed42/sanity_metrics_m2_robust_gamma10_normalized.csv
+Wrote summary to /content/drive/MyDrive/FYP/phase2.2-fix/results/m2_robust_gamma10_normalized_seed42/sanity_summary_m2_robust_gamma10_normalized.json
+Long-Short stats | Cumulative 0.1916 | Std 0.0461 | Sharpe 0.6254
+Loss curve saved to /content/drive/MyDrive/FYP/phase2.2-fix/results/m2_robust_gamma10_normalized_seed42/m2_robust_gamma10_normalized_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/phase2.2-fix/results/m2_robust_gamma10_normalized_seed42/m2_robust_gamma10_normalized_returns_curve.png
+M2_ROBUST_GAMMA10_NORMALIZED 实验完成。
+
+提示：批量比较 7 个 loss 时，请使用对应 runner 或 run_all_experiments.py。

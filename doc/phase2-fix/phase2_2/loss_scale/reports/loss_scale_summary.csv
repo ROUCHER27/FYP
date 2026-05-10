@@ -1,0 +1,4 @@
+loss,source,diagnostic_type,component_count,min_abs_mean,max_abs_mean,scale_ratio,scale_class,largest_component,smallest_component
+imadl_m2_alpha06,/content/drive/MyDrive/FYP/phase2_2/loss_scale/results/imadl_m2_alpha06/sanity_metrics_imadl_m2_alpha06.csv,metric_proxy,5,0.033780087561657034,1.1606531292200089,34.35909179043806,severe_imbalance,r2,medse
+m2_robust_gamma01,/content/drive/MyDrive/FYP/phase2_2/loss_scale/results/m2_robust_gamma01/sanity_metrics_m2_robust_gamma01.csv,metric_proxy,5,0.004696604504715651,0.5310393077151815,113.06877280852339,severe_imbalance,directional_accuracy,medse
+m2_robust_gamma10,/content/drive/MyDrive/FYP/phase2_2/loss_scale/results/m2_robust_gamma10/sanity_metrics_m2_robust_gamma10.csv,metric_proxy,5,0.0046710326375129325,0.5310393077151815,113.68777504366372,severe_imbalance,directional_accuracy,medse

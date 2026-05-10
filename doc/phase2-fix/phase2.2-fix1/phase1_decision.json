@@ -1,0 +1,5 @@
+{
+  "decision": "RUN_PHASE2",
+  "reason": "Severe imbalance, normalization required",
+  "avg_scale_ratio": 86.66666666666667
+}

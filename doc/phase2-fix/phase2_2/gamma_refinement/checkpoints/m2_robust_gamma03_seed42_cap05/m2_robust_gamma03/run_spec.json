@@ -1,0 +1,27 @@
+{
+  "batch_size": 1024,
+  "best_config_path": "best_hyperparameters.txt",
+  "data_dir": "/content/FYP",
+  "input_dim": 15,
+  "lookback_months": 12,
+  "loss_name": "m2_robust_gamma03",
+  "max_epochs": 20,
+  "max_weight": 0.05,
+  "model_config": {
+    "activation": "tanh",
+    "dropout": 0.0,
+    "hidden_dims": [
+      64,
+      32,
+      16
+    ],
+    "input_dim": 15
+  },
+  "pattern": "*.csv",
+  "seed": 42,
+  "test_months": 24,
+  "test_start": "1995-01",
+  "train_end": "1994-12",
+  "train_start": "1990-01",
+  "version": 1
+}

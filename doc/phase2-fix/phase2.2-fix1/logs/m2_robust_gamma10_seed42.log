@@ -1,0 +1,41 @@
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='tanh', dropout=0.0)
+Epoch 1/20 finished for M2_ROBUST_GAMMA10.
+Epoch 5/20 finished for M2_ROBUST_GAMMA10.
+Epoch 10/20 finished for M2_ROBUST_GAMMA10.
+Epoch 15/20 finished for M2_ROBUST_GAMMA10.
+Epoch 20/20 finished for M2_ROBUST_GAMMA10.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | M2_ROBUST_GAMMA10 | MSE 0.044070 | MedSE 0.003144 | R2 -0.0047 | Long 0.0353 | Short 0.0094 | Long-Short 0.0259
+Month 1995-02 | M2_ROBUST_GAMMA10 | MSE 0.024115 | MedSE 0.004395 | R2 -0.0327 | Long 0.0092 | Short 0.0536 | Long-Short -0.0444
+Month 1995-03 | M2_ROBUST_GAMMA10 | MSE 0.025469 | MedSE 0.003444 | R2 -0.0160 | Long 0.0252 | Short 0.0132 | Long-Short 0.0120
+Month 1995-04 | M2_ROBUST_GAMMA10 | MSE 0.029348 | MedSE 0.003771 | R2 -0.0208 | Long 0.0265 | Short 0.0071 | Long-Short 0.0193
+Month 1995-05 | M2_ROBUST_GAMMA10 | MSE 0.031528 | MedSE 0.003901 | R2 -0.0007 | Long 0.0301 | Short 0.0941 | Long-Short -0.0640
+Month 1995-06 | M2_ROBUST_GAMMA10 | MSE 0.030237 | MedSE 0.003965 | R2 -0.0020 | Long 0.0383 | Short 0.1188 | Long-Short -0.0805
+Month 1995-07 | M2_ROBUST_GAMMA10 | MSE 0.033981 | MedSE 0.004175 | R2 -0.0048 | Long 0.0372 | Short -0.0087 | Long-Short 0.0459
+Month 1995-08 | M2_ROBUST_GAMMA10 | MSE 0.024307 | MedSE 0.003325 | R2 -0.0149 | Long 0.0303 | Short 0.0545 | Long-Short -0.0241
+Month 1995-09 | M2_ROBUST_GAMMA10 | MSE 0.026480 | MedSE 0.007758 | R2 -0.3963 | Long -0.0203 | Short -0.0714 | Long-Short 0.0511
+Month 1995-10 | M2_ROBUST_GAMMA10 | MSE 0.023955 | MedSE 0.003893 | R2 -0.0407 | Long 0.0005 | Short 0.0340 | Long-Short -0.0335
+Month 1995-11 | M2_ROBUST_GAMMA10 | MSE 0.028676 | MedSE 0.004810 | R2 -0.0466 | Long 0.0154 | Short 0.0227 | Long-Short -0.0072
+Month 1995-12 | M2_ROBUST_GAMMA10 | MSE 0.031435 | MedSE 0.004848 | R2 -0.0039 | Long 0.0393 | Short -0.0062 | Long-Short 0.0454
+Month 1996-01 | M2_ROBUST_GAMMA10 | MSE 0.029954 | MedSE 0.004274 | R2 -0.0065 | Long 0.0211 | Short 0.0361 | Long-Short -0.0150
+Month 1996-02 | M2_ROBUST_GAMMA10 | MSE 0.023698 | MedSE 0.004378 | R2 -0.0165 | Long 0.0349 | Short 0.0210 | Long-Short 0.0139
+Month 1996-03 | M2_ROBUST_GAMMA10 | MSE 0.034579 | MedSE 0.004945 | R2 -0.0020 | Long 0.0270 | Short 0.0845 | Long-Short -0.0575
+Month 1996-04 | M2_ROBUST_GAMMA10 | MSE 0.058610 | MedSE 0.004089 | R2 -0.0051 | Long 0.0566 | Short 0.1044 | Long-Short -0.0478
+Month 1996-05 | M2_ROBUST_GAMMA10 | MSE 0.023746 | MedSE 0.005833 | R2 -0.2914 | Long 0.0178 | Short -0.1702 | Long-Short 0.1881
+Month 1996-06 | M2_ROBUST_GAMMA10 | MSE 0.034149 | MedSE 0.011601 | R2 -0.7054 | Long -0.0312 | Short -0.1541 | Long-Short 0.1229
+Month 1996-07 | M2_ROBUST_GAMMA10 | MSE 0.021243 | MedSE 0.002892 | R2 -0.0011 | Long 0.0299 | Short 0.0698 | Long-Short -0.0400
+Month 1996-08 | M2_ROBUST_GAMMA10 | MSE 0.021220 | MedSE 0.003620 | R2 -0.0163 | Long 0.0184 | Short 0.0742 | Long-Short -0.0557
+Month 1996-09 | M2_ROBUST_GAMMA10 | MSE 0.024845 | MedSE 0.005329 | R2 -0.1883 | Long 0.0038 | Short -0.0442 | Long-Short 0.0480
+Month 1996-10 | M2_ROBUST_GAMMA10 | MSE 0.023747 | MedSE 0.003780 | R2 -0.0137 | Long 0.0264 | Short 0.0162 | Long-Short 0.0102
+Month 1996-11 | M2_ROBUST_GAMMA10 | MSE 0.025325 | MedSE 0.005078 | R2 -0.1027 | Long 0.0079 | Short -0.0038 | Long-Short 0.0117
+Month 1996-12 | M2_ROBUST_GAMMA10 | MSE 0.039165 | MedSE 0.004691 | R2 -0.0091 | Long 0.0532 | Short 0.0668 | Long-Short -0.0136
+Saved metrics for M2_ROBUST_GAMMA10 to /content/drive/MyDrive/FYP/phase2.2-fix/results/m2_robust_gamma10_seed42/sanity_metrics_m2_robust_gamma10.csv
+Wrote summary to /content/drive/MyDrive/FYP/phase2.2-fix/results/m2_robust_gamma10_seed42/sanity_summary_m2_robust_gamma10.json
+Long-Short stats | Cumulative 0.0727 | Std 0.0610 | Sharpe 0.2628
+Loss curve saved to /content/drive/MyDrive/FYP/phase2.2-fix/results/m2_robust_gamma10_seed42/m2_robust_gamma10_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/phase2.2-fix/results/m2_robust_gamma10_seed42/m2_robust_gamma10_returns_curve.png
+M2_ROBUST_GAMMA10 实验完成。
+
+提示：批量比较 7 个 loss 时，请使用对应 runner 或 run_all_experiments.py。

@@ -1,0 +1,45 @@
+=== Sanity Check: Static 5Y Train / 6M Test ===
+Loaded 3197287 rows from raw panel.
+Using MLPConfig: MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='tanh', dropout=0.0)
+Epoch 1/20 finished for GMADL.
+Epoch 5/20 finished for GMADL.
+Epoch 10/20 finished for GMADL.
+Epoch 15/20 finished for GMADL.
+Epoch 20/20 finished for GMADL.
+Rebalancing monthly: Top 10% predictions -> Long, Bottom 10% -> Short.
+Month 1995-01 | GMADL | MSE 2.137150 | MedSE 2.131731 | R2 -47.7206 | Long -0.0116 | Short 0.0137 | Long-Short -0.0253
+Month 1995-02 | GMADL | MSE 2.157543 | MedSE 2.184505 | R2 -91.3940 | Long 0.0362 | Short 0.0151 | Long-Short 0.0212
+Month 1995-03 | GMADL | MSE 2.140025 | MedSE 2.171754 | R2 -84.3739 | Long 0.0548 | Short 0.0287 | Long-Short 0.0261
+Month 1995-04 | GMADL | MSE 2.155743 | MedSE 2.173465 | R2 -73.9786 | Long 0.0037 | Short 0.0077 | Long-Short -0.0040
+Month 1995-05 | GMADL | MSE 2.084564 | MedSE 2.127963 | R2 -65.1667 | Long 0.1199 | Short 0.0215 | Long-Short 0.0984
+Month 1995-06 | GMADL | MSE 2.076060 | MedSE 2.108513 | R2 -67.7949 | Long 0.0285 | Short 0.0219 | Long-Short 0.0066
+Month 1995-07 | GMADL | MSE 2.134160 | MedSE 2.176268 | R2 -62.1063 | Long 0.0342 | Short 0.0244 | Long-Short 0.0097
+Month 1995-08 | GMADL | MSE 2.145745 | MedSE 2.180026 | R2 -88.5889 | Long 0.0214 | Short 0.0203 | Long-Short 0.0011
+Month 1995-09 | GMADL | MSE 2.334893 | MedSE 2.326854 | R2 -122.1215 | Long -0.0495 | Short -0.0169 | Long-Short -0.0326
+Month 1995-10 | GMADL | MSE 2.168746 | MedSE 2.173062 | R2 -93.2201 | Long -0.0349 | Short 0.0008 | Long-Short -0.0357
+Month 1995-11 | GMADL | MSE 2.194141 | MedSE 2.206476 | R2 -79.0793 | Long -0.0294 | Short 0.0213 | Long-Short -0.0507
+Month 1995-12 | GMADL | MSE 2.126499 | MedSE 2.164412 | R2 -66.9129 | Long 0.0072 | Short 0.0386 | Long-Short -0.0313
+Month 1996-01 | GMADL | MSE 2.129645 | MedSE 2.171838 | R2 -70.5562 | Long 0.0535 | Short 0.0271 | Long-Short 0.0264
+Month 1996-02 | GMADL | MSE 2.143635 | MedSE 2.185548 | R2 -90.9462 | Long -0.0056 | Short 0.0260 | Long-Short -0.0315
+Month 1996-03 | GMADL | MSE 2.078809 | MedSE 2.129921 | R2 -59.2405 | Long 0.0273 | Short 0.0065 | Long-Short 0.0208
+Month 1996-04 | GMADL | MSE 2.079741 | MedSE 2.140580 | R2 -34.6635 | Long 0.0326 | Short 0.0936 | Long-Short -0.0610
+Month 1996-05 | GMADL | MSE 2.304569 | MedSE 2.298680 | R2 -124.3271 | Long 0.0267 | Short 0.0036 | Long-Short 0.0231
+Month 1996-06 | GMADL | MSE 2.442657 | MedSE 2.403337 | R2 -120.9904 | Long -0.0445 | Short -0.0426 | Long-Short -0.0019
+Month 1996-07 | GMADL | MSE 2.092440 | MedSE 2.112005 | R2 -97.6052 | Long 0.0368 | Short 0.0070 | Long-Short 0.0298
+Month 1996-08 | GMADL | MSE 2.133887 | MedSE 2.156766 | R2 -101.2017 | Long 0.0461 | Short 0.0169 | Long-Short 0.0292
+Month 1996-09 | GMADL | MSE 2.265150 | MedSE 2.248398 | R2 -107.3434 | Long 0.0210 | Short 0.0133 | Long-Short 0.0077
+Month 1996-10 | GMADL | MSE 2.134765 | MedSE 2.143202 | R2 -90.1297 | Long 0.0336 | Short 0.0062 | Long-Short 0.0274
+Month 1996-11 | GMADL | MSE 2.229773 | MedSE 2.237986 | R2 -96.0936 | Long 0.0031 | Short 0.0034 | Long-Short -0.0003
+Month 1996-12 | GMADL | MSE 2.050962 | MedSE 2.101024 | R2 -51.8464 | Long 0.0193 | Short 0.0381 | Long-Short -0.0188
+Saved metrics for GMADL to /content/drive/MyDrive/FYP/phase2_1b/results/gmadl_seed62_cap05/sanity_metrics_gmadl.csv
+Wrote summary to /content/drive/MyDrive/FYP/phase2_1b/results/gmadl_seed62_cap05/sanity_summary_gmadl.json
+Long-Short stats | Cumulative 0.0212 | Std 0.0341 | Sharpe 0.1449
+Loss curve saved to /content/drive/MyDrive/FYP/phase2_1b/results/gmadl_seed62_cap05/gmadl_loss_curve.png
+Long-Short return curve saved to /content/drive/MyDrive/FYP/phase2_1b/results/gmadl_seed62_cap05/gmadl_returns_curve.png
+GMADL 实验完成。
+
+提示：批量比较 7 个 loss 时，请使用对应 runner 或 run_all_experiments.py。
+run_id=gmadl_seed62_cap05
+started_at=2026-04-30T09:22:12.468283+00:00
+command=/usr/bin/python3 run_sanity_check_gmadl.py --data-dir /content/FYP --pattern *.csv --lookback-months 12 --train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --best-config-path best_hyperparameters.txt --max-epochs 20 --batch-size 1024 --seed 62 --max-weight 0.05 --output-dir /content/drive/MyDrive/FYP/phase2_1b/results/gmadl_seed62_cap05 --checkpoint-dir /content/drive/MyDrive/FYP/phase2_1b/checkpoints/gmadl_seed62_cap05 --resume-mode auto
+

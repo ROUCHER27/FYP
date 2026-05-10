@@ -1,0 +1,29 @@
+{
+  "m2_robust_gamma07": {
+    "original_sharpe": 0.9156,
+    "normalized_sharpes": [
+      0.5955732631219891,
+      1.4063747592551734,
+      0.7317304195290202
+    ],
+    "avg_normalized_sharpe": 0.9112261473020609
+  },
+  "m2_robust_gamma10": {
+    "original_sharpe": 1.0043,
+    "normalized_sharpes": [
+      0.6254210080061754,
+      0.11813182736230579,
+      0.4780222571597497
+    ],
+    "avg_normalized_sharpe": 0.4071916975094103
+  },
+  "imadl_m2_alpha06": {
+    "original_sharpe": 0.6895,
+    "normalized_sharpes": [
+      0.5627564197803171,
+      -0.8334700417786677,
+      0.22241095167567265
+    ],
+    "avg_normalized_sharpe": -0.016100890107559312
+  }
+}
