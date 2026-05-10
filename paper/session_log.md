@@ -7,6 +7,46 @@ Track what each writing session completed so the next session can resume cleanly
 - Keep entries short: date, tasks completed, files touched, open follow-ups, and the next task to pick up.
 - When a session ends near the context limit, before `/chat save`: commit on `main`, record the commit hash here, and list the first task the next session should run.
 
+## 2026-05-11 — Session 3 (placeholders + abstract + appendices)
+
+Continuation session. Added figure placeholders (with chart-type specs) for the charts that still need to be implemented manually, wrote the report's Abstract, and added two technical appendices.
+
+### Commits added this session
+
+1. `cabaf11` paper: add figure placeholders (Fig 2.1 loss shapes, 3.1 portfolio flow, 4.1 data timeline, 5.1 baseline, 5.2 Phase1.5) with chart specs for later implementation
+2. `60c8e27` paper: add Abstract with primary/alt/fallback recommendation, scope, and keywords
+3. `5c4dbd9` paper: add Appendix A (loss function definitions and pointwise gradients)
+4. `a62eac3` paper: add Appendix B (per-seed raw Sharpes + reproduction commands + checklist)
+
+### Figure placeholders (chart specs inlined as HTML comments for later implementation)
+
+| Figure | Chapter | Chart type | Source |
+|---|---|---|---|
+| Fig 2.1 | Ch2 §2.4 | 4-panel didactic loss-shape curves (MSE/Huber/MedSE/MADL/GMADL/hybrid_mul) | synthetic; evaluate formulas from Ch3 §3.3 |
+| Fig 3.1 | Ch3 §3.5 | flow diagram of the portfolio construction pipeline | schematic only |
+| Fig 4.1 | Ch4 §4.1 | two-panel (CSV coverage timeline + log-scale training-era RET histogram) | `*.csv` at repo root |
+| Fig 5.1 | Ch5 §5.2 | two-panel (baseline cumulative returns line + Sharpe bar) | `doc/final_report_all_24m_evidence/results/baseline/*` |
+| Fig 5.2 | Ch5 §5.3 | grouped horizontal bar (A1–A5 + M1–M4 Sharpe) | `doc/final_report_all_24m_evidence/results/phase15/*` |
+
+Figures 5.3 / 5.4 / 5.5 were already generated in Session 2 and embedded in Ch5.
+
+### New markdown files
+
+- `paper/abstract.md` (618 words) — single-page abstract summarising problem, method, findings, tiered recommendation, and scope.
+- `paper/appendix_A_loss_definitions.md` (1084 words) — closed-form definitions and pointwise gradients for every loss in `Model_Train/losses.py`: MSE, MedSE, Huber (backbone), MADL, GMADL, IMADL, additive and multiplicative hybrid, M2-robust γ.
+- `paper/appendix_B_per_seed_raw.md` (919 words) — per-seed raw Sharpe tables for γ refinement and the normalisation probe; exact reproduction commands for every Ch5 table; reproducibility checklist and known caveats.
+
+### Verification
+
+- Per-seed values in Appendix B §B.1 cross-checked to 5 decimals against `doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_raw_runs.csv`; aggregated means reproduce the grouped-summary values.
+- Forbidden-term sweep on abstract + appendices passes (the single `1995-06` hit in Appendix B §B.6 is an explicit negation of using the 6-month window, consistent with SCHEMA.md §2.2.1).
+- README chapter map updated to include `abstract.md`, `appendix_A_*`, `appendix_B_*`, and to document the figure placeholder list.
+
+### Remaining optional follow-ups
+
+- Implement Fig 2.1 / 3.1 / 4.1 / 5.1 / 5.2 per the inline chart specs.
+- LaTeX conversion after the thesis template is selected (explicitly deferred by the user).
+
 ## 2026-05-11 — Session 2 (figures + audit + references expansion)
 
 Continuation session. Added the three Chapter 5 figures, expanded `references.md` with auxiliary entries, embedded figure blocks into Chapter 5, and ran a formal audit against `SCHEMA.md` high-risk claims.

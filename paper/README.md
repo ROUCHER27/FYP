@@ -13,19 +13,22 @@ Standalone final-report drafting workspace. Each chapter is a separate Markdown 
 
 | File | Content | Primary evidence/sections |
 |------|---------|---------------------------|
+| `abstract.md` | Single-page abstract summarising problem, method, findings, and final recommendation | synthesises Ch5 §5.8 and Ch6 §6.1 |
 | `chapter1_introduction.md` | Background, motivation, research gap, research questions, objectives, contributions, scope, chapter outline | aligns with final claims in Ch5 and methodology in Ch3 |
 | `chapter2_literature_review.md` | Robust regression for financial returns, heavy-tailed returns, MSE/MedSE/Huber, MADL/GMADL family, cross-sectional ML, portfolio construction | strengthen robust-loss and MADL/GMADL rationale |
 | `chapter3_methodology.md` | Research design, MLP architecture, loss family (MSE/MedSE/MADL/GMADL/IMADL/hybrid add/hybrid mul/m2-robust gamma), training protocol, portfolio construction, evaluation metrics, experimental phases, reproducibility/claim boundaries | `best_hyperparameters.txt`, `Model_Train/*.py`, runner scripts, `doc/phase2.5/07_loss_implementation_details.md` |
 | `chapter4_data.md` | Data source, sample construction, train/test split, feature variables (X1), preprocessing (cross-sectional z, turnover scaling, winsorisation where applied), limitations | split from old Ch3; cross-check `Model_Train/features.py`, `data_preprocess.py` |
 | `chapter5_empirical_results_discussion.md` | Baseline 24m results (seed 42), Phase 1.5 variant sweep (seed 42), Phase 2 robustness across seeds, gamma refinement, IMADL α sweep fallback, normalisation check, discussion | `paper/results_source_of_truth.md` |
 | `chapter6_conclusion.md` | Answers to RQs, limitations, future work, no new evidence | synthesises Ch5 and methodology claims |
-| `references.md` | All bracket citations used by the report | ensures 1:1 mapping |
+| `appendix_A_loss_definitions.md` | Closed-form loss definitions and pointwise gradients for every loss family; implementation notes | expands Ch3 §3.3; traces to `Model_Train/losses.py` |
+| `appendix_B_per_seed_raw.md` | Per-seed raw Sharpe tables for the multi-seed phases; reproduction commands for every Ch5 table; reproducibility checklist | cross-verifies Ch5 §5.4 / §5.6; traces to phase2-fix raw CSVs |
+| `references.md` | All bracket citations `[1]..[8]` + auxiliary `[A1]..[A8]` named references | ensures 1:1 mapping |
 
 Supporting files:
 
 - `paper/results_source_of_truth.md` — verified numbers and their provenance (the ONLY numeric source every chapter is allowed to cite).
 - `paper/evidence_map.md` — short pointer index for subagents.
-- `paper/figures/` — generated figures with their source CSV path and regeneration script recorded in captions.
+- `paper/figures/` — generated figures with their source CSV path and regeneration script recorded in captions. PNG outputs: `fig5_3_gamma_refinement.png`, `fig5_4_imadl_alpha_sweep.png`, `fig5_5_normalisation_probe.png`. Placeholder comment blocks in Ch2 §2.4, Ch3 §3.5, Ch4 §4.1, Ch5 §5.2, Ch5 §5.3 specify chart type + data source for figures still to be implemented (Fig 2.1, 3.1, 4.1, 5.1, 5.2).
 
 ## Writing Order (per `SCHEMA.md` workflow)
 
