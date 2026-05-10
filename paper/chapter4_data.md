@@ -6,6 +6,8 @@ This chapter documents the data that underlies every empirical claim in Chapter 
 
 The dataset is a CRSP-style monthly panel of US-listed equity observations. Seven CSV files at the repository root cover the period from December 1989 to December 2024, each file holding roughly five years of observations with a one-month overlap at boundaries. Every file shares the same schema:
 
+**Table 4.1 — CRSP-style monthly panel schema.**
+
 | Column | Description | Source role |
 |---|---|---|
 | `PERMNO` | CRSP-style permanent security identifier | security key |
@@ -65,6 +67,8 @@ After these steps, any row missing any of `{r, to, target_ret}` is dropped. The 
 ## 4.3 Train/test split
 
 The report uses a single static split, not a rolling or expanding-window scheme. The split is:
+
+**Table 4.2 — Static train/test split.**
 
 | Partition | Start | End | Months | Role |
 |---|---|---|---:|---|

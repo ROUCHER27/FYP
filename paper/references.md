@@ -8,11 +8,11 @@ Bracket citations used in Chapters 1 and 2 map to the entries below. Entries fol
 
 [3] Daniel, K., & Moskowitz, T. J. (2016). *Momentum crashes.* Journal of Financial Economics, 122(2), 221–247.
 
-[4] Lopez de Prado, M. (2014). *Deflating the Sharpe ratio.* Working paper / Journal of Portfolio Management (reflecting the Bailey and Lopez de Prado treatment of inflated Sharpe statistics under multiple testing).
+[4] Bailey, D. H., & López de Prado, M. (2014). *The deflated Sharpe ratio: Correcting for selection bias, backtest overfitting, and non-normality.* The Journal of Portfolio Management, 40(5), 94–107.
 
-[5] Bailey, D. H., Borwein, J., Lopez de Prado, M., & Zhu, Q. J. (2014). *The probability of backtest overfitting.* Journal of Computational Finance (forthcoming / working paper version).
+[5] Bailey, D. H., Borwein, J. M., López de Prado, M., & Zhu, Q. J. (2017). *The probability of backtest overfitting.* The Journal of Computational Finance, 20(4), 39–69. https://doi.org/10.21314/JCF.2016.322 (first published online 19 September 2016.)
 
-[6] Harvey, C. R., Liu, Y., & Zhu, H. (2016). *… and the cross-section of expected returns.* The Review of Financial Studies, 29(1), 5–68.
+[6] Harvey, C. R., Liu, Y., & Zhu, H. (2016). *… and the cross-section of expected returns.* The Review of Financial Studies, 29(1), 5–68. https://doi.org/10.1093/rfs/hhv059
 
 [7] Michańków, J., Ślepaczuk, R., & Bielak, P. (2024). *Mean Absolute Directional Loss as a new loss function for machine-learning-based trading strategies.* Working paper / conference preprint. Introduces the MADL formulation used in Chapters 2 and 3.
 

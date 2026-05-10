@@ -6,6 +6,8 @@ This appendix tabulates the per-seed raw Sharpes that the multi-seed grouped sum
 
 Source: `doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_raw_runs.csv`. Static train `1990-01..1994-12`, test `1995-01..1996-12`, `cap05` portfolio cap. Three seeds per γ; seeds are `{42, 52, 62}`.
 
+**Table B.1 — Phase 2.2 γ refinement per-seed annualised Sharpe.**
+
 | Loss | seed 42 | seed 52 | seed 62 | mean | std | CV |
 |---|---:|---:|---:|---:|---:|---:|
 | `m2_robust_gamma03` | $-0.01987$ | $0.32631$ | $0.66380$ | $0.32341$ | $0.34184$ | $1.05698$ |
@@ -20,6 +22,8 @@ Source: `doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_raw_runs.csv`. 
 
 Source: `doc/phase2-fix/phase2.2-fix1/phase2_summary.json`.
 
+**Table B.2 — Phase 2.2-fix1 normalisation probe per-seed Sharpe.**
+
 | Loss | Normalised seed 1 | Normalised seed 2 | Normalised seed 3 | Normalised mean | Original mean |
 |---|---:|---:|---:|---:|---:|
 | `m2_robust_gamma07` | $0.5956$ | $1.4064$ | $0.7317$ | $0.9112$ | $0.9156$ |
@@ -32,7 +36,7 @@ Source: `doc/phase2-fix/phase2.2-fix1/phase2_summary.json`.
 
 Source (read without switching branches): `git show phase2.2-fix:doc/phase2-fix/reports/phase2_grouped_summary.csv`.
 
-Grouped rows used in Chapter 5 Table 5.4 are reproduced verbatim in Table 5.4. Per-seed raw rows for those variants are available in the sibling `phase2_raw_runs.csv` on the same branch. Per-seed detail is elided from the main text for readability, but every seed is recoverable via:
+Grouped rows quoted in Chapter 5 Table 5.4 are read directly from this CSV (column-by-column, no averaging or post-processing). Per-seed raw rows for the same variants are available in the sibling `phase2_raw_runs.csv` on the same branch. Per-seed detail is elided from the main text for readability, but every seed is recoverable via:
 
 ```bash
 git show phase2.2-fix:doc/phase2-fix/reports/phase2_raw_runs.csv
