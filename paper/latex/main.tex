@@ -10,6 +10,7 @@ left=1in,right=1in,top=1in,bottom=1in,
 footskip=0.25in]{geometry}
 \usepackage[english]{babel}
 \usepackage{amsmath}
+\usepackage{tikz,mathpazo}
 \usepackage{amssymb}
 \usepackage[UTF8]{ctex}
 \usepackage[hidelinks]{hyperref}
@@ -17,6 +18,7 @@ footskip=0.25in]{geometry}
 \usepackage{color,soul}
 \usepackage{floatrow}
 \usepackage{graphicx}
+\usepackage[tc]{titlepic}
 \usepackage{enumerate}
 \usepackage{multirow}
 \usepackage{hhline}
@@ -65,22 +67,21 @@ footskip=0.25in]{geometry}
 \captionsetup{font=small,labelfont=bf}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Title page — matches mid-term report template style
-\title{\bfseries {
-\vspace*{1cm}
-FINAL YEAR PROJECT FINAL REPORT \\[1.5cm]
-\MakeUppercase{Loss Function Design for Cross-Sectional Stock-Return Prediction} \\[0.5cm]
+% Title page — matches mid-term report style with logo
+\title{\bfseries {\sc{ Final Year Project Final Report \\[1cm]
+Loss Function Design for Cross-Sectional Stock-Return Prediction \\[0.5cm]
 损失函数设计用于横截面股票收益预测 \\[2cm]
-\rmfamily \normalsize
-A THESIS \\[5pt]
-SUBMITTED TO SCHOOL OF MATHEMATICS \& PHYSICS \\[5pt]
-OF XI'AN JIAOTONG-LIVERPOOL UNIVERSITY \\[5pt]
-IN PARTIAL FULFILMENT FOR THE AWARD OF THE DEGREE OF \\[1.5cm]
-\textbf{\Large BSc Applied Mathematics} \\[1.5cm]
-By \\[5pt]
-\Large{Roucheng Li 1234567} \\[1.5cm]
-\normalsize Supervisor: Dr. XXXX XXXX \\[2cm]
-}}
+}}}
+\author{ \sc{a thesis}   \\ [5pt]
+\sc{submitted to School of Mathematics \& Physics}\\  [5pt]
+\sc{of Xi'an Jiaotong-Liverpool University}\\ [5pt]
+\sc{in partial fulfilment for the award of the degree of} \\[1.5cm]
+\textsc{\Large{BSc Applied Mathematics}} \\[5pt]
+ By\\[5pt]
+ \Large{{Roucheng Li 1234567}}\\ [1cm]
+ Supervisor: Dr. XXXX XXXX\\ [2cm]
+\titlepic{\includegraphics[width=7cm]{xjtluicon.jpg}}\\
+}
 
 \begin{document}
 
