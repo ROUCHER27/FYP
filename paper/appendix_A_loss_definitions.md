@@ -1,6 +1,6 @@
 # Appendix A: Loss Function Definitions and Gradients
 
-This appendix expands the loss-family definitions from Chapter 3 §3.3 with explicit closed-form expressions and derivatives with respect to the prediction $\hat y$. Every formula here matches the implementation in `Model_Train/losses.py`. Gradients are stated pointwise; the effective training gradient at each optimiser step is the batch average (or median for `MedSE`) of the pointwise gradient.
+This appendix expands the loss-family definitions from Chapter 3 §3.3 with explicit closed-form expressions and derivatives with respect to the prediction $\hat y$. Every formula in Sections A.1–A.3.2 matches the implementation in `Model_Train/losses.py` on the current `main` branch. Section A.3.3 records the conceptual form used to interpret Phase 2 branch outputs; its exact closed form lives on the `phase2.2-fix` branch. Gradients are stated pointwise; the effective training gradient at each optimiser step is the batch average (or median for `MedSE`) of the pointwise gradient.
 
 Throughout this appendix, $y$ is the scalar realised return, $\hat y$ is the scalar prediction, and $e = y - \hat y$ is the residual. Where a batch-normalisation factor appears, the batch-level mean is written $\mathbb{E}_{\mathcal{B}}[\cdot]$ and the small regulariser $\epsilon = 10^{-8}$ is included to avoid division by zero.
 
@@ -45,7 +45,7 @@ H_\delta(e) =
 \end{cases}
 $$
 
-The gradient is continuous in $e$ (it equals $-\delta$ from both sides at $|e| = \delta$) and bounded by $\delta$ in absolute value.
+The gradient is continuous in $e$ (the one-sided derivatives agree at both boundaries $|e| = \delta$) and bounded by $\delta$ in absolute value.
 
 ## A.2 Directional losses
 
@@ -74,7 +74,7 @@ $$
 = -a \cdot y \cdot |y|^b \cdot \sigma(a \cdot y \cdot \hat y) \cdot \big[1 - \sigma(a \cdot y \cdot \hat y)\big].
 $$
 
-The $|y|^b = y^2$ factor provides stronger magnitude weighting than MADL, but the sigmoid derivative $\sigma(1-\sigma)$ saturates at $|a y \hat y| \gg 1$. Together these explain why GMADL produces larger absolute prediction values (to push $|a y \hat y|$ into the saturation region) while preserving directional ranking — and why average R² values divulge under this loss (Chapter 5 §5.2).
+The $|y|^b = y^2$ factor provides stronger magnitude weighting than MADL, but the sigmoid derivative $\sigma(1-\sigma)$ saturates at $|a y \hat y| \gg 1$. Together these explain why GMADL produces larger absolute prediction values (to push $|a y \hat y|$ into the saturation region) while preserving directional ranking — and why average R² values diverge under this loss (Chapter 5 §5.2).
 
 ### A.2.3 IMADL (rebalanced)
 
@@ -92,7 +92,7 @@ $$
 - 2\,\lambda_{\mathrm{mag}}\,(y - \hat y).
 $$
 
-The batch-normalisation factor $\mathbb{E}_{\mathcal{B}}[|y|^b]$ decouples the scale of the directional gradient from the particular batch composition; it is treated as a constant during the backward pass through that observation (the PyTorch implementation does not propagate gradient through the batch mean, matching the design intent).
+The batch-normalisation factor $\mathbb{E}_{\mathcal{B}}[|y|^b]$ decouples the scale of the directional gradient from the particular batch composition; it is treated as a constant during the backward pass through that observation (for gradients with respect to $\hat y$, the normalisation denominator is constant, matching the design intent).
 
 ## A.3 Hybrid losses
 
@@ -122,7 +122,7 @@ $$
 + \big(1 + \lambda_{\mathrm{dir}} \cdot D(y, \hat y)\big) \cdot \frac{\partial H_\delta}{\partial \hat y}.
 $$
 
-The multiplicative form couples the two components: the Huber gradient is *gated* by the directional factor $1 + \lambda_{\mathrm{dir}} D$. When the direction is predicted correctly, $D \to 0$ and the gradient reduces to $\partial H_\delta / \partial \hat y$. When the direction is predicted wrongly, $D$ is near $1$ and the Huber gradient is amplified by a factor of $1 + \lambda_{\mathrm{dir}}$.
+The multiplicative form couples the two components: the Huber gradient is *gated* by the directional factor $1 + \lambda_{\mathrm{dir}} D$. When the direction is predicted correctly, $D \to 0$ and the gradient reduces to $\partial H_\delta / \partial \hat y$. When the direction is predicted wrongly, the sigmoid penalty $\sigma(ayŷ)$ approaches 0 so $[1-\sigma(\cdot)]$ approaches 1, and the Huber gradient is amplified by a factor of $1 + \lambda_{\mathrm{dir}} \cdot D$, where $D$ is proportional to the batch-normalised magnitude weight $|y|^b / (\mathbb{E}_{\mathcal{B}}[|y|^b]+\epsilon)$.
 
 ### A.3.3 M2-robust γ family
 

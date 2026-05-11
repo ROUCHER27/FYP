@@ -38,7 +38,7 @@ Dropout is active only during training; the evaluation loop sets the model to `e
 
 The loss functions used in this report are defined in `Model_Train/losses.py`. They fall into three families and one combined hybrid family. Each definition below matches the implementation exactly; numerical constants (e.g., `a = 100`, `b = 2`, Huber threshold `delta = 0.01`) are reproduced from the code.
 
-### 3.3.1 Regression losses
+### ==3.3.1 Regression losses== 
 
 **MSE.**
 $$
@@ -237,7 +237,7 @@ $$
 $$
 which the Phase 2 grouped summaries store in the `sharpe_cv` column. Because $\mathrm{CV}$ is a ratio of two noisy quantities, it is most informative as an order-of-magnitude comparison (e.g., `gamma07` CV $0.18$ vs. `gamma10` CV $0.56$) rather than as a calibrated point estimate.
 
-## 3.7 Experimental phases and evidence configuration
+## ==3.7 Experimental phases and evidence configuration==
 
 The four phases of the study (§3.1) are operationalised through distinct runner commands and output directories. The configuration of each phase is summarised below; the full manifests and commands live alongside the result CSVs under `doc/final_report_all_24m_evidence/` (baseline and Phase 1.5) and `doc/phase2-fix/` (Phase 2 and its diagnostics).
 

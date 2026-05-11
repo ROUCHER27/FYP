@@ -102,7 +102,7 @@ Both aggregations require the full rolling window (`min_periods = window`); rows
 
 X1 is the feature set used in every run that produces a Chapter 5 number. The `best_hyperparameters.txt` configuration `{input_dim: 15, hidden_dims: [64, 32, 16], activation: relu, dropout: 0.2}` matches this feature width exactly, and every runner in `run_sanity_check_*.py` consumes X1 by construction.
 
-### 4.4.2 X2 — normalised momentum excluding the most recent month
+### ==4.4.2 X2 — normalised momentum excluding the most recent month==
 
 X2 is a four-dimensional normalised-momentum variant. It takes lagged returns $r_{i,t-2}, r_{i,t-3}, \ldots$ (shifting two periods instead of one to exclude the "recent month" effect often associated with short-term reversal) and computes, for $w \in \{3, 6, 9, 12\}$:
 
