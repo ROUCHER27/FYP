@@ -1,9 +1,11 @@
 \chapter{Methodology}
+
 \label{ch:methodology}
 
 This chapter describes the pipeline that produces every number reported in Chapter 5. The methodology is grounded in the actual training and evaluation code; where the text differs from older draft material, the implementation is authoritative.
 
 \section{Research design}
+
 \label{sec:research-design}
 
 The research design is a controlled, single-factor comparison. Within each comparison table, data, features, model architecture, training protocol, and portfolio construction are fixed; the loss function is the only varying factor. Cross-phase comparisons are treated separately in \S3.8. This design gives a clean causal attribution of performance differences to the loss function at the cost of limited external validity across market regimes --- a trade-off revisited in \S3.8 and in Chapter 6.
@@ -11,6 +13,7 @@ The research design is a controlled, single-factor comparison. Within each compa
 The study proceeds through four stages: a seed-42 baseline comparison, a seed-42 hybrid-variant sweep, a multi-seed robust-hybrid refinement, and diagnostic checks that define the evidence gate; \S3.7 lists the runner, seed, window, and artifact configuration for each stage.
 
 \section{Model architecture}
+
 \label{sec:model-architecture}
 
 The model is a fully connected feed-forward neural network (multi-layer perceptron). Its configuration is fixed at:
@@ -31,11 +34,13 @@ The hidden-layer widths were selected by a grid search conducted on pre-test dat
 Dropout is active only during training; the evaluation loop sets the model to \texttt{eval} mode before forward passes on the test window, so inference is deterministic given the trained weights. The prediction has no output activation; the scalar is used directly by the loss function during training and by the portfolio construction during evaluation.
 
 \section{Loss function families}
+
 \label{sec:loss-function-families}
 
 The loss functions used in this report fall into three families and one combined hybrid family. Full formulas and gradients are given in Appendix A; this section summarises each loss's role in the experimental design.
 
 \subsection{Regression losses}
+
 \label{subsec:regression-losses}
 
 \begin{itemize}
@@ -44,6 +49,7 @@ The loss functions used in this report fall into three families and one combined
 \end{itemize}
 
 \subsection{Directional losses}
+
 \label{subsec:directional-losses}
 
 \begin{itemize}
@@ -64,6 +70,7 @@ Figure~\ref{fig:loss-reward-penalty} illustrates how the directional gate and th
 \end{figure}
 
 \subsection{Hybrid losses: additive and multiplicative}
+
 \label{subsec:hybrid-losses}
 
 Both hybrid families combine a normalised directional penalty with a Huber magnitude term. The Huber term is
@@ -138,6 +145,7 @@ Figure~\ref{fig:hybrid-loss-surfaces} shows the four loss surfaces on the $(y, \
 \end{figure}
 
 \subsection{M2-robust \texorpdfstring{$\gamma$}{gamma} family and related Phase 2 parameterisations}
+
 \label{subsec:m2-robust-gamma}
 
 The M2-robust family is a generalisation of the M-series in which the gating factor becomes $\gamma$-parameterised and the Huber backbone is replaced by a smoothly saturating magnitude term. Conceptually, a robust M2 loss takes the form
@@ -159,6 +167,7 @@ Figure~\ref{fig:triple-property} illustrates the three properties that distingui
 \end{figure}
 
 \section{Training protocol}
+
 \label{sec:training-protocol}
 
 Each experiment runs the following deterministic protocol.
@@ -176,6 +185,7 @@ Each experiment runs the following deterministic protocol.
 \textbf{Output and verification.} Per-month metrics and portfolio returns form a 24-row CSV per loss. A verification step confirms row count, first month, and last month; verification manifests record these checks for every run (see Appendix B \S B.5).
 
 \section{Portfolio construction}
+
 \label{sec:portfolio-construction}
 
 \begin{figure}[H]
@@ -202,6 +212,7 @@ Portfolio construction takes the cross-sectional prediction vector $\hat y_t = \
 Two implementation details matter for interpreting the tables in Chapter 5. First, the construction is gross-of-cost: no transaction costs, financing costs, or borrow costs are applied. Second, the long and short legs are treated symmetrically in weighting; the report does not differentiate between positive-skew and negative-skew baskets. Both simplifications are discussed in the limitations section of Chapter 6.
 
 \section{Evaluation metrics}
+
 \label{sec:evaluation-metrics}
 
 Three categories of metric are reported for every run. The first two are computed per-month and averaged across the 24 test months; the third is computed once over the entire monthly long-short return series.
@@ -237,6 +248,7 @@ For multi-seed Phase 2 rows (Chapter 5 Tables 5.3 and 5.4), the reported summary
 which the Phase 2 grouped summaries store in the \texttt{sharpe\_cv} column. Because $\mathrm{CV}$ is a ratio of two noisy quantities, it is most informative as an order-of-magnitude comparison (e.g., \texttt{gamma07} CV $0.18$ vs.\ \texttt{gamma10} CV $0.56$) rather than as a calibrated point estimate.
 
 \section{Experimental phases and evidence configuration}
+
 \label{sec:experimental-phases}
 
 The study proceeds in four phases plus one set of diagnostic checks. Each phase is operationalised through distinct runner commands and output directories; full manifests and commands live alongside the result CSVs.
@@ -258,6 +270,7 @@ The study proceeds in four phases plus one set of diagnostic checks. Each phase 
 \end{itemize}
 
 \section{Reproducibility and claim boundaries}
+
 \label{sec:reproducibility}
 
 \textbf{Reproducibility.} Every table reported in Chapter 5 is reproducible from the local clone using the branch and path listed in Appendix B \S B.4. Run manifests preserve the exact commands used to produce each Phase 1 and Phase 2 row. The Phase 3 grouped summaries record per-row \texttt{runs = 3} and aggregate statistics computed from the raw per-seed CSVs. \texttt{best\_hyperparameters.txt} pins the MLP architecture across phases. The CSV data files are versioned alongside the code.

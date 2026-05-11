@@ -1,4 +1,5 @@
 \chapter{Loss Function Definitions and Gradients}
+
 \label{chap:loss-definitions}
 
 This appendix expands the loss-family definitions from Chapter~3 \S3.3 with explicit closed-form expressions and derivatives with respect to the prediction $\hat y$. Every formula in Sections A.1--A.3.2 matches the implementation in \texttt{Model\_Train/losses.py} on the current \texttt{main} branch. Section~A.3.3 records the conceptual form used to interpret Phase~2 branch outputs; its exact closed form lives on the \texttt{phase2.2-fix} branch. Gradients are stated pointwise; the effective training gradient at each optimiser step is the batch average (or median for \texttt{MedSE}) of the pointwise gradient.
@@ -7,9 +8,11 @@ Throughout this appendix, $y$ is the scalar realised return, $\hat y$ is the sca
 
 % ============================================================
 \section{Regression Losses}
+
 \label{sec:regression-losses}
 
 \subsection{MSE}
+
 \label{subsec:mse}
 
 \begin{equation}
@@ -21,6 +24,7 @@ L_{\mathrm{MSE}}(y, \hat y) = (y - \hat y)^2,
 Batch reduction: arithmetic mean.
 
 \subsection{MedSE}
+
 \label{subsec:medse}
 
 \begin{equation}
@@ -32,6 +36,7 @@ L_{\mathrm{MedSE}}(y, \hat y) = (y - \hat y)^2,
 Because the median is non-decomposable, the gradient at each observation is zero at every observation \emph{except} those that determine the batch median. In PyTorch the autograd routes gradient only through the median-ranked observation; this is why MedSE training is inherently noisier and why \texttt{reduction="median"} is declared explicitly in \texttt{medse\_loss}.
 
 \subsection{Huber (as magnitude backbone)}
+
 \label{subsec:huber}
 
 Used inside every hybrid loss, with $\delta = 0.01$ hard-coded in \texttt{\_huber\_term}:
@@ -55,9 +60,11 @@ The gradient is continuous in $e$ (the one-sided derivatives agree at both bound
 
 % ============================================================
 \section{Directional Losses}
+
 \label{sec:directional-losses}
 
 \subsection{MADL (differentiable)}
+
 \label{subsec:madl}
 
 With $a = 25$ fixed:
@@ -72,6 +79,7 @@ L_{\mathrm{MADL}}(y, \hat y) = -\tanh(a \cdot y \cdot \hat y) \cdot |y|,
 The gradient peaks near $a \cdot y \cdot \hat y = 0$ and decays exponentially as $|a \cdot y \cdot \hat y|$ grows. For realistically small $|y|$ (monthly returns typically a few per cent), the factor $y \cdot |y| = y^2 \cdot \operatorname{sgn}(y)$ is of order $10^{-4}$, which is the ``weak-gradient-near-zero'' behaviour described in Chapter~2 \S2.4.
 
 \subsection{GMADL}
+
 \label{subsec:gmadl}
 
 With $a = 100$ and $b = 2$ fixed:
@@ -87,6 +95,7 @@ L_{\mathrm{GMADL}}(y, \hat y) = -\big[\sigma(a \cdot y \cdot \hat y) - \tfrac12\
 The $|y|^b = y^2$ factor provides stronger magnitude weighting than MADL, but the sigmoid derivative $\sigma(1-\sigma)$ saturates at $|a y \hat y| \gg 1$. Together these explain why GMADL produces larger absolute prediction values (to push $|a y \hat y|$ into the saturation region) while preserving directional ranking --- and why average R\textsuperscript{2} values diverge under this loss (Chapter~5 \S5.2).
 
 \subsection{IMADL (rebalanced)}
+
 \label{subsec:imadl}
 
 With $a = 100$, $b = 2$, $\lambda_{\mathrm{dir}} = \lambda_{\mathrm{mag}} = 1$ fixed:
@@ -107,9 +116,11 @@ The batch-normalisation factor $\mathbb{E}_{\mathcal{B}}[|y|^b]$ decouples the s
 
 % ============================================================
 \section{Hybrid Losses}
+
 \label{sec:hybrid-losses}
 
 \subsection{Additive (A-series)}
+
 \label{subsec:additive}
 
 With Huber $\delta = 0.01$ fixed and $(\lambda_{\mathrm{dir}}, \lambda_{\mathrm{hub}})$ varied per variant (see Chapter~3 \S3.3.3):
@@ -126,6 +137,7 @@ L_{\mathrm{add}}(y, \hat y) = \lambda_{\mathrm{dir}} \cdot D(y, \hat y) + \lambd
 Both components contribute additively to the gradient; the relative weighting is $(\lambda_{\mathrm{dir}}, \lambda_{\mathrm{hub}})$. The A-variants scan this 2-dimensional hyperparameter.
 
 \subsection{Multiplicative (M-series)}
+
 \label{subsec:multiplicative}
 
 \begin{equation}
@@ -140,6 +152,7 @@ L_{\mathrm{mul}}(y, \hat y) = \big(1 + \lambda_{\mathrm{dir}} \cdot D(y, \hat y)
 The multiplicative form couples the two components: the Huber gradient is \emph{gated} by the directional factor $1 + \lambda_{\mathrm{dir}} D$. When the direction is predicted correctly, $D \to 0$ and the gradient reduces to $\partial H_\delta / \partial \hat y$. When the direction is predicted wrongly, the sigmoid penalty $\sigma(ay\hat y)$ approaches 0 so $[1-\sigma(\cdot)]$ approaches 1, and the Huber gradient is amplified by a factor of $1 + \lambda_{\mathrm{dir}} \cdot D$, where $D$ is proportional to the batch-normalised magnitude weight $|y|^b / (\mathbb{E}_{\mathcal{B}}[|y|^b]+\epsilon)$.
 
 \subsection{M2-robust \texorpdfstring{$\gamma$}{gamma} family}
+
 \label{subsec:m2-robust}
 
 Conceptually, the M2-robust loss replaces the fixed-threshold Huber backbone with a $\gamma$-controlled saturating magnitude term $H^{\gamma}(e)$ and combines it with the same directional-gating structure:
@@ -152,6 +165,7 @@ The robustness schedule $H^{\gamma}(e)$ is a smooth monotone function that appro
 
 % ============================================================
 \section{Notes on Practical Implementation}
+
 \label{sec:practical-notes}
 
 Two implementation points are worth repeating for completeness, both documented in \texttt{Model\_Train/losses.py}:

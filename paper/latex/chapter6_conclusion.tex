@@ -1,7 +1,9 @@
 \chapter{Conclusion}
+
 \label{ch:conclusion}
 
 \section{Summary of findings}
+
 \label{sec:summary-of-findings}
 
 This report conducted a controlled, single-factor study of loss-function design for cross-sectional stock-return prediction with a multi-layer perceptron. Within each comparison table, data, features, architecture, training protocol, portfolio construction, and evaluation metrics were fixed; only the loss function was varied. Under this protocol, the empirical evidence in Chapter 5 supports the following direct answers to the three research questions posed in Chapter 1.
@@ -21,6 +23,7 @@ This report conducted a controlled, single-factor study of loss-function design 
 \end{itemize}
 
 \section{Limitations}
+
 \label{sec:limitations}
 
 Several limitations scope the findings.
@@ -44,6 +47,7 @@ Several limitations scope the findings.
 \textbf{Feature set restriction.} All Chapter 5 numbers use the X1 feature set: the model input is 15 columns comprising 10 X1 engineered columns (5 horizons $\times$ cumulative return + cumulative turnover) together with the 5 base panel columns retained by \texttt{assemble\_feature\_matrix} (see Appendix B Table B.3). Alternative feature sets are implemented in the codebase but were not run under the final protocol. Loss--feature interactions are untested.
 
 \section{Future work}
+
 \label{sec:future-work}
 
 Five extensions would materially strengthen or broaden the report's conclusions.
@@ -61,6 +65,7 @@ Five extensions would materially strengthen or broaden the report's conclusions.
 A smaller but related set of implementation extensions would also be valuable: explicit CUDA-determinism flags for exact reproduction across hardware, alignment diagnostics that produce a single binary pass/fail per loss family, and a combined report that stitches all phases into one end-to-end run script.
 
 \section{Concluding remarks}
+
 \label{sec:concluding-remarks}
 
 Under the static 24-month protocol studied here, \texttt{m2\_robust\_gamma07} is the best-supported loss recommendation --- scoped to US equity monthly data, a single evaluation window, and three-seed evidence. The broader contribution is methodological: a controlled evidence protocol that isolates the loss function as a design variable and measures multi-seed stability alongside mean performance, providing a reusable template for future loss-design research.

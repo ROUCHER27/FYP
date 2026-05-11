@@ -1,9 +1,11 @@
 \chapter{Per-Seed Raw Results and Reproducibility}
+
 \label{ch:per-seed-raw-results}
 
 This appendix tabulates the per-seed raw Sharpes that the multi-seed grouped summaries in Chapter~5 aggregate, so that the reader can verify the mean, standard deviation, and coefficient of variation directly. It also lists the exact reproduction commands for every table in Chapter~5.
 
 \section{Phase 2.2 $\gamma$ refinement --- per-seed annualised Sharpe}
+
 \label{sec:phase22-gamma-refinement-per-seed}
 
 Source: \texttt{doc/phase2-fix/phase2\_2/gamma\_refinement/reports/phase2\_raw\_runs.csv}. Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, \texttt{cap05} portfolio cap. Three seeds per $\gamma$; seeds are \texttt{\{42, 52, 62\}}.
@@ -25,6 +27,7 @@ Loss & seed 42 & seed 52 & seed 62 & mean & std & CV \\\midrule
 (The seed-42 \texttt{m2\_robust\_gamma07} row here, Sharpe $0.90972$, differs from the rounded $0.9156$ grouped-summary mean because the grouped row averages the three per-seed values. Both numbers trace to the raw CSV.)
 
 \section{Phase 2.2-fix1 normalisation probe --- per-seed annualised Sharpe}
+
 \label{sec:phase22-fix1-normalisation-per-seed}
 
 Source: \texttt{doc/phase2-fix/phase2.2-fix1/phase2\_summary.json}.
@@ -44,6 +47,7 @@ Loss & Normalised seed 1 & Normalised seed 2 & Normalised seed 3 & Normalised me
 (The per-seed IDs are anonymised in the summary JSON. The project notes record that the normalisation probe re-uses the same three seeds as the $\gamma$ refinement, but the mapping between the numeric position and \texttt{\{42, 52, 62\}} is not preserved in the summary file; the mean and per-seed spread remain the relevant quantities.)
 
 \section{Phase 2 integrated summary --- grouped row summary (reproduction)}
+
 \label{sec:phase2-integrated-summary}
 
 Source (read without switching branches): \texttt{git show phase2.2-fix:doc/phase2-fix/reports/phase2\_grouped\_summary.csv}.
@@ -55,11 +59,13 @@ git show phase2.2-fix:doc/phase2-fix/reports/phase2_raw_runs.csv
 \end{lstlisting}
 
 \section{Reproduction commands per Chapter 5 table}
+
 \label{sec:reproduction-commands}
 
 Tables 5.1--5.2 reproduce on \texttt{main} at commit \texttt{6c0fbde} with the repository-root data CSVs (\texttt{*.csv} matching the \texttt{-{}-pattern}) and the shared \texttt{best\_hyperparameters.txt}. Tables 5.3--5.5 are read or reproduced from the \texttt{phase2.2-fix} branch and \texttt{doc/phase2-fix/phase2.2-fix1/} artifacts as listed below.
 
 \subsection{Table 5.1 --- Baseline losses (seed 42, 24 months)}
+
 \label{ssec:table51-baseline-losses}
 
 For each \texttt{\{loss\} in \{mse, medse, madl, gmadl, imadl, hybrid\_mul\_m1, hybrid\_mul\_m2\}}:
@@ -82,6 +88,7 @@ python run_sanity_check_{loss}.py \
 The output CSV at \texttt{<output-root>/results/baseline/\{loss\}/sanity\_metrics\_\{loss\}.csv} must have \texttt{row\_count = 24}, \texttt{first\_month = 1995-01}, \texttt{last\_month = 1996-12}. The paired summary JSON is at \texttt{sanity\_summary\_\{loss\}.json}.
 
 \subsection{Table 5.2 --- Phase 1.5 A/M variants (seed 42, 24 months)}
+
 \label{ssec:table52-phase15-variants}
 
 For each variant (\texttt{A1..A5}, \texttt{M1..M4}) use the corresponding runner, e.g., for \texttt{M2}:
@@ -100,6 +107,7 @@ python run_sanity_check_hybrid_mul_m2.py \
 The runner-to-variant mapping is listed in \texttt{doc/final\_report\_all\_24m\_evidence/manifests/run\_manifest.json}.
 
 \subsection{Table 5.3 --- Phase 2.2 $\gamma$ refinement (multi-seed)}
+
 \label{ssec:table53-gamma-refinement-multiseed}
 
 The $\gamma$ refinement was run from the \texttt{phase2.2-fix} branch with three seeds and the five $\gamma$ values listed in \S\ref{sec:phase22-gamma-refinement-per-seed}. The grouped summary is reproduced locally at:
@@ -123,6 +131,7 @@ grouped["cv"] = grouped["std"] / grouped["mean"].abs()
 \end{lstlisting}
 
 \subsection{Tables 5.4 and 5.5 --- Phase 2 integrated and normalisation}
+
 \label{ssec:table54-55-phase2-integrated}
 
 The integrated grouped summary is on branch \texttt{phase2.2-fix}:
@@ -139,6 +148,7 @@ doc/phase2-fix/phase2.2-fix1/phase2_summary.json
 \end{lstlisting}
 
 \section{Reproducibility checklist}
+
 \label{sec:reproducibility-checklist}
 
 Before re-running any table for publication, verify:
@@ -153,6 +163,7 @@ Before re-running any table for publication, verify:
 \end{enumerate}
 
 \section{Known numerical caveats}
+
 \label{sec:known-numerical-caveats}
 
 \begin{itemize}
@@ -163,6 +174,7 @@ Before re-running any table for publication, verify:
 \end{itemize}
 
 \section{Complete model input columns}
+
 \label{sec:complete-model-input-columns}
 
 \textbf{Table B.3 --- Complete 15-column model input for X1.}

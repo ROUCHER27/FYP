@@ -1,4 +1,5 @@
 \chapter{Empirical Results and Discussion}
+
 \label{ch:empirical-results-and-discussion}
 
 This chapter reports the empirical performance of every loss function that enters the final recommendation. All numbers quoted here are traceable to a single-source-of-truth table in \texttt{paper/results\_source\_of\_truth.md}; each caption records the evaluation window, the seed set, and the underlying artifact path so the reader can audit the claim.
@@ -6,11 +7,13 @@ This chapter reports the empirical performance of every loss function that enter
 The structure of the chapter mirrors the empirical pipeline rather than the order in which the experiments were carried out. Section~5.1 restates the shared evaluation protocol. Sections~5.2--5.3 present same-window single-seed comparisons (baseline losses and the hybrid A/M sweep, both at seed 42); within each comparison table, the loss function is the only varying factor. Sections~5.4--5.5 move to multi-seed evidence on the M2-robust family and the broader $\alpha/\beta/\lambda$ sweeps, which form the basis of the final recommendation; cross-phase comparisons differ in additional dimensions (§5.7). Section~5.6 discusses a loss-component normalisation probe. Section~5.7 scopes the boundary of cross-phase comparison claims. Section~5.8 synthesises the headline findings and bridges to the conclusion.
 
 \section{Evaluation protocol recap}
+
 \label{sec:evaluation-protocol-recap}
 
 All experiments use the protocol defined in Chapter~3 §3.4 and the X1 feature input from Chapter~4. The key operational parameters are: train \texttt{1990-01..1994-12} (60 months), test \texttt{1995-01..1996-12} (24 months), MLP[64,32,16]+ReLU+dropout 0.2, batch size 1024, 20 epochs, top/bottom 10\% signal-tilted long-short portfolio with 5\% per-name cap. Sharpe is annualised as $\sqrt{12} \cdot \bar r / \sigma_r$. Single-seed tables (§5.2--§5.3) use seed 42; multi-seed tables (§5.4--§5.6) use three seeds per row. Source paths are listed in each table caption; full reproduction commands are in Appendix~B.
 
 \section{Phase 1: Baseline loss comparison (24 months, seed 42)}
+
 \label{sec:phase1-baseline-loss-comparison}
 
 Table~\ref{tab:baseline-loss-comparison} reports the main baseline-loss comparison under the static 24-month window at seed 42. The seven rows cover the traditional regression losses (MSE, MedSE), the absolute-loss family (MADL, GMADL, IMADL), and the two hybrid multiplicative variants (\texttt{hybrid\_mul\_m1}, \texttt{hybrid\_mul\_m2}) that will be extended in §5.3.
@@ -52,6 +55,7 @@ Table~\ref{tab:baseline-loss-comparison} is a same-window single-seed comparison
 \end{figure}
 
 \section{Phase 2: Hybrid A/M variant sweep (24 months, seed 42)}
+
 \label{sec:phase2-hybrid-am-sweep}
 
 This phase extends the two hybrid multiplicative variants of §5.2 into a parameterised family of nine variants (additive A1--A5 and multiplicative M1--M4; see Chapter~3 §3.3 for definitions). All nine runs use the same static window, feature set, and portfolio construction as Table~\ref{tab:baseline-loss-comparison}; only the loss specification changes.
@@ -91,6 +95,7 @@ The additive family is not carried further into multi-seed robustness in this re
 \end{figure}
 
 \section{Phase 3a: Multi-seed $\gamma$ refinement}
+
 \label{sec:phase3a-gamma-refinement}
 
 Phase~2 introduces an explicit robustness parameter $\gamma$ into the multiplicative hybrid M2 variant, producing the family of \texttt{m2\_robust\_gamma\{0.03, 0.05, 0.07, 0.10, 0.15\}} losses. Each variant is run across three random seeds using the same 24-month static window and the 5\% per-name portfolio cap (\texttt{cap05}). The purpose is to decouple the seed-42 ranking of §5.3 from a claim about the expected performance of the loss under seed perturbation.
@@ -141,6 +146,7 @@ Third, the $\gamma$ schedule exhibits a non-monotone relationship with Sharpe st
 On this evidence alone, \texttt{m2\_robust\_gamma07} is the best-supported candidate for the primary recommendation in §5.8. The fuller comparison in §5.5 -- where \texttt{gamma07} is evaluated against $\alpha$- and $\beta$-sweep variants from other families -- confirms this ordering.
 
 \section{Phase 3b: Integrated $\alpha$, $\beta$, and $\lambda$ sweeps}
+
 \label{sec:phase3b-integrated-sweeps}
 
 To rule out the possibility that the M2-robust $\gamma$ family is merely a locally good design in the hybrid-multiplicative corner of the loss space, Phase~2 also runs an integrated sweep over three other parameterised families: the IMADL-m2 $\alpha$ sweep, the IMADL-GMADL $\beta$ sweep, and an adaptive-$\lambda$ family. Table~\ref{tab:integrated-summary} reports selected grouped summaries; the complete table contains further fine-grained $\gamma$ variants (\texttt{gamma001}, \texttt{gamma01}) used for locating the $\gamma$ optimum. Note that \texttt{m2\_robust\_gamma07}, the primary recommendation, is reported in Table~\ref{tab:gamma-refinement} and serves as the reference line in Figure~\ref{fig:gamma-refinement}.
@@ -200,6 +206,7 @@ Figure~\ref{fig:sharpe-cv-frontier} places all multi-seed hybrid variants on a s
 \end{figure}
 
 \section{Phase 4: Loss-component normalisation probe}
+
 \label{sec:phase4-normalisation-probe}
 
 A natural concern with the hybrid-multiplicative design is that the directional-prediction term and the error-magnitude term operate on different scales, and that the observed Sharpe differences might simply reflect scale imbalance rather than genuine loss-family differences. The normalisation probe runs a component-level normalisation on the three candidate variants (\texttt{m2\_robust\_gamma07}, \texttt{m2\_robust\_gamma10}, \texttt{imadl\_m2\_alpha06}) to test whether equalising the scale of the two terms materially changes the ranking.
@@ -238,6 +245,7 @@ Third, the probe itself has a known limitation: the scale ratios are estimated f
 In summary, component normalisation is informative but is not recommended as a blanket fix across the hybrid-multiplicative family. \texttt{gamma07} does not require it; \texttt{gamma10} and \texttt{alpha06} are damaged by it in the current evidence.
 
 \section{Claim-boundary diagnostics}
+
 \label{sec:claim-boundary-diagnostics}
 
 Diagnostic passes confirm that cross-phase comparisons (e.g., stacking Phase~2 tables against Phase~3 tables) involve small but systematic runner and formula differences that are not attributable to a single factor. These differences do not invalidate controlled comparisons within a single phase, but they prevent claims of the form ``Phase~3 improves Phase~2 by $X$ Sharpe points.''
@@ -245,6 +253,7 @@ Diagnostic passes confirm that cross-phase comparisons (e.g., stacking Phase~2 t
 Two claim boundaries follow. First, \textbf{intra-phase comparison is strong}: within each table the loss function is the only varying factor. Second, \textbf{inter-phase comparison is moderate to weak}: cross-phase comparisons differ in seed set, parameterisation, and implementation details (see §3.8). They are reasonable as design motivation but should not be quoted as direct-improvement claims. The closest supportable cross-phase statement is descriptive: the $\gamma$ family, once evaluated under multi-seed conditions, produces a mean Sharpe that exceeds the best Phase~2 seed-42 variant, but the two rows differ in more than one experimental factor.
 
 \section{Headline findings and recommendations}
+
 \label{sec:headline-findings}
 
 Figure~\ref{fig:cumulative-return-paths} shows the cumulative long-short return paths that underlie the summary statistics in §5.2--§5.5. The left panel places the Phase~1 baselines in time: MSE and IMADL produce negative or flat paths throughout the 24-month window, while the hybrid variants (M1, A3) accumulate positive returns steadily. The right panel shows the Phase~2 gamma robustness picture: \texttt{gamma07} (red) produces the most consistent upward path across all three seeds, with a narrow seed envelope; \texttt{gamma10} (orange) reaches a higher peak in its best seed but shows wider dispersion; \texttt{gamma03} collapses early and never recovers.

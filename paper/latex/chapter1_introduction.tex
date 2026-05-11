@@ -1,9 +1,11 @@
 % Chapter 1: Introduction
 
 \chapter{Introduction}
+
 \label{ch1:introduction}
 
 \section{Background and Motivation}
+
 \label{ch1:background}
 
 Machine-learning models are now widely used for cross-sectional stock-return prediction and long-short portfolio construction. In this setting, the loss function is not just a technical training choice: it determines which prediction errors the model treats as important. Yet most return-prediction studies vary architectures and feature sets while keeping the objective at generic regression losses such as Mean Squared Error (MSE) or Mean Absolute Error (MAE).
@@ -13,6 +15,7 @@ This default is not fully aligned with the portfolio task. A long-short portfoli
 Existing loss-function families address parts of this problem. Robust losses reduce the influence of heavy-tailed residuals, while directional losses such as MADL and GMADL \cite{ref7, ref8} reward correct return signs and magnitude-weighted directional alignment. What remains less clear is how regression, robust, directional, and hybrid losses compare under the same data, feature input, model, and portfolio rule. This report addresses that gap through a controlled empirical study of loss-function design for portfolio-oriented return prediction.
 
 \section{Research Objectives}
+
 \label{ch1:objectives}
 
 This report has four objectives.
@@ -23,6 +26,7 @@ Fourth, it checks whether the recommended loss remains approximately stable unde
 The study is deliberately narrow. It fixes the equity universe, X1 feature input, MLP architecture, static 1990--1994 training window, 1995--1996 test window, and long-short portfolio construction. Architecture search, feature-set sensitivity, rolling-window validation, transaction costs, and non-US or non-monthly settings are outside the main claim boundary.
 
 \section{Research Questions}
+
 \label{ch1:questions}
 
 \textbf{RQ1: How does loss choice affect prediction-level and portfolio-level performance under a fixed evaluation protocol?}
@@ -37,6 +41,7 @@ This question tests whether the observed Sharpe ordering is driven by the relati
 Chapter~5 reports the empirical evidence for these questions, and Chapter~6 synthesises the answers.
 
 \section{Contributions and Report Structure}
+
 \label{ch1:contributions}
 
 The report makes four contributions.
