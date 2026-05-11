@@ -45,7 +45,7 @@ The Mean Absolute Directional Loss (MADL) of Michańków, Ślepaczuk, and Bielak
 
 The same authors extend MADL into Generalised MADL (GMADL) [8], which replaces $\tanh$ with a sigmoid (providing a different saturation profile centred at $0.5$ rather than $0$) and uses $|y|^b$ to magnify the weighting of large returns. GMADL is the parent of the adaptive and hybrid families developed later in this report.
 
-An Inverse MADL (IMADL) variant has also been developed within the project codebase as a project-specific extension rather than a published loss. IMADL is conceptually similar to MADL but re-parameterises the directional term so that the reward curve is steeper around the zero-prediction region, at the cost of making the loss less symmetric between correct and incorrect directions. The exact IMADL formulas are documented in Chapter 3 and Appendix A; the Phase 2 grouped summaries (IMADL-m2 $\alpha$ sweep and IMADL-GMADL $\beta$ sweep) use these implementations.
+An Inverse MADL (IMADL) variant has also been developed within the project codebase as a project-specific extension rather than a published loss. IMADL is conceptually similar to MADL but re-parameterises the directional term so that the reward curve is steeper around the zero-prediction region, at the cost of making the loss less symmetric between correct and incorrect directions. The exact IMADL formulas are documented in Chapter 3 and Appendix A.
 
 The directional-loss family has three theoretical attractions that directly address the point-prediction–portfolio mismatch of §2.3:
 
@@ -81,7 +81,7 @@ The IMADL-m2 $\alpha$ family follows the same multiplicative-hybrid skeleton but
 
 The standard diagnostic concerns for empirical asset-pricing studies apply here with extra force, because the research compares many loss functions on a single panel. Bailey and López de Prado (2014) and Bailey et al. (2017) document that the apparent performance of a backtested strategy is upward-biased whenever the researcher observes the performance of many candidate strategies on the same data and reports only the best [4, 5]. Harvey, Liu, and Zhu (2016) extend this multiple-testing argument to the broader empirical factor literature and recommend higher $t$-statistic thresholds to account for the universe of tested factors [6].
 
-This report does not introduce new factors, but the loss-function comparison creates an analogous multiple-comparison problem. Seven baseline losses, nine Phase 2 hybrid variants, five Phase 3 $\gamma$ refinements, and additional $\alpha$/$\beta$/$\lambda$ sweeps are evaluated on the same 24-month test window. Three mitigations are applied:
+This report does not introduce new factors, but the loss-function comparison creates an analogous multiple-comparison problem: many loss variants are evaluated on the same 24-month test window. Three mitigations are applied:
 
 1. **Reporting every tested configuration.** Chapter 5 reports the full baseline table, the full A/M sweep, and the full multi-seed Phase 2 summaries rather than only the winning row. The reader can verify the selection rule and is not left guessing which configurations were omitted.
 2. **Multi-seed evaluation with explicit stability reporting.** The final recommendation is not drawn from single-seed evidence. The $\gamma$ refinement and the broader Phase 3 sweep are evaluated across three seeds per row, and stability is reported as the coefficient of variation $\mathrm{CV} = \sigma_S / |\mu_S|$. A single-seed peak does not qualify as a headline claim.

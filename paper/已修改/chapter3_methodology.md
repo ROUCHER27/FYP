@@ -108,7 +108,7 @@ $$
 L_{\mathrm{M2\text{-}robust}, \gamma}(y, \hat y)
 = \big(1 + \lambda_{\mathrm{dir}} \cdot D(y, \hat y)\big) \cdot H^{\gamma}(y - \hat y),
 $$
-where $H^{\gamma}$ is the $\gamma$-controlled robust magnitude term that saturates the contribution of large residuals. Small $\gamma$ flattens the loss surface and prioritises the directional component; large $\gamma$ approaches the Phase 1.5 M2 form. The five values scanned in Chapter 5 Table 5.3 are $\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$. The integrated Phase 2 summary (Chapter 5 Table 5.4) extends this with finer-grained values $\gamma \in \{0.001, 0.01, 0.10\}$, an IMADL-m2 α sweep (α is the weight on the IMADL-style directional rebalancing, scanned over $\{0.2, 0.3, \ldots, 0.8\}$), an IMADL-GMADL β sweep (β controls the composition of the two directional primitives), and an adaptive-$\lambda$ schedule that modulates the directional weight during training.
+where $H^{\gamma}$ is the $\gamma$-controlled robust magnitude term that saturates the contribution of large residuals. Small $\gamma$ flattens the loss surface and prioritises the directional component; large $\gamma$ approaches the Phase 2 M2 form. The five values scanned in Chapter 5 Table 5.3 are $\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$. The Phase 3b integrated summary (Chapter 5 Table 5.4) extends this with finer-grained values $\gamma \in \{0.001, 0.01, 0.10\}$, an IMADL-m2 α sweep (α is the weight on the IMADL-style directional rebalancing, scanned over $\{0.2, 0.3, \ldots, 0.8\}$), an IMADL-GMADL β sweep (β controls the composition of the two directional primitives), and an adaptive-$\lambda$ schedule that modulates the directional weight during training.
 
 The exact implementations of the Phase 3 variants beyond the core Phase 2 A/M set live on a separate evidence branch alongside the run outputs cited by the grouped summaries. For the evidence used in Chapter 5, the authoritative reference is the grouped summary CSV (source path listed in each table caption). The design intent in every case is the same as the Phase 2 skeleton: a magnitude-controlling backbone combined with a directional-rebalancing factor, parameterised so that a scan can locate the stability peak under multi-seed evaluation.
 
@@ -116,7 +116,7 @@ The exact implementations of the Phase 3 variants beyond the core Phase 2 A/M se
 
 Each experiment runs the following deterministic protocol (`sanity_check_signal_tilted.run_sanity_check`).
 
-**1. Reproducibility seed.** A single integer seed is provided by the CLI argument `--seed`. It initialises Python's `random`, NumPy's `np.random`, PyTorch's CPU RNG, and — when available — PyTorch's CUDA RNG. All baseline and Phase 1.5 tables in Chapter 5 use `--seed 42`. Phase 2 multi-seed runs use three seeds per row; the exact seed sets are recorded per-run in the phase-specific manifests (not globally).
+**1. Reproducibility seed.** A single integer seed is provided by the CLI argument `--seed`. It initialises Python's `random`, NumPy's `np.random`, PyTorch's CPU RNG, and — when available — PyTorch's CUDA RNG. All Phase 1 and Phase 2 tables in Chapter 5 use `--seed 42`. Phase 3 multi-seed runs use three seeds per row; the exact seed sets are recorded per-run in the phase-specific manifests (not globally).
 
 **2. Device detection.** The runner selects CUDA if available, otherwise MPS on Apple Silicon, otherwise CPU. The all-loss same-window evidence run from Colab uses CUDA; multi-seed Phase 2 runs use CUDA as well. Precision is float32 throughout.
 
@@ -136,7 +136,7 @@ Each experiment runs the following deterministic protocol (`sanity_check_signal_
 
 **10. Summary computation.** Once the 24 test months are processed, `compute_long_short_stats` aggregates the monthly long-short series into cumulative return, standard deviation, and annualised Sharpe. The summary JSON `sanity_summary_{loss}.json` is written with a fixed schema.
 
-**11. Verification.** A separate verification step confirms that the metrics CSV has exactly 24 rows with `first_month = 1995-01` and `last_month = 1996-12`. The `*_verification.json` files under `doc/final_report_all_24m_evidence/manifests/` record these checks for every run in the baseline and Phase 1.5 groups.
+**11. Verification.** A separate verification step confirms that the metrics CSV has exactly 24 rows with `first_month = 1995-01` and `last_month = 1996-12`. The `*_verification.json` files under `doc/final_report_all_24m_evidence/manifests/` record these checks for every run in the Phase 1 and Phase 2 groups.
 
 ## 3.5 Portfolio construction
 
@@ -213,19 +213,19 @@ The study proceeds in four phases plus one set of diagnostic checks. Each phase 
 
 ## 3.8 Reproducibility and claim boundaries
 
-**Reproducibility.** Every table reported in Chapter 5 is reproducible from the local clone using the branch/path listed for that table by combining the listed evidence path with the runner CLI described in §3.4. The `run_manifest.json` and `*_command.txt` files under `doc/final_report_all_24m_evidence/manifests/` preserve the exact commands used to produce each baseline and Phase 1.5 row. The Phase 2 grouped summaries record per-row `runs = 3` and aggregate statistics computed from the raw per-seed CSVs. `best_hyperparameters.txt` pins the MLP architecture across phases. The CSV data files are versioned alongside the code.
+**Reproducibility.** Every table reported in Chapter 5 is reproducible from the local clone using the branch/path listed for that table by combining the listed evidence path with the runner CLI described in §3.4. The `run_manifest.json` and `*_command.txt` files under `doc/final_report_all_24m_evidence/manifests/` preserve the exact commands used to produce each Phase 1 and Phase 2 row. The Phase 3 grouped summaries record per-row `runs = 3` and aggregate statistics computed from the raw per-seed CSVs. `best_hyperparameters.txt` pins the MLP architecture across phases. The CSV data files are versioned alongside the code.
 
 Two operational caveats apply. First, floating-point outputs from CUDA and MPS devices may differ in the last few decimals; all reported results were produced on CUDA and inherit that numerical convention. Second, the runner seeds Python, NumPy, and PyTorch but does not force CUDA determinism (`torch.backends.cudnn.deterministic`); small bit-level drift across reproductions is possible, but the grouped-summary figures in Chapter 5 are reported to be stable across re-runs within the same environment.
 
 **Claim strength taxonomy.** The evidence used in this report falls into three tiers, and claims are labelled accordingly throughout Chapter 5.
 
-- **Strong.** Same runner, same window, same seed set, verified CSVs, grouped summary re-derivable from raw runs. Examples: baseline 24-month single-seed comparison (Table 5.1), Phase 1.5 single-seed sweep (Table 5.2), γ refinement grouped summary (Table 5.3). Claims of the form "variant X has a higher mean Sharpe than variant Y within phase P" at this level are safe.
-- **Moderate.** Same window and broad loss family, different hyperparameters or seed sets across the compared rows. Example: comparing the Phase 1.5 A3 row (seed 42 peak) to the Phase 2 γ07 row (multi-seed winner). Such comparisons are used as *motivation chains* in the empirical chapter rather than as direct-improvement claims.
+- **Strong.** Same runner, same window, same seed set, verified CSVs, grouped summary re-derivable from raw runs. Examples: Phase 1 baseline 24-month single-seed comparison (Table 5.1), Phase 2 single-seed sweep (Table 5.2), Phase 3a γ refinement grouped summary (Table 5.3). Claims of the form "variant X has a higher mean Sharpe than variant Y within phase P" at this level are safe.
+- **Moderate.** Same window and broad loss family, different hyperparameters or seed sets across the compared rows. Example: comparing the Phase 2 A3 row (seed 42 peak) to the Phase 3a γ07 row (multi-seed winner). Such comparisons are used as *motivation chains* in the empirical chapter rather than as direct-improvement claims.
 - **Weak / contextual.** Phase 2.5 alignment diagnostics, the Phase 2.2-fix1 normalisation probe (because scale ratios are estimated), and the original six-month sanity-check material. These are cited as scope-setting or consistency-checking evidence but are never quoted as headline performance numbers.
 
 **Forbidden inference patterns.** The following claim shapes are explicitly avoided throughout:
 
-1. **"Phase 2 directly improves on Phase 1.5."** Phase 2 and Phase 1.5 use different λ, γ, or α settings, possibly different IMADL formulations, and in the multi-seed case different seed sets. Cross-phase differences cannot be attributed to the loss redesign alone.
+1. **"Phase 3 directly improves on Phase 2."** Phase 3 and Phase 2 use different λ, γ, or α settings, possibly different IMADL formulations, and in the multi-seed case different seed sets. Cross-phase differences cannot be attributed to the loss redesign alone.
 2. **"Normalisation does not work for any loss."** The Phase 2.2-fix1 probe covers three candidates; it is not exhaustive and its scale ratios are estimates. The claim used in Chapter 5 is that normalisation is not a *universal* fix and that two of three probed variants degrade under it.
 3. **"The 6-month 1995-01..1995-06 window is a headline result."** Any result on that window is labelled explicitly as an early sanity check, and none of the 24-month tables reports numbers from the 6-month window.
 4. **"A single seed is evidence of robustness."** Seed-42 tables are comparison tables within the single-seed protocol; robustness claims only attach to multi-seed Phase 2 rows.

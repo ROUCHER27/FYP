@@ -65,14 +65,14 @@ The scope of this report is deliberately narrow so that the causal attribution i
 - *Moderate.* Same window but different hyperparameters or seed sets across the compared rows: cross-phase comparisons are used as motivation chains, not as direct-improvement claims.
 - *Weak / contextual.* Alignment diagnostics, the normalisation probe with estimated scale ratios, and legacy 6-month sanity checks. These are cited for scope-setting, not as headlines.
 
-**Non-claims.** The report does *not* claim that (i) MLP[64, 32, 16] is the optimal architecture for loss-design research, (ii) the M2-robust γ family is optimal across market regimes, (iii) loss-component normalisation universally fails, (iv) single-seed results indicate robustness, or (v) Phase 2 exactly replicates Phase 1.5 at a formula level. Each of these is explicitly avoided throughout Chapters 3 and 5.
+**Non-claims.** The report does *not* claim that (i) MLP[64, 32, 16] is the optimal architecture for loss-design research, (ii) the M2-robust γ family is optimal across market regimes, (iii) loss-component normalisation universally fails, (iv) single-seed results indicate robustness, or (v) Phase 3 exactly replicates Phase 2 at a formula level. Each of these is explicitly avoided throughout Chapters 3 and 5.
 
 ## 1.6 Contributions and report structure
 
 The primary contributions of this report are:
 
 1. **A same-conditions 24-month baseline.** A single-seed comparison of seven baseline loss families (MSE, MedSE, MADL, GMADL, IMADL, and two hybrid multiplicative variants) under an identical runner, window, feature set, model, batch size, and portfolio construction (Chapter 5 §5.2).
-2. **A parameterised hybrid-loss sweep.** Nine Phase 1.5 variants (A1–A5 and M1–M4) with explicit $\lambda_{\mathrm{dir}}$ and $\lambda_{\mathrm{hub}}$ settings, evaluated under the same protocol as the baseline (Chapter 5 §5.3).
+2. **A parameterised hybrid-loss sweep.** Nine Phase 2 variants (A1–A5 and M1–M4) with explicit $\lambda_{\mathrm{dir}}$ and $\lambda_{\mathrm{hub}}$ settings, evaluated under the same protocol as the baseline (Chapter 5 §5.3).
 3. **A multi-seed γ refinement.** Five γ values of the M2-robust family evaluated across three seeds, with explicit cross-seed mean, standard deviation, minimum, maximum, and coefficient of variation (Chapter 5 §5.4 and Table 5.3).
 4. **An integrated sweep across alternative hybrid parameterisations.** IMADL-m2 α, IMADL-GMADL β, and adaptive-λ families evaluated under the same multi-seed protocol, producing a grouped summary that identifies `m2_robust_gamma07` and `imadl_m2_alpha06` as the self-consistent peaks (Chapter 5 §5.5 and Table 5.4).
 5. **A loss-component normalisation probe.** A three-candidate test of whether scale imbalance between the directional and magnitude components drives the observed Sharpe ordering; the result is that `m2_robust_gamma07` is approximately scale-stable while `gamma10` and `alpha06` degrade under normalisation (Chapter 5 §5.6).
