@@ -67,26 +67,34 @@ footskip=0.25in]{geometry}
 \captionsetup{font=small,labelfont=bf}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Title page — matches mid-term report style with logo
-\title{\bfseries {\sc{ Final Year Project Final Report \\[1cm]
-Loss Function Design for Cross-Sectional Stock-Return Prediction \\[0.5cm]
+% Title page — exact XJTLU template format
+\title{\bfseries {%
+\MakeUppercase{Loss Function Design for Cross-Sectional Stock-Return Prediction} \\[0.5cm]
 损失函数设计用于横截面股票收益预测 \\[2cm]
-}}}
-\author{ \sc{a thesis}   \\ [5pt]
-\sc{submitted to School of Mathematics \& Physics}\\  [5pt]
-\sc{of Xi'an Jiaotong-Liverpool University}\\ [5pt]
-\sc{in partial fulfilment for the award of the degree of} \\[1.5cm]
-\textsc{\Large{BSc Applied Mathematics}} \\[5pt]
- By\\[5pt]
- \Large{{Roucheng Li 1234567}}\\ [1cm]
- Supervisor: Dr. XXXX XXXX\\ [2cm]
-\titlepic{\includegraphics[width=7cm]{xjtluicon.jpg}}\\
+}}
+\author{%
+a thesis \\[5pt]
+submitted to School of Mathematics \& Physics \\[5pt]
+of Xi'an Jiaotong-Liverpool University \\[5pt]
+in partial fulfilment for the award of the degree of \\[1.5cm]
+\textsc{\Large BSc Applied Mathematics} \\[5pt]
+By \\[5pt]
+\Large{Roucheng Li 1234567} \\[1cm]
+\normalsize Supervisor: Dr. XXXX XXXX \\[1cm]
+February 8, 2026 \\[1.5cm]
+\titlepic{\includegraphics[width=4cm]{xjtluicon.jpg}}
 }
 
 \begin{document}
 
+% === Title page ===
 \clearpage\maketitle
 \thispagestyle{empty}
+
+% === Blank page (required by template) ===
+\newpage
+\thispagestyle{empty}
+\mbox{}
 \newpage
 
 % === Abstract ===
