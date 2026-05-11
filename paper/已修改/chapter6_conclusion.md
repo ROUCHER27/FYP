@@ -36,7 +36,7 @@ Several limitations scope the findings.
 
 **Architecture is not ablated.** The MLP[64, 32, 16] with ReLU and dropout $0.2$ was selected on pre-test data for an earlier research question and then frozen. The report conditions on this architecture rather than arguing for it; a larger or smaller network could change the magnitude of the loss-function effects documented here.
 
-**Feature set restriction.** All Chapter 5 numbers use the X1 feature set: the model input is 15 columns comprising 10 X1 engineered columns (5 horizons × cumulative return + cumulative turnover) together with the 5 base panel columns retained by `assemble_feature_matrix` (see Table 4.3). Alternative feature sets are implemented in the codebase but were not run under the final protocol. Loss–feature interactions are untested.
+**Feature set restriction.** All Chapter 5 numbers use the X1 feature set: the model input is 15 columns comprising 10 X1 engineered columns (5 horizons × cumulative return + cumulative turnover) together with the 5 base panel columns retained by `assemble_feature_matrix` (see Appendix B Table B.3). Alternative feature sets are implemented in the codebase but were not run under the final protocol. Loss–feature interactions are untested.
 
 ## 6.3 Future work
 

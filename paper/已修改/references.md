@@ -18,6 +18,12 @@ Bracket citations used in Chapters 1 and 2 map to the entries below. Entries fol
 
 [8] Michańków, J., Ślepaczuk, R., & Bielak, P. (2024). *Generalized Mean Absolute Directional Loss (GMADL).* Working paper, University of Warsaw. Extended formulation introducing the sigmoid-based directional loss weighted by $|y|^b$.
 
+[9] Gu, S., Kelly, B., & Xiu, D. (2021). *Autoencoder asset pricing models.* Journal of Econometrics, 222(1), 429–450. Extends [1] with latent-factor extraction; supports the broader ML asset-pricing context of Chapter 2.
+
+[10] Han, C. (2021). *Bimodal characteristic returns and predictability enhancement via machine learning.* Management Science. Demonstrates that ML models can exploit non-linear return predictability from characteristic-based features.
+
+[11] Medhat, M., & Schmeling, M. (2021). *Short-term momentum.* The Review of Financial Studies, 35(3), 1480–1526. Motivates the cumulative-return and cumulative-turnover feature construction used in X1 (Chapter 4 §4.4).
+
 ## Auxiliary references
 
 These works are cited by bracket `[A1]..[A8]` in the chapter body where they are substantively used. A LaTeX pass that adopts a full author–year bibliography style should merge them into the main list with their own keys.

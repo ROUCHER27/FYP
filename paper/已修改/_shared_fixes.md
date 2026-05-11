@@ -28,7 +28,7 @@ The authoritative 15 model-input columns (order as emitted by `assemble_feature_
 
 Rule:
 - Wherever the old text says "X1 is 15-dimensional cumulative-return and cumulative-turnover" or equivalent, correct it to "the X1 feature set contributes 10 engineered columns; the model input is 15 columns comprising these 10 X1 columns together with the 5 base panel columns (`RET`, `VOL`, `SHROUT`, `r`, `to`) that `assemble_feature_matrix` retains."
-- Chapter 4 §4.4.1 gets the full 15-row table above (labelled "**Table 4.3 — 15 model-input columns consumed by `assemble_feature_matrix`.**"). Other chapters/abstract/appendix A/B cite Table 4.3 rather than repeating the full list.
+- Chapter 4 §4.4.1 references the full 15-row table in Appendix B Table B.3. Other chapters/abstract/appendix A cite "Appendix B Table B.3" rather than repeating the full list.
 - Do not rewrite the MLPConfig line `input_dim=15`; that is correct.
 
 ## R2. "Robustness" must be reserved for multi-seed rows

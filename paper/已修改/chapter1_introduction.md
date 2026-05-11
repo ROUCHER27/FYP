@@ -1,6 +1,6 @@
 # Chapter 1: Introduction
 
-## 1.1 Background, motivation, and research gap
+## 1.1 Background and motivation 
 
 Machine-learning models are now widely used for cross-sectional stock-return prediction and long-short portfolio construction. In this setting, the loss function is not just a technical training choice: it determines which prediction errors the model treats as important. Yet most return-prediction studies vary architectures and feature sets while keeping the objective at generic regression losses such as Mean Squared Error (MSE) or Mean Absolute Error (MAE).
 
@@ -19,11 +19,14 @@ The study is deliberately narrow. It fixes the equity universe, X1 feature input
 
 ## 1.3 Research questions
 
-**RQ1: How does loss choice affect prediction-level and portfolio-level performance under a fixed evaluation protocol?** This question compares regression, robust, directional, and hybrid losses while holding data, model, and portfolio rule fixed, asking whether calibration metrics (R²) and portfolio metrics (Sharpe) move together or decouple.
+**RQ1: How does loss choice affect prediction-level and portfolio-level performance under a fixed evaluation protocol?** 
+This question compares regression, robust, directional, and hybrid losses while holding data, model, and portfolio rule fixed, asking whether calibration metrics (R²) and portfolio metrics (Sharpe) move together or decouple.
 
-**RQ2: Which hybrid-loss design gives the best supported Sharpe-stability trade-off?** Among hybrid losses that combine directional alignment with robust magnitude control, this question asks which parameterisation achieves the highest mean Sharpe while maintaining tolerable cross-seed variability.
+**RQ2: Which hybrid-loss design gives the best supported Sharpe-stability trade-off?** 
+Among hybrid losses that combine directional alignment with robust magnitude control, this question asks which parameterisation achieves the highest mean Sharpe while maintaining tolerable cross-seed variability.
 
-**RQ3: Are the leading hybrid-loss candidates approximately stable under diagnostic component normalisation?** This question tests whether the observed Sharpe ordering is driven by the relative scale of loss components or by a genuine loss-family effect.
+**RQ3: Are the leading hybrid-loss candidates approximately stable under diagnostic component normalisation?** 
+This question tests whether the observed Sharpe ordering is driven by the relative scale of loss components or by a genuine loss-family effect.
 
 Chapter 5 reports the empirical evidence for these questions, and Chapter 6 synthesises the answers.
 

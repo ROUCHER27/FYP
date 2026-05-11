@@ -9,7 +9,7 @@ All numbers allowed to appear in the final report are listed here with provenanc
 - Main test window: `1995-01` to `1996-12` (24 monthly cross-sections, verified row count = 24).
 - Seed: `42` (single-seed for baseline and Phase 1.5 tables below).
 - Model: `MLPConfig(input_dim=15, hidden_dims=[64, 32, 16], activation='relu', dropout=0.2)`.
-- Feature set: X1 contributes 10 engineered columns (cumulative returns + cumulative turnover at 5 horizons); the 15-column model input also includes `RET`, `VOL`, `SHROUT`, `r`, and `to` (see Chapter 4 Table 4.3).
+- Feature set: X1 contributes 10 engineered columns (cumulative returns + cumulative turnover at 5 horizons); the 15-column model input also includes `RET`, `VOL`, `SHROUT`, `r`, and `to` (see Appendix B Table B.3).
 - Training: `max_epochs=20`, `batch_size=1024`, no retraining during test period.
 - Portfolio: cross-sectional top 10% long / bottom 10% short, signal-tilted weights (z within bucket clipped to ±3), capped-simplex projection at 5% per stock.
 - Evaluation metrics: monthly long-short return, cumulative return over 24 months, annualised Sharpe computed as $\text{Sharpe} = \sqrt{12} \cdot \bar r / \sigma_r$ with $\bar r, \sigma_r$ the sample mean and standard deviation of the monthly long-short portfolio return series (`compute_long_short_stats` in `sanity_check_signal_tilted.py` uses `periods_per_year=12`), and average R² across months.

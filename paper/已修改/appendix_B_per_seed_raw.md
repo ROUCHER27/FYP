@@ -138,3 +138,25 @@ Before re-running any table for publication, verify:
 - Floating-point noise in `compute_portfolio_returns`. The capped-simplex projection iterates up to 10 times; edge cases (multiple weights hitting the cap simultaneously) can produce microscopic differences across runs.
 - `git show phase2.2-fix:...` depends on the `phase2.2-fix` branch being present in the local clone. `git fetch` if needed.
 - The 6-month legacy window `1995-01..1995-06` in `sanity_outputs/` is not part of this appendix's reproduction and should not be used for any final-report table.
+
+## B.7 Complete model input columns
+
+**Table B.3 — Complete 15-column model input for X1.**
+
+| # | Column | Description |
+|---|---|---|
+| 1 | RET | raw monthly total return for month t |
+| 2 | VOL | monthly trading volume (shares) for month t |
+| 3 | SHROUT | shares outstanding (thousands) for month t |
+| 4 | r | numeric copy of RET |
+| 5 | to | monthly turnover = VOL/(SHROUT×1000) |
+| 6 | cr_1m | 1-month cumulative lagged return |
+| 7 | co_1m | 1-month cumulative lagged turnover |
+| 8 | cr_3m | 3-month cumulative lagged return |
+| 9 | co_3m | 3-month cumulative lagged turnover |
+| 10 | cr_6m | 6-month cumulative lagged return |
+| 11 | co_6m | 6-month cumulative lagged turnover |
+| 12 | cr_9m | 9-month cumulative lagged return |
+| 13 | co_9m | 9-month cumulative lagged turnover |
+| 14 | cr_12m | 12-month cumulative lagged return |
+| 15 | co_12m | 12-month cumulative lagged turnover |
