@@ -58,7 +58,7 @@ Figure~\ref{fig:loss-reward-penalty} illustrates how the directional gate and th
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{../figures/fig3_1_loss_reward_penalty_response.png}
+    \includegraphics[width=0.9\textwidth]{figures/fig3_1_loss_reward_penalty_response.png}
     \caption{Reward and penalty logic of the hybrid loss components. The panels show how the normalised directional gate $D(y,\hat y)$ and the multiplicative gate $1 + \lambda D$ respond as the prediction changes sign for four realised-return values. Blue shading marks sign-correct predictions and orange shading marks sign-wrong predictions. The dashed purple curve is the GMADL signed score for reference. Illustrative; closed-form components from \S3.3; no training data. $a=100$, $b=2$, $\lambda=5$.}
     \label{fig:loss-reward-penalty}
 \end{figure}
@@ -132,7 +132,7 @@ Figure~\ref{fig:hybrid-loss-surfaces} shows the four loss surfaces on the $(y, \
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{../figures/fig3_2_hybrid_loss_surfaces.png}
+    \includegraphics[width=0.9\textwidth]{figures/fig3_2_hybrid_loss_surfaces.png}
     \caption{Loss-surface comparison of directional and hybrid objectives. The panels show the loss value on the $(y, \hat y)$ plane for four constructions. The solid white lines mark $y=0$ and $\hat y=0$; the dashed diagonal is the calibration line $\hat y = y$. Quadrants I and III (where $y \cdot \hat y > 0$) are sign-correct; quadrants II and IV are sign-wrong. Illustrative; closed-form components from \S3.3; no training data. $a=100$, $b=2$, $\delta=0.01$.}
     \label{fig:hybrid-loss-surfaces}
 \end{figure}
@@ -145,7 +145,7 @@ The M2-robust family is a generalisation of the M-series in which the gating fac
 L_{\mathrm{M2\text{-}robust}, \gamma}(y, \hat y)
 = \big(1 + \lambda_{\mathrm{dir}} \cdot D(y, \hat y)\big) \cdot H^{\gamma}(y - \hat y),
 \]
-where $H^{\gamma}$ is the $\gamma$-controlled robust magnitude term that saturates the contribution of large residuals. Small $\gamma$ flattens the loss surface and prioritises the directional component; large $\gamma$ approaches the Phase 2 M2 form. The five values scanned in Chapter 5 Table 5.3 are $\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$. The Phase 3b integrated summary (Chapter 5 Table 5.4) extends this with finer-grained values $\gamma \in \{0.001, 0.01, 0.10\}$, an IMADL-m2 $\alpha$ sweep ($\alpha$ is the weight on the IMADL-style directional rebalancing, scanned over $\{0.2, 0.3, \ldots, 0.8\}$), an IMADL-GMADL $\beta$ sweep ($\beta$ controls the composition of the two directional primitives), and an adaptive-$\lambda$ schedule that modulates the directional weight during training.
+where $H^{\gamma}$ is the $\gamma$-controlled robust magnitude term that saturates the contribution of large residuals. Small $\gamma$ flattens the loss surface and prioritises the directional component; large $\gamma$ approaches the Phase 2 M2 form. The five values scanned in Chapter~5 Table~\ref{tab:gamma-refinement} are $\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$. The Phase 3b integrated summary (Chapter~5 Table~\ref{tab:integrated-summary}) extends this with finer-grained values $\gamma \in \{0.001, 0.01, 0.10\}$, an IMADL-m2 $\alpha$ sweep ($\alpha$ is the weight on the IMADL-style directional rebalancing, scanned over $\{0.2, 0.3, \ldots, 0.8\}$), an IMADL-GMADL $\beta$ sweep ($\beta$ controls the composition of the two directional primitives), and an adaptive-$\lambda$ schedule that modulates the directional weight during training.
 
 The exact implementations of the Phase 3 variants beyond the core Phase 2 A/M set live on a separate evidence branch alongside the run outputs cited by the grouped summaries. For the evidence used in Chapter 5, the authoritative reference is the grouped summary CSV (source path listed in each table caption). The design intent in every case is the same as the Phase 2 skeleton: a magnitude-controlling backbone combined with a directional-rebalancing factor, parameterised so that a scan can locate the stability peak under multi-seed evaluation.
 
@@ -153,7 +153,7 @@ Figure~\ref{fig:triple-property} illustrates the three properties that distingui
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{../figures/fig3_3_triple_property.png}
+    \includegraphics[width=0.9\textwidth]{figures/fig3_3_triple_property.png}
     \caption{Triple property of the multiplicative hybrid loss. Panel (a): directional asymmetry for $y = +5\%$; blue shading marks sign-correct predictions and orange shading marks sign-wrong predictions. Panel (b): magnitude awareness at a fixed sign-wrong prediction $\hat y = -3\%$; the hybrid penalty diverges from Huber as $|y|$ grows. Panel (c): implicit variance penalty; expected batch loss as a function of prediction spread, with $y$ drawn from a realistic monthly return distribution ($\sigma \approx 4\%$). All panels use $a = 100$, $b = 2$, $\delta = 0.01$, $\lambda = 5$. Illustrative; closed-form components from \S3.3; no training data.}
     \label{fig:triple-property}
 \end{figure}
@@ -180,7 +180,7 @@ Each experiment runs the following deterministic protocol.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{../figures/fig3_4_portfolio_flow.png}
+    \includegraphics[width=0.9\textwidth]{figures/fig3_4_portfolio_flow.png}
     \caption{Portfolio construction pipeline.}
     \label{fig:portfolio-flow}
 \end{figure}
@@ -267,7 +267,7 @@ Two operational caveats apply. First, floating-point outputs from CUDA and MPS d
 \textbf{Claim strength taxonomy.} The evidence used in this report falls into three tiers, and claims are labelled accordingly throughout Chapter 5.
 
 \begin{itemize}
-    \item \textbf{Strong.} Same runner, same window, same seed set, verified CSVs, grouped summary re-derivable from raw runs. Examples: Phase 1 baseline 24-month single-seed comparison (Table 5.1), Phase 2 single-seed sweep (Table 5.2), Phase 3a $\gamma$ refinement grouped summary (Table 5.3). Claims of the form ``variant X has a higher mean Sharpe than variant Y within phase P'' at this level are safe.
+    \item \textbf{Strong.} Same runner, same window, same seed set, verified CSVs, grouped summary re-derivable from raw runs. Examples: Phase 1 baseline 24-month single-seed comparison (Table~\ref{tab:baseline-loss-comparison}), Phase 2 single-seed sweep (Table~\ref{tab:phase2-variants}), Phase 3a $\gamma$ refinement grouped summary (Table~\ref{tab:gamma-refinement}). Claims of the form ``variant X has a higher mean Sharpe than variant Y within phase P'' at this level are safe.
     \item \textbf{Moderate.} Same window and broad loss family, different hyperparameters or seed sets across the compared rows. Example: comparing the Phase 2 A3 row (seed 42 peak) to the Phase 3a $\gamma$07 row (multi-seed winner). Such comparisons are used as \emph{motivation chains} in the empirical chapter rather than as direct-improvement claims.
     \item \textbf{Weak / contextual.} Phase 2.5 alignment diagnostics, the Phase 2.2-fix1 normalisation probe (because scale ratios are estimated), and the original six-month sanity-check material. These are cited as scope-setting or consistency-checking evidence but are never quoted as headline performance numbers.
 \end{itemize}
