@@ -4,7 +4,7 @@ This chapter describes the data that underlies every empirical claim in Chapter~
 
 \section{Data source}\label{sec:data-source}
 
-The dataset is a CRSP-style monthly panel of US-listed equity observations, sourced from the Center for Research in Security Prices (CRSP) monthly stock file \cite{A4}. The term ``CRSP-style'' is used because the project's data snapshot has not been independently verified against the official CRSP database for completeness or delisting-return handling (see \S\ref{sec:data-limitations}). Seven CSV files at the repository root cover the period from December 1989 to December 2024, each file holding roughly five years of observations with a one-month overlap at boundaries. Every file shares the same schema:
+The dataset is a CRSP-style monthly panel of US-listed equity observations, sourced from the Center for Research in Security Prices (CRSP) monthly stock file \cite{refA4}. The term ``CRSP-style'' is used because the project's data snapshot has not been independently verified against the official CRSP database for completeness or delisting-return handling (see \S\ref{sec:data-limitations}). Seven CSV files at the repository root cover the period from December 1989 to December 2024, each file holding roughly five years of observations with a one-month overlap at boundaries. Every file shares the same schema:
 
 \begin{table}[H]
 \centering
@@ -26,7 +26,7 @@ At the training end of the panel the \texttt{89.12-94.csv} file contributes 449,
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.9\textwidth]{fig4_1_data_coverage.png}
+\includegraphics[width=0.9\textwidth]{../figures/fig4_1_data_coverage.png}
 \caption{Data coverage and training-era return distribution.}
 \label{fig:data-coverage}
 \end{figure}
@@ -78,7 +78,7 @@ The repository implements multiple feature sets (\texttt{Model\_Train/features.p
 
 \subsection{X1 --- cumulative return and cumulative turnover (used throughout)}\label{subsec:x1}
 
-The X1 feature set contributes 10 engineered columns (5 horizons $\times$ 2 variables), following the cumulative-return and cumulative-turnover construction of Medhat and Schmeling (2021) \cite{11} and Daniel and Moskowitz (2016) \cite{3}. The model input is 15 columns comprising these 10 X1 columns together with the 5 base panel columns (RET, VOL, SHROUT, r, to) that \texttt{assemble\_feature\_matrix} retains.
+The X1 feature set contributes 10 engineered columns (5 horizons $\times$ 2 variables), following the cumulative-return and cumulative-turnover construction of Medhat and Schmeling (2021) \cite{ref11} and Daniel and Moskowitz (2016) \cite{ref3}. The model input is 15 columns comprising these 10 X1 columns together with the 5 base panel columns (RET, VOL, SHROUT, r, to) that \texttt{assemble\_feature\_matrix} retains.
 
 Formally, with $r_{i,t-1}$ denoting the one-month-lagged simple return (to avoid look-ahead for the $t+1$ target) and $\text{to}_{i,t-1}$ the one-month-lagged turnover:
 
