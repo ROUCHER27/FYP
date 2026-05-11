@@ -15,10 +15,10 @@ The pattern across this literature is informative: essentially every study itera
 Equity returns are not Gaussian. Monthly cross-sections contain sporadic observations with returns in excess of $\pm 100\%$ (in the training-era panel used in Chapter~4, the realised monthly return distribution has a standard deviation of roughly $19.5\%$ but a maximum of $+2400\%$ for a single name-month). Four properties of this distribution challenge standard loss functions:
 
 \begin{enumerate}
-    \item \textbf{Heavy tails.} Extreme returns occur far more often than a Gaussian model predicts, so the variance of a sample is dominated by a small number of tail observations.
-    \item \textbf{Skewness.} Return distributions are often negatively skewed at the individual-stock level, though the training panel's extreme positive tail ($+2400\%$) shows that right-tail outliers also occur. The asymmetry violates the symmetric-noise assumption of MSE.
-    \item \textbf{Time-varying volatility.} Volatility clusters, violating the homoskedasticity assumption that underpins MSE's efficiency argument.
-    \item \textbf{Idiosyncratic shocks.} Company-specific events (earnings surprises, management changes, regulatory shocks) produce large returns that are unrelated to predictable factors and act as noise from the perspective of a factor-style model.
+ \item \textbf{Heavy tails.} Extreme returns occur far more often than a Gaussian model predicts, so the variance of a sample is dominated by a small number of tail observations.
+ \item \textbf{Skewness.} Return distributions are often negatively skewed at the individual-stock level, though the training panel's extreme positive tail ($+2400\%$) shows that right-tail outliers also occur. The asymmetry violates the symmetric-noise assumption of MSE.
+ \item \textbf{Time-varying volatility.} Volatility clusters, violating the homoskedasticity assumption that underpins MSE's efficiency argument.
+ \item \textbf{Idiosyncratic shocks.} Company-specific events (earnings surprises, management changes, regulatory shocks) produce large returns that are unrelated to predictable factors and act as noise from the perspective of a factor-style model.
 \end{enumerate}
 
 Under these conditions, a loss function that is quadratic in the residual gives disproportionate weight to a small number of outliers. The trained model fits the noise rather than the predictable component. This is the classical motivation for robust regression --- a line of work that goes back at least to Huber (1964) \cite{refA1} and has been applied extensively to finance whenever heavy tails matter.
@@ -46,34 +46,34 @@ An Inverse MADL (IMADL) variant has also been developed within the project codeb
 The directional-loss family has three theoretical attractions that directly address the point-prediction--portfolio mismatch of \S~2.3:
 
 \begin{enumerate}
-    \item \textbf{Directional alignment.} A model trained on MADL/GMADL is explicitly optimising for $\operatorname{sign}(\hat{y}) = \operatorname{sign}(y)$, which is the quantity that determines whether a name enters the long or short bucket.
-    \item \textbf{Magnitude weighting.} By multiplying the directional term by $|y|$ or $|y|^b$, the loss spends training signal on the moves that matter economically.
-    \item \textbf{Bounded directional activation.} The directional factors ($\tanh$ and sigmoid) saturate, which limits the influence of the alignment term on any single observation. However, the overall loss is weighted by $|y|$ or $|y|^b$, so the \textit{realised-return magnitude} component is unbounded. The directional activation provides implicit robustness to prediction outliers but does not fully protect against heavy-tailed realised returns.
+ \item \textbf{Directional alignment.} A model trained on MADL/GMADL is explicitly optimising for $\operatorname{sign}(\hat{y}) = \operatorname{sign}(y)$, which is the quantity that determines whether a name enters the long or short bucket.
+ \item \textbf{Magnitude weighting.} By multiplying the directional term by $|y|$ or $|y|^b$, the loss spends training signal on the moves that matter economically.
+ \item \textbf{Bounded directional activation.} The directional factors ($\tanh$ and sigmoid) saturate, which limits the influence of the alignment term on any single observation. However, the overall loss is weighted by $|y|$ or $|y|^b$, so the \textit{realised-return magnitude} component is unbounded. The directional activation provides implicit robustness to prediction outliers but does not fully protect against heavy-tailed realised returns.
 \end{enumerate}
 
 Several limitations of the pure directional family have also been documented:
 
 \begin{enumerate}
-    \item \textbf{Symmetric reward and penalty.} The reward for a correct large-magnitude prediction equals the penalty for an incorrect large-magnitude prediction. The loss encodes no preference for avoiding losses over capturing gains, which is a mismatch with the risk-averse nature of most trading applications.
-    \item \textbf{Weak gradients near $\hat{y} \approx 0$.} When the prediction is close to zero, $y \hat{y}$ is close to zero, and the sigmoid or $\tanh$ derivative is close to its peak but the overall loss derivative with respect to $\hat{y}$ remains proportional to $|y|$ (or $|y|^b$). For small $|y|$ this can produce uninformative training signal, slowing convergence.
-    \item \textbf{No notion of prediction precision beyond sign.} A prediction of $+0.01$ and a prediction of $+1.00$ receive essentially the same directional reward if the realised return is positive. In a ranking context this is a feature rather than a bug --- the model focuses on the ordering --- but in a calibrated forecasting context it would be a liability.
-    \item \textbf{Scale sensitivity in the neural-network setting.} Empirically, MADL/GMADL trained MLPs produce predictions whose scale drifts far from the realised-return scale (Chapter~5 shows average R$^{2}$ values divergent by several orders of magnitude). The directional reward is unaffected, but any diagnostic that depends on calibration is no longer usable.
+ \item \textbf{Symmetric reward and penalty.} The reward for a correct large-magnitude prediction equals the penalty for an incorrect large-magnitude prediction. The loss encodes no preference for avoiding losses over capturing gains, which is a mismatch with the risk-averse nature of most trading applications.
+ \item \textbf{Weak gradients near $\hat{y} \approx 0$.} When the prediction is close to zero, $y \hat{y}$ is close to zero, and the sigmoid or $\tanh$ derivative is close to its peak but the overall loss derivative with respect to $\hat{y}$ remains proportional to $|y|$ (or $|y|^b$). For small $|y|$ this can produce uninformative training signal, slowing convergence.
+ \item \textbf{No notion of prediction precision beyond sign.} A prediction of $+0.01$ and a prediction of $+1.00$ receive essentially the same directional reward if the realised return is positive. In a ranking context this is a feature rather than a bug --- the model focuses on the ordering --- but in a calibrated forecasting context it would be a liability.
+ \item \textbf{Scale sensitivity in the neural-network setting.} Empirically, MADL/GMADL trained MLPs produce predictions whose scale drifts far from the realised-return scale (Chapter~5 shows average R$^{2}$ values divergent by several orders of magnitude). The directional reward is unaffected, but any diagnostic that depends on calibration is no longer usable.
 \end{enumerate}
 
 Figure~\ref{fig:madl_gmadl_comparison} illustrates the key behavioural difference between MADL and GMADL. For a small positive return ($y = +0.01$, left panel), both losses are nearly flat across the sign-correct region --- the reward signal is weak because the move is small. GMADL's sigmoid saturation produces a slightly smoother transition at the sign-switch point compared to MADL's tanh. For a large negative return ($y = -0.80$, right panel), the difference is more pronounced: GMADL's $|y|^b$ weighting (with $b=2$) amplifies the penalty in the sign-wrong region to approximately twice the MADL level, making GMADL more sensitive to large-magnitude directional errors. This magnitude-amplification property is one reason GMADL's directional component is reused in the hybrid losses of Chapter~3.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{figures/fig2_2_madl_gmadl_comparison.png}
-    \caption{MADL vs GMADL response for small and large realised returns. Left: small positive return ($y = +0.01$); both losses are nearly flat in the sign-correct region. Right: large negative return ($y = -0.80$); GMADL's $|y|^b$ weighting amplifies the sign-wrong penalty to approximately twice the MADL level. Blue shading marks sign-correct predictions; orange shading marks sign-wrong predictions. Illustrative; closed-form components from \S~3.3; no training data. $a=100$, $b=2$, temperature=25.}
-    \label{fig:madl_gmadl_comparison}
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/fig2_2_madl_gmadl_comparison.png}
+ \caption[MADL vs GMADL response for small and large realised returns]{MADL vs GMADL response for small and large realised returns. Left: small positive return ($y = +0.01$); both losses are nearly flat in the sign-correct region. Right: large negative return ($y = -0.80$); GMADL's $|y|^b$ weighting amplifies the sign-wrong penalty to approximately twice the MADL level. Blue shading marks sign-correct predictions; orange shading marks sign-wrong predictions. Illustrative; closed-form components from \S~3.3; no training data. $a=100$, $b=2$, temperature=25.}
+ \label{fig:madl_gmadl_comparison}
 \end{figure}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{figures/fig2_1_loss_shapes.png}
-    \caption{Conceptual loss-function shape comparison. Generated by \texttt{paper/figures/plot\_loss\_shapes.py}. Illustrative shapes (no training data) of MSE vs Huber ($\delta = 0.01$), per-observation MedSE, MADL vs GMADL with the weak-gradient band around $\hat{y} = 0$ highlighted, and the \texttt{hybrid\_mul\_m1} loss at $\lambda_{\mathrm{dir}} = 2$ compared against its Huber backbone. All formulas match Chapter~3 \S~3.3; the realised return is fixed at $y = 0.05$.}
-    \label{fig:loss_shapes}
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/fig2_1_loss_shapes.png}
+ \caption[Conceptual loss-function shape comparison]{Conceptual loss-function shape comparison. Illustrative shapes (no training data) of MSE vs Huber ($\delta = 0.01$), per-observation MedSE, MADL vs GMADL with the weak-gradient band around $\hat{y} = 0$ highlighted, and the \texttt{hybrid\_mul\_m1} loss at $\lambda_{\mathrm{dir}} = 2$ compared against its Huber backbone. All formulas match Chapter~3 \S~3.3; the realised return is fixed at $y = 0.05$.}
+ \label{fig:loss_shapes}
 \end{figure}
 
 These limitations motivate the hybrid designs evaluated later in the report. Rather than treating regression accuracy, robustness, and directional alignment as separate objectives, the project tests whether they can be combined in one training loss. Chapter~3 gives the formal definitions of the additive, multiplicative, and M2-robust variants; Chapter~5 evaluates them empirically.
@@ -85,9 +85,9 @@ The standard diagnostic concerns for empirical asset-pricing studies apply here 
 This report does not introduce new factors, but the loss-function comparison creates an analogous multiple-comparison problem: many loss variants are evaluated on the same 24-month test window. Three mitigations are applied:
 
 \begin{enumerate}
-    \item \textbf{Reporting every tested configuration.} Chapter~5 reports the full baseline table, the full A/M sweep, and the full multi-seed summaries rather than only the winning row. The reader can verify the selection rule and is not left guessing which configurations were omitted.
-    \item \textbf{Multi-seed evaluation with explicit stability reporting.} The final recommendation is not drawn from single-seed evidence. The $\gamma$ refinement and the broader multi-seed sweep are evaluated across three seeds per row, and stability is reported as the coefficient of variation $\mathrm{CV} = \sigma_S / |\mu_S|$. A single-seed peak does not qualify as a headline claim.
-    \item \textbf{Static out-of-sample protocol with no in-window tuning.} The model architecture is fixed (MLP[64,32,16]+ReLU+dropout 0.2) across every experiment, chosen via grid search on pre-test data and then frozen. Hyperparameters such as batch size and epoch count are held fixed across losses. No parameter is tuned on the 1995--1996 test window.
+ \item \textbf{Reporting every tested configuration.} Chapter~5 reports the full baseline table, the full A/M sweep, and the full multi-seed summaries rather than only the winning row. The reader can verify the selection rule and is not left guessing which configurations were omitted.
+ \item \textbf{Multi-seed evaluation with explicit stability reporting.} The final recommendation is not drawn from single-seed evidence. The $\gamma$ refinement and the broader multi-seed sweep are evaluated across three seeds per row, and stability is reported as the coefficient of variation $\mathrm{CV} = \sigma_S / |\mu_S|$. A single-seed peak does not qualify as a headline claim.
+ \item \textbf{Static out-of-sample protocol with no in-window tuning.} The model architecture is fixed (MLP[64,32,16]+ReLU+dropout 0.2) across every experiment, chosen via grid search on pre-test data and then frozen. Hyperparameters such as batch size and epoch count are held fixed across losses. No parameter is tuned on the 1995--1996 test window.
 \end{enumerate}
 
 These mitigations do not eliminate the multiple-testing concern. With three seeds, the standard error on mean Sharpe remains wide, and the absolute CV values reported in Chapter~5 should be read as order-of-magnitude indicators rather than precise estimates. A larger seed depth and a second, independent test window would strengthen the robustness argument; both are listed in the future-work discussion of Chapter~6.

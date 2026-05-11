@@ -20,10 +20,10 @@ The model is a fully connected feed-forward neural network (multi-layer perceptr
 
 \begin{lstlisting}[language=Python]
 MLPConfig(
-    input_dim=15,
-    hidden_dims=[64, 32, 16],
-    activation="relu",
-    dropout=0.2,
+ input_dim=15,
+ hidden_dims=[64, 32, 16],
+ activation="relu",
+ dropout=0.2,
 )
 \end{lstlisting}
 
@@ -44,8 +44,8 @@ The loss functions used in this report fall into three families and one combined
 \label{subsec:regression-losses}
 
 \begin{itemize}
-    \item \textbf{MSE.} Standard mean squared error; reduction is \texttt{mean}. Used as the traditional baseline.
-    \item \textbf{MedSE.} Median of squared residuals; reduction is \texttt{median} over each mini-batch of size 1024. Used as a robust baseline that is insensitive to up to 50\% contamination.
+ \item \textbf{MSE.} Standard mean squared error; reduction is \texttt{mean}. Used as the traditional baseline.
+ \item \textbf{MedSE.} Median of squared residuals; reduction is \texttt{median} over each mini-batch of size 1024. Used as a robust baseline that is insensitive to up to 50\% contamination.
 \end{itemize}
 
 \subsection{Directional losses}
@@ -53,9 +53,9 @@ The loss functions used in this report fall into three families and one combined
 \label{subsec:directional-losses}
 
 \begin{itemize}
-    \item \textbf{MADL.} Smooth tanh-based directional loss weighted by $|y|$, with $a = 25$. Rewards correct sign predictions.
-    \item \textbf{GMADL.} Sigmoid-based directional loss weighted by $|y|^b$, with $a = 100$, $b = 2$. Stronger magnitude weighting than MADL.
-    \item \textbf{IMADL.} Batch-normalised directional penalty plus a squared-error magnitude term ($\lambda_{\mathrm{dir}} = \lambda_{\mathrm{mag}} = 1$, $\epsilon = 10^{-8}$). The batch normalisation decouples loss scale from batch composition.
+ \item \textbf{MADL.} Smooth tanh-based directional loss weighted by $|y|$, with $a = 25$. Rewards correct sign predictions.
+ \item \textbf{GMADL.} Sigmoid-based directional loss weighted by $|y|^b$, with $a = 100$, $b = 2$. Stronger magnitude weighting than MADL.
+ \item \textbf{IMADL.} Batch-normalised directional penalty plus a squared-error magnitude term ($\lambda_{\mathrm{dir}} = \lambda_{\mathrm{mag}} = 1$, $\epsilon = 10^{-8}$). The batch normalisation decouples loss scale from batch composition.
 \end{itemize}
 
 All three are used as baseline comparisons in Chapter 5 \S5.2. See Appendix A \S A.2 for full expressions and derivatives.
@@ -63,10 +63,10 @@ All three are used as baseline comparisons in Chapter 5 \S5.2. See Appendix A \S
 Figure~\ref{fig:loss-reward-penalty} illustrates how the directional gate and the multiplicative gating factor respond as the prediction $\hat y$ sweeps from $-20\%$ to $+20\%$ for four representative realised-return values. The key observation is that the gate is not symmetric: when the prediction sign is wrong, the directional gate rises and the multiplicative factor amplifies any magnitude loss; when the sign is correct, the gate relaxes toward zero and the loss reduces to the plain Huber backbone. The asymmetry is stronger for large $|y|$ (panels a and d) than for small $|y|$ (panels b and c), because the batch-normalised $|y|^b$ weight scales the gate with realised-return magnitude.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{figures/fig3_1_loss_reward_penalty_response.png}
-    \caption{Reward and penalty logic of the hybrid loss components. The panels show how the normalised directional gate $D(y,\hat y)$ and the multiplicative gate $1 + \lambda D$ respond as the prediction changes sign for four realised-return values. Blue shading marks sign-correct predictions and orange shading marks sign-wrong predictions. The dashed purple curve is the GMADL signed score for reference. Illustrative; closed-form components from \S3.3; no training data. $a=100$, $b=2$, $\lambda=5$.}
-    \label{fig:loss-reward-penalty}
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/fig3_1_loss_reward_penalty_response.png}
+ \caption[Reward and penalty logic of the hybrid loss components]{Reward and penalty logic of the hybrid loss components. The panels show how the normalised directional gate $D(y,\hat y)$ and the multiplicative gate $1 + \lambda D$ respond as the prediction changes sign for four realised-return values. Blue shading marks sign-correct predictions and orange shading marks sign-wrong predictions. The dashed purple curve is the GMADL signed score for reference. Illustrative; closed-form components from \S3.3; no training data. $a=100$, $b=2$, $\lambda=5$.}
+ \label{fig:loss-reward-penalty}
 \end{figure}
 
 \subsection{Hybrid losses: additive and multiplicative}
@@ -138,10 +138,10 @@ Intuitively, the multiplicative form treats the Huber magnitude term as a backbo
 Figure~\ref{fig:hybrid-loss-surfaces} shows the four loss surfaces on the $(y, \hat y)$ plane. Panel (a) shows the GMADL signed score, which encodes pure directional reward and penalty but has no magnitude backbone. Panel (b) shows the Huber backbone alone, which is symmetric about the calibration diagonal and carries no directional information. Panels (c) and (d) show the additive and multiplicative hybrids: both break the symmetry of the Huber surface, but the multiplicative hybrid (d) concentrates the additional penalty in the sign-wrong quadrants more sharply, because the directional gate multiplies rather than adds to the magnitude term.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{figures/fig3_2_hybrid_loss_surfaces.png}
-    \caption{Loss-surface comparison of directional and hybrid objectives. The panels show the loss value on the $(y, \hat y)$ plane for four constructions. The solid white lines mark $y=0$ and $\hat y=0$; the dashed diagonal is the calibration line $\hat y = y$. Quadrants I and III (where $y \cdot \hat y > 0$) are sign-correct; quadrants II and IV are sign-wrong. Illustrative; closed-form components from \S3.3; no training data. $a=100$, $b=2$, $\delta=0.01$.}
-    \label{fig:hybrid-loss-surfaces}
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/fig3_2_hybrid_loss_surfaces.png}
+ \caption[Loss-surface comparison of directional and hybrid objectives]{Loss-surface comparison of directional and hybrid objectives. The panels show the loss value on the $(y, \hat y)$ plane for four constructions. The solid white lines mark $y=0$ and $\hat y=0$; the dashed diagonal is the calibration line $\hat y = y$. Quadrants I and III (where $y \cdot \hat y > 0$) are sign-correct; quadrants II and IV are sign-wrong. Illustrative; closed-form components from \S3.3; no training data. $a=100$, $b=2$, $\delta=0.01$.}
+ \label{fig:hybrid-loss-surfaces}
 \end{figure}
 
 \subsection{M2-robust \texorpdfstring{$\gamma$}{gamma} family and related Phase 2 parameterisations}
@@ -160,10 +160,10 @@ The exact implementations of the Phase 3 variants beyond the core Phase 2 A/M se
 Figure~\ref{fig:triple-property} illustrates the three properties that distinguish the multiplicative hybrid from plain regression and pure directional losses. Panel (a) shows the directional asymmetry: for a fixed realised return $y = +5\%$, the hybrid loss is substantially higher when the prediction sign is wrong than when it is correct, whereas MSE is symmetric. Panel (b) shows magnitude awareness: when the prediction is sign-wrong at $\hat y = -3\%$, the hybrid penalty grows faster than Huber as $|y|$ increases, because the batch-normalised $|y|^b$ weight in $D(y, \hat y)$ amplifies the gating factor for large realised returns. Panel (c) shows the implicit variance penalty: as prediction dispersion increases, more predictions fall into the sign-wrong region and the multiplicative gate amplifies the Huber backbone for each of them, causing expected batch loss to grow super-linearly --- a property absent from MSE and Huber. Together, these three panels explain why the M2-robust $\gamma$ family is the primary candidate for further empirical evaluation in Chapter 5.
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{figures/fig3_3_triple_property.png}
-    \caption{Triple property of the multiplicative hybrid loss. Panel (a): directional asymmetry for $y = +5\%$; blue shading marks sign-correct predictions and orange shading marks sign-wrong predictions. Panel (b): magnitude awareness at a fixed sign-wrong prediction $\hat y = -3\%$; the hybrid penalty diverges from Huber as $|y|$ grows. Panel (c): implicit variance penalty; expected batch loss as a function of prediction spread, with $y$ drawn from a realistic monthly return distribution ($\sigma \approx 4\%$). All panels use $a = 100$, $b = 2$, $\delta = 0.01$, $\lambda = 5$. Illustrative; closed-form components from \S3.3; no training data.}
-    \label{fig:triple-property}
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/fig3_3_triple_property.png}
+ \caption[Triple property of the multiplicative hybrid loss]{Triple property of the multiplicative hybrid loss. Panel (a): directional asymmetry for $y = +5\%$; blue shading marks sign-correct predictions and orange shading marks sign-wrong predictions. Panel (b): magnitude awareness at a fixed sign-wrong prediction $\hat y = -3\%$; the hybrid penalty diverges from Huber as $|y|$ grows. Panel (c): implicit variance penalty; expected batch loss as a function of prediction spread, with $y$ drawn from a realistic monthly return distribution ($\sigma \approx 4\%$). All panels use $a = 100$, $b = 2$, $\delta = 0.01$, $\lambda = 5$. Illustrative; closed-form components from \S3.3; no training data.}
+ \label{fig:triple-property}
 \end{figure}
 
 \section{Training protocol}
@@ -189,10 +189,10 @@ Each experiment runs the following deterministic protocol.
 \label{sec:portfolio-construction}
 
 \begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{figures/fig3_4_portfolio_flow.png}
-    \caption{Portfolio construction pipeline.}
-    \label{fig:portfolio-flow}
+ \centering
+ \includegraphics[width=0.9\textwidth]{figures/fig3_4_portfolio_flow.png}
+ \caption[Portfolio construction pipeline]{Portfolio construction pipeline.}
+ \label{fig:portfolio-flow}
 \end{figure}
 
 Six blocks: prediction vector $\hat y_t$ $\to$ top/bottom 10\% bucket selection ($k = \max(1, \lfloor 0.1\,N \rfloor)$) $\to$ within-bucket $z$-score clipped to $[-3, 3]$ $\to$ sign-consistent positive weights + bucket-level normalisation $\to$ capped-simplex projection (5\% per-name cap, $\leq$ 10 iterations) $\to$ long, short, and long-short scalar returns. Same pipeline is used for every loss and every seed; only $\hat y_t$ varies.
@@ -259,14 +259,14 @@ The study proceeds in four phases plus one set of diagnostic checks. Each phase 
 
 \textbf{Phase 3: Multi-seed robust-hybrid refinement (3 seeds per row).} Comprises two sub-phases:
 \begin{itemize}
-    \item \emph{Phase 3a --- $\gamma$ refinement.} Five $\gamma$ values of the M2-robust family ($\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$), three seeds each. Source: see Appendix B \S B.4.
-    \item \emph{Phase 3b --- Integrated $\alpha$/$\beta$/$\lambda$ sweeps.} Extends the comparison to IMADL-m2 $\alpha$ ($\alpha \in \{0.2, \ldots, 0.8\}$), IMADL-GMADL $\beta$ ($\beta \in \{0.3, 0.5, 0.7\}$), adaptive-$\lambda$ ($\lambda \in \{10, 50, 100\}$), and finer $\gamma$ values. Source: integrated grouped summary CSV on the same evidence branch.
+ \item \emph{Phase 3a --- $\gamma$ refinement.} Five $\gamma$ values of the M2-robust family ($\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$), three seeds each. Source: see Appendix B \S B.4.
+ \item \emph{Phase 3b --- Integrated $\alpha$/$\beta$/$\lambda$ sweeps.} Extends the comparison to IMADL-m2 $\alpha$ ($\alpha \in \{0.2, \ldots, 0.8\}$), IMADL-GMADL $\beta$ ($\beta \in \{0.3, 0.5, 0.7\}$), adaptive-$\lambda$ ($\lambda \in \{10, 50, 100\}$), and finer $\gamma$ values. Source: integrated grouped summary CSV on the same evidence branch.
 \end{itemize}
 
 \textbf{Phase 4: Diagnostic checks.} Two components:
 \begin{itemize}
-    \item \emph{Normalisation probe.} A three-seed re-run of the three strongest candidates with loss-component normalisation applied. Scale ratios are estimated rather than measured by a per-component logger. Source: see Appendix B \S B.4.
-    \item \emph{Alignment diagnostics.} Cross-phase consistency checks that identify runner and formula differences between Phase 2 and Phase 3 implementations. These support the claim boundaries in \S3.8 but are not headline evidence.
+ \item \emph{Normalisation probe.} A three-seed re-run of the three strongest candidates with loss-component normalisation applied. Scale ratios are estimated rather than measured by a per-component logger. Source: see Appendix B \S B.4.
+ \item \emph{Alignment diagnostics.} Cross-phase consistency checks that identify runner and formula differences between Phase 2 and Phase 3 implementations. These support the claim boundaries in \S3.8 but are not headline evidence.
 \end{itemize}
 
 \section{Reproducibility and claim boundaries}
@@ -280,9 +280,9 @@ Two operational caveats apply. First, floating-point outputs from CUDA and MPS d
 \textbf{Claim strength taxonomy.} The evidence used in this report falls into three tiers, and claims are labelled accordingly throughout Chapter 5.
 
 \begin{itemize}
-    \item \textbf{Strong.} Same runner, same window, same seed set, verified CSVs, grouped summary re-derivable from raw runs. Examples: Phase 1 baseline 24-month single-seed comparison (Table~\ref{tab:baseline-loss-comparison}), Phase 2 single-seed sweep (Table~\ref{tab:phase2-variants}), Phase 3a $\gamma$ refinement grouped summary (Table~\ref{tab:gamma-refinement}). Claims of the form ``variant X has a higher mean Sharpe than variant Y within phase P'' at this level are safe.
-    \item \textbf{Moderate.} Same window and broad loss family, different hyperparameters or seed sets across the compared rows. Example: comparing the Phase 2 A3 row (seed 42 peak) to the Phase 3a $\gamma$07 row (multi-seed winner). Such comparisons are used as \emph{motivation chains} in the empirical chapter rather than as direct-improvement claims.
-    \item \textbf{Weak / contextual.} Phase 2.5 alignment diagnostics, the Phase 2.2-fix1 normalisation probe (because scale ratios are estimated), and the original six-month sanity-check material. These are cited as scope-setting or consistency-checking evidence but are never quoted as headline performance numbers.
+ \item \textbf{Strong.} Same runner, same window, same seed set, verified CSVs, grouped summary re-derivable from raw runs. Examples: Phase 1 baseline 24-month single-seed comparison (Table~\ref{tab:baseline-loss-comparison}), Phase 2 single-seed sweep (Table~\ref{tab:phase2-variants}), Phase 3a $\gamma$ refinement grouped summary (Table~\ref{tab:gamma-refinement}). Claims of the form ``variant X has a higher mean Sharpe than variant Y within phase P'' at this level are safe.
+ \item \textbf{Moderate.} Same window and broad loss family, different hyperparameters or seed sets across the compared rows. Example: comparing the Phase 2 A3 row (seed 42 peak) to the Phase 3a $\gamma$07 row (multi-seed winner). Such comparisons are used as \emph{motivation chains} in the empirical chapter rather than as direct-improvement claims.
+ \item \textbf{Weak / contextual.} Phase 2.5 alignment diagnostics, the Phase 2.2-fix1 normalisation probe (because scale ratios are estimated), and the original six-month sanity-check material. These are cited as scope-setting or consistency-checking evidence but are never quoted as headline performance numbers.
 \end{itemize}
 
 \textbf{Evidence gate.} A number may enter a final-report table if and only if: (a) it is listed in \texttt{paper/results\_source\_of\_truth.md} with its source CSV or JSON path; (b) its run's verification confirms 24 rows over \texttt{1995-01..1996-12} (for per-run values), or the grouped summary row records \texttt{runs = 3} with \texttt{cap\_tag = cap05} (for multi-seed values); (c) the parent runner CLI and \texttt{best\_hyperparameters.txt} are both available on the stated branch. Chapter 5 is written entirely within this gate.
