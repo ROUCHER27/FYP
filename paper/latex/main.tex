@@ -1,0 +1,148 @@
+% FYP Final Report — Loss Function Design for Cross-Sectional Stock-Return Prediction
+% Converted from Obsidian markdown (paper/已修改/) on 2026-05-11
+% Compile with: tectonic main.tex (or xelatex main.tex && bibtex main && xelatex main.tex && xelatex main.tex)
+
+\documentclass[12pt,a4paper]{report}
+
+% === Core packages ===
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\setCJKmainfont{Songti SC}
+\setmainfont{Times New Roman}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+
+% === Math ===
+\usepackage{amsmath,amssymb,mathtools}
+
+% === Tables ===
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{colortbl}
+\usepackage{xcolor}
+
+% === Figures ===
+\usepackage{graphicx}
+\graphicspath{{../figures/}{./figures/}}
+\usepackage{float}
+
+% === References & hyperlinks ===
+\usepackage[numbers,sort&compress]{natbib}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!70!black,
+}
+
+% === Code listings ===
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+% === Highlight macros for tables ===
+\definecolor{bestred}{HTML}{FF0000}
+\definecolor{secondblue}{HTML}{0000FF}
+\definecolor{gaingreen}{HTML}{008000}
+\newcommand{\best}[1]{\textcolor{bestred}{\textbf{#1}}}
+\newcommand{\second}[1]{\textcolor{secondblue}{\underline{#1}}}
+\newcommand{\gain}[1]{\textcolor{gaingreen}{#1}}
+
+% === Misc ===
+\usepackage{enumitem}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+
+% ==============================================================================
+\begin{document}
+
+% === Title page (exact template format) ===
+\begin{titlepage}
+  \centering
+  \vspace*{3cm}
+  {\LARGE\bfseries Loss Function Design for\\Cross-Sectional Stock-Return Prediction\par}
+  \vspace{0.5cm}
+  {\Large 损失函数设计用于横截面股票收益预测\par}
+  \vspace{2.5cm}
+  {\large a thesis\\submitted to School of Mathematics \& Physics\\of Xi'an Jiaotong-Liverpool University\\in partial fulfilment for the award of the degree of\par}
+  \vspace{1.5cm}
+  {\Large\bfseries BSc Applied Mathematics\par}
+  \vspace{2cm}
+  {\large By\par}
+  \vspace{1cm}
+  {\Large Roucheng Li\par}
+  {\large Student ID: XXXXXXXXX\par}
+  \vspace{1cm}
+  {\large Supervisor: Dr. XXXX XXXX\par}
+  \vspace{2cm}
+  {\large May 2026\par}
+\end{titlepage}
+
+% Blank page
+\thispagestyle{empty}
+\cleardoublepage
+
+% === Front matter ===
+\pagenumbering{roman}
+
+% Abstract
+\input{abstract}
+\cleardoublepage
+
+% TOC
+\tableofcontents
+\cleardoublepage
+
+% Lists
+\listoffigures
+\cleardoublepage
+\listoftables
+\cleardoublepage
+
+% === Main body ===
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\input{chapter1_introduction}
+\cleardoublepage
+
+\input{chapter2_literature_review}
+\cleardoublepage
+
+\input{chapter3_methodology}
+\cleardoublepage
+
+\input{chapter4_data}
+\cleardoublepage
+
+\input{chapter5_empirical_results}
+\cleardoublepage
+
+\input{chapter6_conclusion}
+\cleardoublepage
+
+% === Appendices ===
+\appendix
+\input{appendix_A_loss_definitions}
+\cleardoublepage
+
+\input{appendix_B_per_seed_raw}
+\cleardoublepage
+
+% === Bibliography ===
+\bibliographystyle{plainnat}
+\bibliography{references}
+\cleardoublepage
+
+\end{document}
