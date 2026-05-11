@@ -21,16 +21,7 @@ Equity returns are not Gaussian. Monthly cross-sections contain sporadic observa
 
 Under these conditions, a loss function that is quadratic in the residual gives disproportionate weight to a small number of outliers. The trained model fits the noise rather than the predictable component. This is the classical motivation for robust regression — a line of work that goes back at least to Huber (1964) [A1] and has been applied extensively to finance whenever heavy tails matter.
 
-Huber loss offers a principled middle ground between quadratic and linear penalisation,
-$$
-L_{\delta}(y, \hat y) =
-\begin{cases}
-\tfrac{1}{2}(y - \hat y)^2 & \text{if } |y - \hat y| \le \delta, \\
-\delta \, |y - \hat y| - \tfrac{1}{2}\delta^2 & \text{otherwise.}
-\end{cases}
-$$
-
-For residuals below the threshold $\delta$ the loss behaves like MSE, preserving efficiency under near-Gaussian conditions; for residuals above $\delta$ it behaves like MAE, limiting the influence of any single observation. The resulting M-estimator retains desirable convexity and differentiability properties while being robust to a non-trivial fraction of contamination.
+Huber loss offers a principled middle ground between quadratic and linear penalisation: for residuals below a threshold $\delta$ the loss behaves like MSE, preserving efficiency under near-Gaussian conditions; for residuals above $\delta$ it behaves like MAE, limiting the influence of any single observation. The resulting M-estimator retains desirable convexity and differentiability properties while being robust to a non-trivial fraction of contamination (see Appendix A §A.1.3 for the closed-form expression).
 
 More aggressive robustness is provided by median-based losses. Median Squared Error (MedSE), $\mathrm{MedSE} = \mathrm{median}_i[(y_i - \hat y_i)^2]$, depends only on the central ordered residual and is therefore unaffected by contamination of up to half the sample. MedSE is implemented in this project as a robust baseline (see Chapter 3 §3.3 and Appendix A); it follows the same median-of-squared-residuals principle used in robust statistics but is not a standard named loss in the deep-learning literature. The price is computational: MedSE does not decompose across observations and has subgradient rather than gradient information at the median rank. Both properties matter for neural-network training.
 
@@ -50,17 +41,9 @@ The gap between point-prediction loss and portfolio objective has two standard r
 
 ## 2.4 Directional and trading-aware losses: MADL, GMADL, IMADL
 
-The Mean Absolute Directional Loss (MADL) of Michańków, Ślepaczuk, and Bielak (2024) replaces point-prediction error with an explicit directional reward weighted by realised return magnitude [7]:
-$$
-L_{\mathrm{MADL}}(y, \hat y) = -\tanh\!\big(a \cdot y \cdot \hat y\big) \cdot |y|,
-$$
-with a typical scaling constant $a = 25$. The sign of $y \hat y$ encodes whether the prediction agrees with the realised return; the $\tanh$ wrapper provides a smooth, bounded translation of that sign into a training signal; and the $|y|$ factor weights the loss by how large the realised move was, so that correctly predicting a large return contributes more to training than correctly predicting a small one.
+The Mean Absolute Directional Loss (MADL) of Michańków, Ślepaczuk, and Bielak (2024) replaces point-prediction error with an explicit directional reward weighted by realised return magnitude [7]. The sign of $y \hat y$ encodes whether the prediction agrees with the realised return; a $\tanh$ wrapper provides a smooth, bounded translation of that sign into a training signal; and a $|y|$ factor weights the loss by how large the realised move was, so that correctly predicting a large return contributes more to training than correctly predicting a small one.
 
-The same authors extend MADL into Generalised MADL (GMADL),
-$$
-L_{\mathrm{GMADL}}(y, \hat y) = -\big[\sigma(a \cdot y \cdot \hat y) - \tfrac12\big] \cdot |y|^b,
-$$
-with $a = 100$ and $b = 2$. The sigmoid replacement provides a different saturation profile from $\tanh$ (centred at $0.5$ rather than $0$), and the $|y|^b$ term magnifies the weighting of large returns. GMADL is the parent of the adaptive and hybrid families developed later in Phase 2 of this report.
+The same authors extend MADL into Generalised MADL (GMADL) [8], which replaces $\tanh$ with a sigmoid (providing a different saturation profile centred at $0.5$ rather than $0$) and uses $|y|^b$ to magnify the weighting of large returns. GMADL is the parent of the adaptive and hybrid families developed later in this report.
 
 An Inverse MADL (IMADL) variant has also been developed within the project codebase as a project-specific extension rather than a published loss. IMADL is conceptually similar to MADL but re-parameterises the directional term so that the reward curve is steeper around the zero-prediction region, at the cost of making the loss less symmetric between correct and incorrect directions. The exact IMADL formulas are documented in Chapter 3 and Appendix A; the Phase 2 grouped summaries (IMADL-m2 $\alpha$ sweep and IMADL-GMADL $\beta$ sweep) use these implementations.
 
@@ -88,24 +71,9 @@ The limitations above are what motivates the *hybrid* designs evaluated in this 
 
 ## 2.5 Hybrid loss design and the M2-robust family
 
-The hybrid losses studied in this report belong to two families. The additive hybrid family takes the form
-$$
-L_{\mathrm{add}, \alpha}(y, \hat y) = L_{\mathrm{base}}(y, \hat y) + \alpha \cdot L_{\mathrm{direction}}(y, \hat y),
-$$
-where $L_{\mathrm{base}}$ is a regression loss (MSE in the A-series of Chapter 5) and $L_{\mathrm{direction}}$ is a directional loss derived from MADL/GMADL. The five variants A1–A5 in the empirical tables scan $\alpha$ across five settings; A3 produces the best single-seed Sharpe at seed 42, while the extremes A1 and A5 either under-weight or over-weight the directional term.
+The hybrid losses studied in this report belong to two families. The **additive** hybrid family sums a regression backbone (MSE or Huber) with a weighted directional penalty; the five A-series variants scan the relative weight across five settings. The **multiplicative** hybrid family uses the regression loss as a backbone and multiplies it by a directional gating factor that up-weights residuals whose direction is mispredicted. Intuitively, the multiplicative form treats the regression loss as the "backbone" and uses the directional term as a gating factor. The Phase 2 variants M1–M4 are specific choices of the gating weight; M1 emerges as the single-seed peak in Chapter 5.
 
-The multiplicative hybrid family takes the form
-$$
-L_{\mathrm{mul}}(y, \hat y) = L_{\mathrm{base}}(y, \hat y) \cdot f_{\mathrm{direction}}(y, \hat y),
-$$
-where $f_{\mathrm{direction}}$ is a positive modifier that up-weights residuals whose direction is mispredicted and down-weights residuals whose direction is correctly predicted. Intuitively, the multiplicative form treats the regression loss as the "backbone" and uses the directional term as a gating factor. The Phase 1.5 variants M1–M4 are specific choices of $f_{\mathrm{direction}}$; M1 emerges as the single-seed peak in Chapter 5.
-
-The M2-robust family, introduced in Phase 2 of the project, extends the multiplicative hybrid design with an explicit robustness parameter $\gamma$ that controls how much the magnitude of large residuals contributes to the loss. Conceptually, the modifier has the form
-$$
-f^{\mathrm{robust}}_{\mathrm{direction}, \gamma}(y, \hat y)
-= g_{\mathrm{direction}}(y, \hat y) \cdot h_{\gamma}(|y - \hat y|),
-$$
-where $h_{\gamma}$ is a saturating function that approaches 1 for small residuals and levels off above a threshold controlled by $\gamma$. Small $\gamma$ flattens the loss surface (the robust component dominates); large $\gamma$ approaches the non-robust multiplicative form. The $\gamma$ parameter is introduced to test whether robust magnitude control improves the hybrid design; empirical selection is deferred to Chapter 5 §5.4.
+The M2-robust family extends the multiplicative hybrid design with an explicit robustness parameter $\gamma$ that controls how much the magnitude of large residuals contributes to the loss. Small $\gamma$ flattens the loss surface (the robust component dominates); large $\gamma$ approaches the non-robust multiplicative form. The $\gamma$ parameter is introduced to test whether robust magnitude control improves the hybrid design; empirical selection is deferred to Chapter 5 §5.4. Full closed-form expressions for all hybrid variants are given in Chapter 3 §3.3 and Appendix A.
 
 The IMADL-m2 $\alpha$ family follows the same multiplicative-hybrid skeleton but replaces the GMADL-style directional factor with the IMADL factor and parameterises its weight through $\alpha$ rather than $\gamma$. Additional sweeps over a $\beta$ composition and an adaptive-$\lambda$ schedule are also evaluated. Chapter 5 reports the full empirical comparison.
 
@@ -113,17 +81,17 @@ The IMADL-m2 $\alpha$ family follows the same multiplicative-hybrid skeleton but
 
 The standard diagnostic concerns for empirical asset-pricing studies apply here with extra force, because the research compares many loss functions on a single panel. Bailey and López de Prado (2014) and Bailey et al. (2017) document that the apparent performance of a backtested strategy is upward-biased whenever the researcher observes the performance of many candidate strategies on the same data and reports only the best [4, 5]. Harvey, Liu, and Zhu (2016) extend this multiple-testing argument to the broader empirical factor literature and recommend higher $t$-statistic thresholds to account for the universe of tested factors [6].
 
-This report does not introduce new factors, but the loss-function comparison creates an analogous multiple-comparison problem. Seven baseline losses, nine Phase 1.5 variants, five Phase 2.2 $\gamma$ refinements, and additional $\alpha$/$\beta$/$\lambda$ sweeps are evaluated on the same 24-month test window. Three mitigations are applied:
+This report does not introduce new factors, but the loss-function comparison creates an analogous multiple-comparison problem. Seven baseline losses, nine Phase 2 hybrid variants, five Phase 3 $\gamma$ refinements, and additional $\alpha$/$\beta$/$\lambda$ sweeps are evaluated on the same 24-month test window. Three mitigations are applied:
 
 1. **Reporting every tested configuration.** Chapter 5 reports the full baseline table, the full A/M sweep, and the full multi-seed Phase 2 summaries rather than only the winning row. The reader can verify the selection rule and is not left guessing which configurations were omitted.
-2. **Multi-seed evaluation with explicit stability reporting.** The final recommendation is not drawn from single-seed evidence. The $\gamma$ refinement and the broader Phase 2 sweep are evaluated across three seeds per row, and stability is reported as the coefficient of variation $\mathrm{CV} = \sigma_S / |\mu_S|$. A single-seed peak does not qualify as a headline claim.
+2. **Multi-seed evaluation with explicit stability reporting.** The final recommendation is not drawn from single-seed evidence. The $\gamma$ refinement and the broader Phase 3 sweep are evaluated across three seeds per row, and stability is reported as the coefficient of variation $\mathrm{CV} = \sigma_S / |\mu_S|$. A single-seed peak does not qualify as a headline claim.
 3. **Static out-of-sample protocol with no in-window tuning.** The model architecture is fixed (MLP[64,32,16]+ReLU+dropout 0.2) across every experiment, chosen via grid search on pre-test data and then frozen. Hyperparameters such as batch size and epoch count are held fixed across losses. No parameter is tuned on the 1995–1996 test window.
 
 These mitigations do not eliminate the multiple-testing concern. With three seeds, the standard error on mean Sharpe remains wide, and the absolute CV values reported in Chapter 5 should be read as order-of-magnitude indicators rather than precise estimates. A larger seed depth and a second, independent test window would strengthen the robustness argument; both are listed in the future-work discussion of Chapter 6.
 
 The static-window design also implies a specific position on the internal-versus-external validity trade-off. Training once on 1990–1994 and evaluating on 1995–1996 gives a clean causal attribution of performance differences to the loss function (internal validity) at the cost of limited regime coverage (external validity). A rolling-window counterpart would reverse that trade-off. The project originally planned a rolling-window extension but paused it when the static-window results began to reveal the seed-sensitivity patterns explored in Phase 2; the argument of the report is that within-phase controlled comparisons are the evidence the reader can trust most, and that generalisation to other regimes is future work.
 
-## 2.7 Positioning of this report
+## 2.7 Literature synthesis
 
 The literature reviewed above points to a clear gap. Return-prediction papers routinely vary architecture and features while keeping the loss function fixed at MSE or MAE. Robust-regression and trading-aware losses have been proposed independently but have rarely been compared against each other — or against hybrid combinations — under controlled conditions with explicit stability reporting.
 

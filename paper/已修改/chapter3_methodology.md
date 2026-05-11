@@ -71,9 +71,9 @@ $$
 L_{\mathrm{add}, \lambda_{\mathrm{dir}}, \lambda_{\mathrm{hub}}}(y, \hat y)
 = \lambda_{\mathrm{dir}} \cdot D(y, \hat y) + \lambda_{\mathrm{hub}} \cdot H_\delta(y - \hat y).
 $$
-The five Phase 1.5 A-variants scan two hyperparameters simultaneously (from `LOSS_SPECS` in `losses.py`):
+The five Phase 2 A-variants scan two hyperparameters simultaneously (from `LOSS_SPECS` in `losses.py`):
 
-**Table 3.1 — Phase 1.5 additive A-series loss hyperparameters.**
+**Table 3.1 — Phase 2 additive A-series loss hyperparameters.**
 
 | Variant | $\lambda_{\mathrm{dir}}$ | $\lambda_{\mathrm{hub}}$ |
 |---|---:|---:|
@@ -88,9 +88,9 @@ $$
 L_{\mathrm{mul}, \lambda_{\mathrm{dir}}}(y, \hat y)
 = \big(1 + \lambda_{\mathrm{dir}} \cdot D(y, \hat y)\big) \cdot H_\delta(y - \hat y).
 $$
-The four Phase 1.5 M-variants scan only $\lambda_{\mathrm{dir}}$:
+The four Phase 2 M-variants scan only $\lambda_{\mathrm{dir}}$:
 
-**Table 3.2 — Phase 1.5 multiplicative M-series loss hyperparameters.**
+**Table 3.2 — Phase 2 multiplicative M-series loss hyperparameters.**
 
 | Variant | $\lambda_{\mathrm{dir}}$ |
 |---|---:|

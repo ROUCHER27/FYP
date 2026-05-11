@@ -102,7 +102,7 @@ Both aggregations require the full rolling window (`min_periods = window`); rows
 
 X1 is the feature set used in every run that produces a Chapter 5 number. The `best_hyperparameters.txt` configuration `{input_dim: 15, hidden_dims: [64, 32, 16], activation: relu, dropout: 0.2}` matches this feature width exactly, and every runner in `run_sanity_check_*.py` consumes X1 by construction.
 
-Alternative feature sets (normalised momentum and lagged monthly returns) are implemented in `Model_Train/features.py` but were not run under the final 24-month protocol. Feature-set sensitivity is therefore excluded from the main report and listed as future work in Chapter 6.
+Alternative feature-set constructors exist in the codebase but were not run under the final 24-month protocol. Feature-set sensitivity is therefore excluded from the main report and listed as future work in Chapter 6.
 
 ## 4.5 Preprocessing
 
