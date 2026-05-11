@@ -57,7 +57,7 @@ The report uses a single static split, not a rolling or expanding-window scheme.
 
 The split is defined by date, not by security. A given `PERMNO` can contribute to both the training and test partitions; the prohibition on leakage is enforced at the time dimension via the shift in §4.2 and via the strict month cutoff above. No retraining occurs during the test window; the test period is a held-out evaluation of a single model per loss and per seed.
 
-Chapter 5 labels every final headline number with the exact window start and end. A six-month variant of the test window (`1995-01` to `1995-06`) appears in very early sanity-check material stored under `sanity_outputs/`; those files predate the final protocol and are not used as headline evidence anywhere in this report. Every final verification JSON under `doc/final_report_all_24m_evidence/` records `row_count = 24`, `first_month = 1995-01`, and `last_month = 1996-12`, confirming the 24-month window for the baseline and Phase 1.5 tables. The multi-seed Phase 2 runs inherit the same window.
+Chapter 5 labels every final headline number with the exact window start and end. A six-month variant of the test window (`1995-01` to `1995-06`) appears in very early sanity-check material stored under `sanity_outputs/`; those files predate the final protocol and are not used as headline evidence anywhere in this report. Every final verification JSON confirms `row_count = 24`, `first_month = 1995-01`, and `last_month = 1996-12` for the baseline and Phase 2 tables (see Appendix B §B.5). The multi-seed Phase 3 runs inherit the same window.
 
 ## 4.4 Feature variables
 

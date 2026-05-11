@@ -11,15 +11,10 @@ Existing loss-function families address parts of this problem. Robust losses red
 ## 1.2 Research objectives
 
 This report has four objectives.
-
 First, it benchmarks standard regression, robust, directional, and initial hybrid losses under a common 24-month out-of-sample protocol.
-
 Second, it develops and evaluates hybrid loss functions that combine a directional component with a robust magnitude component.
-
 Third, it evaluates the most relevant hybrid families under multi-seed conditions, using both mean Sharpe and cross-seed stability to avoid relying on a single favourable run.
-
 Fourth, it checks whether the recommended loss remains approximately stable under a diagnostic loss-component normalisation probe.
-
 The study is deliberately narrow. It fixes the equity universe, X1 feature input, MLP architecture, static 1990–1994 training window, 1995–1996 test window, and long-short portfolio construction. Architecture search, feature-set sensitivity, rolling-window validation, transaction costs, and non-US or non-monthly settings are outside the main claim boundary.
 
 ## 1.3 Research questions

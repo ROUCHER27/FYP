@@ -136,7 +136,7 @@ Each experiment runs the following deterministic protocol (`sanity_check_signal_
 
 **10. Summary computation.** Once the 24 test months are processed, `compute_long_short_stats` aggregates the monthly long-short series into cumulative return, standard deviation, and annualised Sharpe. The summary JSON `sanity_summary_{loss}.json` is written with a fixed schema.
 
-**11. Verification.** A separate verification step confirms that the metrics CSV has exactly 24 rows with `first_month = 1995-01` and `last_month = 1996-12`. The `*_verification.json` files under `doc/final_report_all_24m_evidence/manifests/` record these checks for every run in the Phase 1 and Phase 2 groups.
+**11. Verification.** A separate verification step confirms that the metrics CSV has exactly 24 rows with `first_month = 1995-01` and `last_month = 1996-12`. Verification manifests record these checks for every run in the Phase 1 and Phase 2 groups (see Appendix B §B.5).
 
 ## 3.5 Portfolio construction
 
@@ -199,21 +199,21 @@ which the Phase 2 grouped summaries store in the `sharpe_cv` column. Because $\m
 
 The study proceeds in four phases plus one set of diagnostic checks. Each phase is operationalised through distinct runner commands and output directories; full manifests and commands live alongside the result CSVs.
 
-**Phase 1: Baseline losses (seed 42, single-seed).** Seven loss functions (MSE, MedSE, MADL, GMADL, IMADL, hybrid_mul_m1, hybrid_mul_m2) evaluated on the static 24-month window at seed 42. Evidence path: `doc/final_report_all_24m_evidence/results/baseline/{loss}/`. CLI: `--train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --max-epochs 20 --batch-size 1024 --seed 42`.
+**Phase 1: Baseline losses (seed 42, single-seed).** Seven loss functions (MSE, MedSE, MADL, GMADL, IMADL, hybrid_mul_m1, hybrid_mul_m2) evaluated on the static 24-month window at seed 42. CLI: `--train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --max-epochs 20 --batch-size 1024 --seed 42`. Evidence paths: see Appendix B §B.4.
 
-**Phase 2: Hybrid A/M variant sweep (seed 42, single-seed).** Nine parameterised hybrid variants (A1–A5 additive, M1–M4 multiplicative) evaluated at the same seed and window. Evidence path: `doc/final_report_all_24m_evidence/results/phase15/{variant}/`.
+**Phase 2: Hybrid A/M variant sweep (seed 42, single-seed).** Nine parameterised hybrid variants (A1–A5 additive, M1–M4 multiplicative) evaluated at the same seed and window. Evidence paths: see Appendix B §B.4.
 
 **Phase 3: Multi-seed robust-hybrid refinement (3 seeds per row).** Comprises two sub-phases:
-- *Phase 3a — γ refinement.* Five γ values of the M2-robust family ($\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$), three seeds each. Grouped summary: `doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_grouped_summary.csv`.
+- *Phase 3a — γ refinement.* Five γ values of the M2-robust family ($\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$), three seeds each. Source: see Appendix B §B.4.
 - *Phase 3b — Integrated α/β/λ sweeps.* Extends the comparison to IMADL-m2 α ($\alpha \in \{0.2, \ldots, 0.8\}$), IMADL-GMADL β ($\beta \in \{0.3, 0.5, 0.7\}$), adaptive-λ ($\lambda \in \{10, 50, 100\}$), and finer γ values. Source: integrated grouped summary CSV on the same evidence branch.
 
 **Phase 4: Diagnostic checks.** Two components:
-- *Normalisation probe.* A three-seed re-run of the three strongest candidates with loss-component normalisation applied. Source: `doc/phase2-fix/phase2.2-fix1/{phase1_summary,phase2_summary}.json`. Scale ratios are estimated rather than measured by a per-component logger.
+- *Normalisation probe.* A three-seed re-run of the three strongest candidates with loss-component normalisation applied. Scale ratios are estimated rather than measured by a per-component logger. Source: see Appendix B §B.4.
 - *Alignment diagnostics.* Cross-phase consistency checks that identify runner and formula differences between Phase 2 and Phase 3 implementations. These support the claim boundaries in §3.8 but are not headline evidence.
 
 ## 3.8 Reproducibility and claim boundaries
 
-**Reproducibility.** Every table reported in Chapter 5 is reproducible from the local clone using the branch/path listed for that table by combining the listed evidence path with the runner CLI described in §3.4. The `run_manifest.json` and `*_command.txt` files under `doc/final_report_all_24m_evidence/manifests/` preserve the exact commands used to produce each Phase 1 and Phase 2 row. The Phase 3 grouped summaries record per-row `runs = 3` and aggregate statistics computed from the raw per-seed CSVs. `best_hyperparameters.txt` pins the MLP architecture across phases. The CSV data files are versioned alongside the code.
+**Reproducibility.** Every table reported in Chapter 5 is reproducible from the local clone using the branch and path listed in Appendix B §B.4. Run manifests preserve the exact commands used to produce each Phase 1 and Phase 2 row. The Phase 3 grouped summaries record per-row `runs = 3` and aggregate statistics computed from the raw per-seed CSVs. `best_hyperparameters.txt` pins the MLP architecture across phases. The CSV data files are versioned alongside the code.
 
 Two operational caveats apply. First, floating-point outputs from CUDA and MPS devices may differ in the last few decimals; all reported results were produced on CUDA and inherit that numerical convention. Second, the runner seeds Python, NumPy, and PyTorch but does not force CUDA determinism (`torch.backends.cudnn.deterministic`); small bit-level drift across reproductions is possible, but the grouped-summary figures in Chapter 5 are reported to be stable across re-runs within the same environment.
 
