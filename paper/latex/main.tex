@@ -1,45 +1,56 @@
 % FYP Final Report — Loss Function Design for Cross-Sectional Stock-Return Prediction
-% Converted from Obsidian markdown (paper/已修改/) on 2026-05-11
-% Compile with: tectonic main.tex (or xelatex main.tex && bibtex main && xelatex main.tex && xelatex main.tex)
+% Based on XJTLU MAP FYP Template
+% Compile with: xelatex main.tex && bibtex main && xelatex main.tex && xelatex main.tex
 
-\documentclass[12pt,a4paper]{report}
-
-% === Core packages ===
-\usepackage{fontspec}
-\usepackage{xeCJK}
-\setCJKmainfont{Songti SC}
-\setmainfont{Times New Roman}
-\usepackage[margin=2.5cm]{geometry}
-\usepackage{setspace}
-\onehalfspacing
-
-% === Math ===
-\usepackage{amsmath,amssymb,mathtools}
-
-% === Tables ===
+\documentclass[openany]{book}
+\linespread{1.5}
+\setlength{\parindent}{0pt}
+\usepackage[a4paper,bindingoffset=0.2in,
+left=1in,right=1in,top=1in,bottom=1in,
+footskip=0.25in]{geometry}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[UTF8]{ctex}
+\usepackage{hyperref}
+\usepackage{paralist}
+\usepackage{color,soul}
+\usepackage{floatrow}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{multirow}
+\usepackage{hhline}
+\usepackage{fancyhdr}
+\usepackage{textcomp}
+\usepackage{indentfirst}
+\usepackage{amsfonts}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
 \usepackage{booktabs}
 \usepackage{array}
-\usepackage{tabularx}
-\usepackage{multirow}
-\usepackage{colortbl}
-\usepackage{xcolor}
-
-% === Figures ===
-\usepackage{graphicx}
 \usepackage{float}
-
-% === References & hyperlinks ===
-\usepackage[numbers,sort&compress]{natbib}
-\usepackage{hyperref}
-\hypersetup{
-  colorlinks=true,
-  linkcolor=blue!60!black,
-  citecolor=blue!60!black,
-  urlcolor=blue!70!black,
-}
-
-% === Code listings ===
+\usepackage{caption}
 \usepackage{listings}
+
+\setcounter{secnumdepth}{1}
+\numberwithin{figure}{chapter}
+\numberwithin{equation}{chapter}
+
+% Highlight macros for tables
+\definecolor{bestred}{HTML}{FF0000}
+\definecolor{secondblue}{HTML}{0000FF}
+\definecolor{gaingreen}{HTML}{008000}
+\newcommand{\best}[1]{\textcolor{bestred}{\textbf{#1}}}
+\newcommand{\second}[1]{\textcolor{secondblue}{\underline{#1}}}
+\newcommand{\gain}[1]{\textcolor{gaingreen}{#1}}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhead[L]{\nouppercase\leftmark}
+\fancyhead[R]{School of Mathematics \& Physics}
+
+% Code listings
 \lstset{
   basicstyle=\ttfamily\small,
   breaklines=true,
@@ -50,98 +61,60 @@
   keepspaces=true,
 }
 
-% === Highlight macros for tables ===
-\definecolor{bestred}{HTML}{FF0000}
-\definecolor{secondblue}{HTML}{0000FF}
-\definecolor{gaingreen}{HTML}{008000}
-\newcommand{\best}[1]{\textcolor{bestred}{\textbf{#1}}}
-\newcommand{\second}[1]{\textcolor{secondblue}{\underline{#1}}}
-\newcommand{\gain}[1]{\textcolor{gaingreen}{#1}}
-
-% === Misc ===
-\usepackage{enumitem}
-\usepackage{caption}
+% Caption setup
 \captionsetup{font=small,labelfont=bf}
 
-% ==============================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Title page
+\title{\bfseries {\sc{ Loss Function Design for Cross-Sectional Stock-Return Prediction \\ 损失函数设计用于横截面股票收益预测}}}
+\author{ \sc{a thesis}   \\
+\sc{submitted to School of Mathematics \& Physics}\\  [5pt]
+\sc{of Xi'an Jiaotong-Liverpool University}\\ [5pt]
+\sc{in partial fulfilment for the award of the degree of} \\[1.5cm]
+\textsc{\Large{BSc Applied Mathematics}} \\[5pt]
+ By\\[5pt]
+ \Large{{Roucheng Li 1234567}}\\ [1cm]
+ Supervisor: Dr. XXXX XXXX\\ [2cm]
+\titlepic{\includegraphics[width=7cm]{xjtluicon.jpg}}\\
+}
+
 \begin{document}
 
-% === Title page (exact template format) ===
-\begin{titlepage}
-  \centering
-  \vspace*{3cm}
-  {\LARGE\bfseries Loss Function Design for\\Cross-Sectional Stock-Return Prediction\par}
-  \vspace{0.5cm}
-  {\Large 损失函数设计用于横截面股票收益预测\par}
-  \vspace{2.5cm}
-  {\large a thesis\\submitted to School of Mathematics \& Physics\\of Xi'an Jiaotong-Liverpool University\\in partial fulfilment for the award of the degree of\par}
-  \vspace{1.5cm}
-  {\Large\bfseries BSc Applied Mathematics\par}
-  \vspace{2cm}
-  {\large By\par}
-  \vspace{1cm}
-  {\Large Roucheng Li\par}
-  {\large Student ID: XXXXXXXXX\par}
-  \vspace{1cm}
-  {\large Supervisor: Dr. XXXX XXXX\par}
-  \vspace{2cm}
-  {\large May 2026\par}
-\end{titlepage}
-
-% Blank page
+\clearpage\maketitle
 \thispagestyle{empty}
-\cleardoublepage
+\newpage
 
-% === Front matter ===
-\pagenumbering{roman}
-
-% Abstract
+% === Abstract ===
 \input{abstract}
-\cleardoublepage
+\newpage
 
-% TOC
+% === Acknowledgements ===
+\chapter*{Acknowledgements}
+I would like to express my sincere gratitude to my supervisor for their invaluable guidance and support throughout this project.\\
+
+\pagenumbering{roman}
 \tableofcontents
-\cleardoublepage
-
-% Lists
 \listoffigures
-\cleardoublepage
 \listoftables
-\cleardoublepage
+\newpage
+\pagenumbering{arabic}
 
 % === Main body ===
-\pagenumbering{arabic}
-\setcounter{page}{1}
-
 \input{chapter1_introduction}
-\cleardoublepage
-
 \input{chapter2_literature_review}
-\cleardoublepage
-
 \input{chapter3_methodology}
-\cleardoublepage
-
 \input{chapter4_data}
-\cleardoublepage
-
 \input{chapter5_empirical_results}
-\cleardoublepage
-
 \input{chapter6_conclusion}
-\cleardoublepage
 
 % === Appendices ===
 \appendix
 \input{appendix_A_loss_definitions}
-\cleardoublepage
-
 \input{appendix_B_per_seed_raw}
-\cleardoublepage
 
 % === Bibliography ===
-\bibliographystyle{plainnat}
-\bibliography{references}
-\cleardoublepage
+\newpage
+\bibliography{references}{}
+\bibliographystyle{siam}
 
 \end{document}
