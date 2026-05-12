@@ -11,7 +11,7 @@ Highlights:
   gamma10 — orange triangle, "Higher Sharpe, higher variance"
 
 Data: doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_raw_runs.csv
-Output: paper/figures/fig5_2_gamma_tuning_curve.png  (dpi=300)
+Output: paper/figures/fig5_4_gamma_tuning_curve.png  (dpi=300)
 """
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ from _style import apply_paper_style, style_framed_axes
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_raw_runs.csv"
-OUT = ROOT / "paper/figures/fig5_2_gamma_tuning_curve.png"
+OUT = ROOT / "paper/figures/fig5_4_gamma_tuning_curve.png"
 
 GAMMA_ORDER = [
     "m2_robust_gamma03",
@@ -35,9 +35,9 @@ GAMMA_ORDER = [
     "m2_robust_gamma10",
     "m2_robust_gamma15",
 ]
-GAMMA_VAL = [0.03, 0.05, 0.07, 0.10, 0.15]
-GAMMA_LABEL = [r"$\gamma$=0.03", r"$\gamma$=0.05", r"$\gamma$=0.07",
-               r"$\gamma$=0.10", r"$\gamma$=0.15"]
+GAMMA_VAL = [0.3, 0.5, 0.7, 1.0, 1.5]
+GAMMA_LABEL = [r"$\gamma$=0.3", r"$\gamma$=0.5", r"$\gamma$=0.7",
+               r"$\gamma$=1.0", r"$\gamma$=1.5"]
 BEST = "m2_robust_gamma07"
 ALT = "m2_robust_gamma10"
 
@@ -74,12 +74,12 @@ def panel_sharpe(ax, agg):
     alt_idx = GAMMA_ORDER.index(ALT)
     ax.annotate("Recommended\ntrade-off",
                 xy=(GAMMA_VAL[best_idx], means[best_idx]),
-                xytext=(GAMMA_VAL[best_idx] - 0.025, means[best_idx] + 0.18),
+                xytext=(GAMMA_VAL[best_idx] - 0.25, means[best_idx] + 0.18),
                 fontsize=8.5, color=C_BEST, ha="center",
                 arrowprops=dict(arrowstyle="->", color=C_BEST, lw=0.9))
     ax.annotate("Higher Sharpe,\nhigher variance",
                 xy=(GAMMA_VAL[alt_idx], means[alt_idx]),
-                xytext=(GAMMA_VAL[alt_idx] + 0.018, means[alt_idx] - 0.22),
+                xytext=(GAMMA_VAL[alt_idx] + 0.18, means[alt_idx] - 0.22),
                 fontsize=8.5, color=C_ALT, ha="left",
                 arrowprops=dict(arrowstyle="->", color=C_ALT, lw=0.9))
 
@@ -100,7 +100,7 @@ def panel_cv(ax, agg):
 
     # Preferred band
     ax.axhspan(0, 0.30, color="#D5F5E3", alpha=0.40, zorder=0)
-    ax.text(0.155, 0.28, "Preferred\nstability zone", fontsize=8, color="#1E8449",
+    ax.text(1.55, 0.28, "Preferred\nstability zone", fontsize=8, color="#1E8449",
             ha="right", va="top")
 
     ax.set_xticks(GAMMA_VAL)
@@ -122,7 +122,7 @@ def panel_ls_std(ax, agg):
     best_idx = GAMMA_ORDER.index(BEST)
     ax.annotate(f"{stds[best_idx]*100:.2f}%",
                 xy=(GAMMA_VAL[best_idx], stds[best_idx]),
-                xytext=(GAMMA_VAL[best_idx] - 0.025, stds[best_idx] + 0.003),
+                xytext=(GAMMA_VAL[best_idx] - 0.25, stds[best_idx] + 0.003),
                 fontsize=8.5, color=C_BEST, ha="center",
                 arrowprops=dict(arrowstyle="->", color=C_BEST, lw=0.9))
 

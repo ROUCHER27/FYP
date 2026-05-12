@@ -155,13 +155,13 @@ The multiplicative form couples the two components: the Huber gradient is \emph{
 
 \label{subsec:m2-robust}
 
-Conceptually, the M2-robust loss replaces the fixed-threshold Huber backbone with a $\gamma$-controlled saturating magnitude term $H^{\gamma}(e)$ and combines it with the same directional-gating structure:
+Conceptually, the M2-robust loss augments the base M2 multiplicative hybrid with a prediction-variance regularisation penalty:
 
 \begin{equation}
-L_{\mathrm{M2\text{-}robust},\gamma}(y, \hat y) = \big(1 + \lambda_{\mathrm{dir}} \cdot D(y, \hat y)\big) \cdot H^{\gamma}(y - \hat y).
+L_{\mathrm{M2\text{-}robust},\gamma}(y, \hat y) = L_{\mathrm{M2}}(y, \hat y) \;+\; \gamma \cdot \mathrm{Var}(\hat y),
 \end{equation}
 
-The robustness schedule $H^{\gamma}(e)$ is a smooth monotone function that approaches $\tfrac12 e^2$ for small $|e|$ and saturates above a threshold controlled by $\gamma$. Small $\gamma$ flattens the loss surface and prioritises the directional component; large $\gamma$ recovers a nearly unbounded quadratic behaviour. The $\gamma$ refinement of Chapter~5 \S5.4 scans $\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$. The exact closed form used in the Phase~2.2 runner lives on the \texttt{phase2.2-fix} branch together with the runner scripts; the empirically selected setting within the reported 24-month, 3-seed protocol is $\gamma = 0.07$ (see Chapter~5 \S5.4 and Table~5.3).
+where $L_{\mathrm{M2}}$ is the multiplicative hybrid with $\lambda_{\mathrm{dir}} = 2.0$ and $\mathrm{Var}(\hat y)$ is the within-batch variance of the prediction vector. The variance penalty discourages excessively dispersed predictions: small $\gamma$ applies minimal regularisation and the loss behaves like the base M2; large $\gamma$ penalises prediction spread more aggressively, which can over-compress the signal and degrade ranking quality. The $\gamma$ refinement of Chapter~5 \S5.4 scans $\gamma \in \{0.3, 0.5, 0.7, 1.0, 1.5\}$ (loss identifiers \texttt{gamma03} through \texttt{gamma15}). The implementation lives on the \texttt{phase2.2-fix} branch in \texttt{Model\_Train/losses.py} as \texttt{m2\_robustness\_enhanced\_loss}; the empirically selected setting within the reported 24-month, 3-seed protocol is $\gamma = 0.7$ (loss id \texttt{m2\_robust\_gamma07}; see Chapter~5 \S5.4 and Table~5.3).
 
 % ============================================================
 \section{Notes on Practical Implementation}

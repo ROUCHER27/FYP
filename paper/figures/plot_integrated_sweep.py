@@ -1,5 +1,5 @@
 """
-Figure 5.4 — IMADL-m2 α sweep vs γ reference.
+Figure 5.5 — IMADL-m2 α sweep vs γ reference.
 
 Paper-plot-skills style: `line_confidence_band` (Type B, discrete scaling
 curve). Equi-spaced x positions with manual tick labels, marker-per-point,
@@ -15,7 +15,7 @@ Right : coefficient of variation on a log y-axis for the same α values with
 Inputs : integrated summary `phase2.2-fix:doc/phase2-fix/reports/phase2_grouped_summary.csv`
          and local `doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_grouped_summary.csv`
          (for γ07 reference row).
-Output : paper/figures/fig5_4_imadl_alpha_sweep.png (dpi=300)
+Output : paper/figures/fig5_5_imadl_alpha_sweep.png (dpi=300)
 """
 from __future__ import annotations
 
@@ -38,7 +38,7 @@ from _style import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "paper/figures/fig5_4_imadl_alpha_sweep.png"
+OUT = ROOT / "paper/figures/fig5_5_imadl_alpha_sweep.png"
 
 ALPHA_ORDER = [
     "imadl_m2_alpha02",
@@ -54,8 +54,8 @@ ALPHA_TICK = [r"$\alpha$=0.2", r"$\alpha$=0.3", r"$\alpha$=0.4",
 
 GAMMA_REF = ["m2_robust_gamma07", "m2_robust_gamma10"]
 GAMMA_LABEL = {
-    "m2_robust_gamma07": r"m2-robust $\gamma$=0.07 (ref)",
-    "m2_robust_gamma10": r"m2-robust $\gamma$=0.10 (ref)",
+    "m2_robust_gamma07": r"m2-robust $\gamma$=0.7 (ref)",
+    "m2_robust_gamma10": r"m2-robust $\gamma$=1.0 (ref)",
 }
 COLOURS_REF = {"m2_robust_gamma07": C_REF_HLINE, "m2_robust_gamma10": "#E58C00"}
 
@@ -235,7 +235,7 @@ def main() -> None:
     draw_cv(ax_cv, df)
 
     fig.suptitle(
-        "Figure 5.4 — IMADL-m2 α sweep (Phase 2 integrated summary · cap05 · 3 seeds per row)",
+        "Figure 5.5 — IMADL-m2 α sweep (Phase 2 integrated summary · cap05 · 3 seeds per row)",
         fontsize=12,
         fontweight="bold",
         y=0.99,

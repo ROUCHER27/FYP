@@ -1,5 +1,5 @@
 """
-Figure 5.5 — Loss-component normalisation probe (Phase 2.2-fix1).
+Figure 5.7 — Loss-component normalisation probe (Phase 2.2-fix1).
 
 Paper-plot-skills style: `bar_paired_delta` (paired bars + arrow + red delta
 annotation + horizontal reference dashed line at the baseline).
@@ -12,7 +12,7 @@ Right panel: per-seed normalised Sharpes as dots (same candidate column)
             and alpha06. Open-axis style.
 
 Inputs : doc/phase2-fix/phase2.2-fix1/phase2_summary.json
-Output : paper/figures/fig5_5_normalisation_probe.png (dpi=300)
+Output : paper/figures/fig5_7_normalisation_probe.png (dpi=300)
 """
 from __future__ import annotations
 
@@ -34,12 +34,12 @@ from _style import (
 
 ROOT = Path(__file__).resolve().parents[2]
 SRC = ROOT / "doc/phase2-fix/phase2.2-fix1/phase2_summary.json"
-OUT = ROOT / "paper/figures/fig5_5_normalisation_probe.png"
+OUT = ROOT / "paper/figures/fig5_7_normalisation_probe.png"
 
 ORDER = ["m2_robust_gamma07", "m2_robust_gamma10", "imadl_m2_alpha06"]
 LABEL = {
-    "m2_robust_gamma07": r"m2-robust $\gamma$=0.07",
-    "m2_robust_gamma10": r"m2-robust $\gamma$=0.10",
+    "m2_robust_gamma07": r"m2-robust $\gamma$=0.7",
+    "m2_robust_gamma10": r"m2-robust $\gamma$=1.0",
     "imadl_m2_alpha06": r"imadl-m2 $\alpha$=0.6",
 }
 
@@ -211,7 +211,7 @@ def main() -> None:
     )
 
     fig.suptitle(
-        "Figure 5.5 — Phase 2.2-fix1 normalisation probe (cap05, 3 seeds per row)",
+        "Figure 5.7 — Phase 2.2-fix1 normalisation probe (cap05, 3 seeds per row)",
         fontsize=12,
         fontweight="bold",
         y=0.99,

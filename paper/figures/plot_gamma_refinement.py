@@ -40,11 +40,11 @@ GAMMA_ORDER = [
     "m2_robust_gamma15",
 ]
 GAMMA_LABEL = {
-    "m2_robust_gamma03": r"$\gamma$=0.03",
-    "m2_robust_gamma05": r"$\gamma$=0.05",
-    "m2_robust_gamma07": r"$\gamma$=0.07",
-    "m2_robust_gamma10": r"$\gamma$=0.10",
-    "m2_robust_gamma15": r"$\gamma$=0.15",
+    "m2_robust_gamma03": r"$\gamma$=0.3",
+    "m2_robust_gamma05": r"$\gamma$=0.5",
+    "m2_robust_gamma07": r"$\gamma$=0.7",
+    "m2_robust_gamma10": r"$\gamma$=1.0",
+    "m2_robust_gamma15": r"$\gamma$=1.5",
 }
 BEST = "m2_robust_gamma07"
 

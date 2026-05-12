@@ -12,17 +12,18 @@ Highlights:
   gamma10  — orange ▲   "High-return, unstable"
   alpha06  — green ◆    "Stable fallback"
 
-Extreme beta rows (CV > 10) are excluded from the main panel and noted in caption.
+Extreme beta rows (CV > 8) are excluded from the main panel and noted in caption.
 
 Data sources:
   - Gamma rows: doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_grouped_summary.csv
-  - Integrated rows: embedded from results_source_of_truth.md §4
-    (git show phase2.2-fix:doc/phase2-fix/reports/phase2_grouped_summary.csv)
+  - Integrated rows: phase2.2-fix:doc/phase2-fix/reports/phase2_grouped_summary.csv
 
-Output: paper/figures/fig5_3_sharpe_cv_frontier.png  (dpi=300)
+Output: paper/figures/fig5_6_sharpe_cv_frontier.png  (dpi=300)
 """
 from __future__ import annotations
 
+import io
+import subprocess
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -35,29 +36,9 @@ from _style import apply_paper_style, style_open_axes
 
 ROOT = Path(__file__).resolve().parents[2]
 GAMMA_SRC = ROOT / "doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_grouped_summary.csv"
-OUT = ROOT / "paper/figures/fig5_3_sharpe_cv_frontier.png"
+OUT = ROOT / "paper/figures/fig5_6_sharpe_cv_frontier.png"
 
-# ── Integrated rows from phase2.2-fix branch (results_source_of_truth.md §4) ─
-# Embedded to avoid branch switching at runtime.
-INTEGRATED_ROWS = [
-    # loss, sharpe_mean, sharpe_cv, cumulative_return_mean
-    ("adaptive_lambda10",   0.4938, 1.5426, 0.0618),
-    ("adaptive_lambda50",   0.2763, 0.5780, 0.0817),
-    ("adaptive_lambda100",  0.0955, 0.3591, 0.0021),
-    ("imadl_gmadl_beta03", -0.0345, 4.0084, -0.0424),
-    ("imadl_gmadl_beta05",  0.0406, 10.133, -0.0138),
-    # beta07 CV=139 excluded (extreme)
-    ("imadl_m2_alpha02",    0.1788, 6.4735, 0.2225),
-    ("imadl_m2_alpha03",    0.2159, 0.9310, 0.0588),
-    ("imadl_m2_alpha04",    0.3540, 0.1853, 0.0962),
-    ("imadl_m2_alpha05",    0.5822, 0.5484, 0.2465),
-    ("imadl_m2_alpha06",    0.6895, 0.2443, 0.3042),
-    ("imadl_m2_alpha07",    0.4024, 0.6128, 0.1036),
-    ("imadl_m2_alpha08",    0.5683, 0.7267, 0.2071),
-    ("m2_robust_gamma001",  0.6919, 1.1936, 0.1705),
-    ("m2_robust_gamma01",   0.7470, 0.5270, 0.2718),
-    ("m2_robust_gamma10",   1.0043, 0.5613, 0.2368),
-]
+INTEGRATED_REF = "phase2.2-fix:doc/phase2-fix/reports/phase2_grouped_summary.csv"
 
 # ── Family classification ─────────────────────────────────────────────────────
 def classify(name: str) -> str:
@@ -99,9 +80,14 @@ def build_df() -> pd.DataFrame:
         ["loss", "sharpe_mean", "sharpe_cv", "cumulative_return_mean"]
     ].copy()
 
-    # Integrated rows (embedded)
-    idf = pd.DataFrame(INTEGRATED_ROWS,
-                       columns=["loss", "sharpe_mean", "sharpe_cv", "cumulative_return_mean"])
+    out = subprocess.check_output(
+        ["git", "-C", str(ROOT), "show", INTEGRATED_REF],
+        text=True,
+    )
+    idf = pd.read_csv(io.StringIO(out))
+    idf = idf[idf["cap_tag"] == "cap05"][
+        ["loss", "sharpe_mean", "sharpe_cv", "cumulative_return_mean"]
+    ].copy()
 
     # Merge: gamma rows take precedence (they are the authoritative local source)
     df = pd.concat([gdf, idf], ignore_index=True)
@@ -161,7 +147,7 @@ def main() -> None:
 
     _highlight(BEST,     "*", "#C0392B", "black", 280,
                r"$\gamma$07 (Recommended)",
-               "Recommended\n" + r"$\gamma$=0.07",
+               "Recommended\n" + r"$\gamma$=0.7",
                (-0.12, 0.13))
     _highlight(ALT,      "^", "#E67E22", "black", 160,
                r"$\gamma$10 (High-return, unstable)",

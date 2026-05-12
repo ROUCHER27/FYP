@@ -1,5 +1,5 @@
 """
-Figure 5.9 — Cumulative long-short return paths.
+Figure 5.8 — Cumulative long-short return paths.
 
 Two panels (1×2), line_confidence_band style:
   Left  (a): Phase 1 baselines — seed-42 paths for MSE, MedSE, MADL, GMADL,
@@ -12,7 +12,7 @@ Data:
   Phase 1.5 : doc/final_report_all_24m_evidence/results/phase15/*/sanity_metrics_*.csv
   Gamma     : doc/phase2-fix/phase2_2/gamma_refinement/results/*/sanity_metrics_*.csv
 
-Output: paper/figures/fig5_9_cumulative_return_paths.png  (dpi=300)
+Output: paper/figures/fig5_8_cumulative_return_paths.png  (dpi=300)
 """
 from __future__ import annotations
 
@@ -26,7 +26,7 @@ import _style
 from _style import apply_paper_style, style_open_axes
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT  = ROOT / "paper/figures/fig5_9_cumulative_return_paths.png"
+OUT  = ROOT / "paper/figures/fig5_8_cumulative_return_paths.png"
 
 # ── colour palette ────────────────────────────────────────────────────────────
 BASELINE_COLORS = {
@@ -72,9 +72,9 @@ BASELINE_LABELS = {
 GAMMA_SEEDS = [42, 52, 62]
 GAMMA_NAMES = ["gamma03", "gamma05", "gamma07", "gamma10", "gamma15"]
 GAMMA_LABELS = {
-    "gamma03": r"$\gamma$=0.03", "gamma05": r"$\gamma$=0.05",
-    "gamma07": r"$\gamma$=0.07 (Rec.)", "gamma10": r"$\gamma$=0.10",
-    "gamma15": r"$\gamma$=0.15",
+    "gamma03": r"$\gamma$=0.3", "gamma05": r"$\gamma$=0.5",
+    "gamma07": r"$\gamma$=0.7 (Rec.)", "gamma10": r"$\gamma$=1.0",
+    "gamma15": r"$\gamma$=1.5",
 }
 
 
@@ -145,7 +145,7 @@ def main() -> None:
     draw_gamma(ax2)
 
     fig.suptitle(
-        "Figure 5.9 — Cumulative long-short return paths  "
+        "Figure 5.8 — Cumulative long-short return paths  "
         "(train 1990-01..1994-12 · test 1995-01..1996-12 · cap05)",
         fontsize=10.5, fontweight="bold", y=0.99,
     )

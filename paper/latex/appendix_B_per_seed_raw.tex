@@ -44,7 +44,7 @@ Loss & Normalised seed 1 & Normalised seed 2 & Normalised seed 3 & Normalised me
 \bottomrule\end{tabular}
 \end{table}
 
-(The per-seed IDs are anonymised in the summary JSON. The project notes record that the normalisation probe re-uses the same three seeds as the $\gamma$ refinement, but the mapping between the numeric position and \texttt{\{42, 52, 62\}} is not preserved in the summary file; the mean and per-seed spread remain the relevant quantities.)
+(The per-seed IDs are anonymised in the summary JSON. The project notes record that the normalisation probe uses seeds \texttt{\{42, 123, 456\}}, but the mapping between the numeric position and those seed IDs is not preserved in the summary file; the mean and per-seed spread remain the relevant quantities.)
 
 \section{Phase 2 integrated summary --- grouped row summary (reproduction)}
 
@@ -155,7 +155,7 @@ Before re-running any table for publication, verify:
 
 \begin{enumerate}
 \item Working directory is the repository root; \texttt{*.csv} data files are present.
-\item \texttt{best\_hyperparameters.txt} is unchanged from commit \texttt{6c0fbde} (MLP[64, 32, 16], ReLU, dropout 0.2, input\_dim 15).
+\item \texttt{best\_hyperparameters.txt} is unchanged from commit \texttt{6c0fbde} (MLP[64, 32, 16], ReLU, dropout 0.2, input\_dim 15). This applies to Phase~1 and Phase~2 single-seed evidence; Phase~3 multi-seed evidence on \texttt{phase2.2-fix} uses tanh activation and dropout 0.0.
 \item Python version $\geq$ 3.10; PyTorch installed; NumPy/pandas/matplotlib available for figure scripts.
 \item CUDA or MPS accelerator is available if matching Phase 2 run behaviour (device auto-detection in \texttt{sanity\_check\_signal\_tilted.detect\_device}). CPU-only runs are numerically close but not bit-identical.
 \item The runner CLI arguments match exactly (\texttt{-{}-test-months 24}, \texttt{-{}-train-start 1990-01}, \texttt{-{}-train-end 1994-12}, \texttt{-{}-test-start 1995-01}, \texttt{-{}-seed 42} for single-seed tables).
@@ -183,8 +183,8 @@ Before re-running any table for publication, verify:
 \caption{Complete 15-column model input for X1}\label{tab:b3-model-input-columns}
 \begin{tabular}{ccc}\toprule
 \# & Column & Description \\\midrule
-1 & RET & raw monthly total return for month $t$ \\
-2 & VOL & monthly trading volume (shares) for month $t$ \\
+1 & VOL & monthly trading volume (shares) for month $t$ \\
+2 & RET & raw monthly total return for month $t$ \\
 3 & SHROUT & shares outstanding (thousands) for month $t$ \\
 4 & r & numeric copy of RET \\
 5 & to & monthly turnover = VOL/(SHROUT$\times$1000) \\

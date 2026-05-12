@@ -2,7 +2,7 @@
 
 \label{ch:empirical-results-and-discussion}
 
-This chapter reports the empirical performance of every loss function that enters the final recommendation. All numbers quoted here are traceable to a single source-of-truth evidence map; each caption records the evaluation window, the seed set, and the underlying artifact path so the reader can audit the claim.
+This chapter reports the empirical performance of every loss function that enters the final recommendation. All numbers quoted here are traceable to a single source-of-truth evidence map; captions record the evaluation window and seed set, and Appendix~B records the underlying artifact paths and reproduction commands needed to audit each claim.
 
 The structure of the chapter mirrors the empirical pipeline rather than the order in which the experiments were carried out. Section~5.1 restates the shared evaluation protocol. Sections~5.2--5.3 present same-window single-seed comparisons (baseline losses and the hybrid A/M sweep, both at seed 42); within each comparison table, the loss function is the only varying factor. Sections~5.4--5.5 move to multi-seed evidence on the M2-robust family and the broader $\alpha/\beta/\lambda$ sweeps, which form the basis of the final recommendation; cross-phase comparisons differ in additional dimensions (\S5.7). Section~5.6 discusses a loss-component normalisation probe. Section~5.7 scopes the boundary of cross-phase comparison claims. Section~5.8 synthesises the headline findings and bridges to the conclusion.
 
@@ -10,7 +10,9 @@ The structure of the chapter mirrors the empirical pipeline rather than the orde
 
 \label{sec:evaluation-protocol-recap}
 
-All experiments use the protocol defined in Chapter~3 \S3.4 and the X1 feature input from Chapter~4. The key operational parameters are: train \texttt{1990-01..1994-12} (60 months), test \texttt{1995-01..1996-12} (24 months), MLP[64,32,16]+ReLU+dropout 0.2, batch size 1024, 20 epochs, top/bottom 10\% signal-tilted long-short portfolio with 5\% per-name cap. Sharpe is annualised as $\sqrt{12} \cdot \bar r / \sigma_r$. Single-seed tables (\S5.2--\S5.3) use seed 42; multi-seed tables (\S5.4--\S5.6) use three seeds per row. Source paths are listed in each table caption; full reproduction commands are in Appendix~B.
+All experiments share the same evaluation window (train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, 24 months out-of-sample), the X1 feature input from Chapter~4, and the top/bottom 10\% signal-tilted long-short portfolio with 5\% per-name cap. Sharpe is annualised as $\sqrt{12} \cdot \bar r / \sigma_r$. Single-seed tables (\S5.2--\S5.3) use seed 42; multi-seed tables (\S5.4--\S5.6) use three seeds per row.
+
+The model and training configuration differs between evidence phases. Phase~1 and Phase~2 single-seed evidence (Tables~5.1--5.2) was produced on \texttt{main} at commit \texttt{6c0fbde} with MLP[64,32,16]+ReLU+dropout~0.2, batch size 1024, 20 epochs. Phase~3 multi-seed evidence (Tables~5.3--5.5) was produced on the \texttt{phase2.2-fix} branch with MLP[64,32,16]+tanh+dropout~0.0, batch size 1024, 20 epochs. Within each table the model configuration is identical across rows; only the loss function varies. Cross-phase comparisons therefore differ in activation and dropout in addition to the loss, and are discussed with appropriate caveats in \S5.7. Source paths are listed in each table caption; full reproduction commands are in Appendix~B.
 
 \section{Phase 1: Baseline loss comparison (24 months, seed 42)}
 
@@ -20,7 +22,7 @@ Table~\ref{tab:baseline-loss-comparison} reports the main baseline-loss comparis
 
 \begin{table}[H]
 \centering
-\caption{Baseline loss comparison. Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, seed 42, MLP[64,32,16]+ReLU+dropout 0.2, X1, batch 1024, 20 epochs, top/bottom 10\% with 5\% per-name cap. Source: see Appendix~B \SB.4.}
+\caption{Baseline loss comparison. Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, seed 42, MLP[64,32,16]+ReLU+dropout 0.2, X1, batch 1024, 20 epochs, top/bottom 10\% with 5\% per-name cap. Source: Appendix~B, Section~B.4.}
 \label{tab:baseline-loss-comparison}
 \begin{tabular}{cccccc}
 \toprule
@@ -62,7 +64,7 @@ This phase extends the two hybrid multiplicative variants of \S5.2 into a parame
 
 \begin{table}[H]
 \centering
-\caption{Phase 2 additive (A1--A5) and multiplicative (M1--M4) variants. Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, seed 42, same model / feature / portfolio configuration as Table~\ref{tab:baseline-loss-comparison}. Source: see Appendix~B \SB.4.}
+\caption{Phase 2 additive (A1--A5) and multiplicative (M1--M4) variants. Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, seed 42, same model / feature / portfolio configuration as Table~\ref{tab:baseline-loss-comparison}. Source: Appendix~B, Section~B.4.}
 \label{tab:phase2-variants}
 \begin{tabular}{ccccc}
 \toprule
@@ -98,13 +100,13 @@ The additive family is not carried further into multi-seed robustness in this re
 
 \label{sec:phase3a-gamma-refinement}
 
-Phase~2 introduces an explicit robustness parameter $\gamma$ into the multiplicative hybrid M2 variant, producing the family of \texttt{m2\_robust\_gamma\{0.03, 0.05, 0.07, 0.10, 0.15\}} losses. Each variant is run across three random seeds using the same 24-month static window and the 5\% per-name portfolio cap (\texttt{cap05}). The purpose is to decouple the seed-42 ranking of \S5.3 from a claim about the expected performance of the loss under seed perturbation.
+Phase~2 introduces an explicit prediction-variance regularisation parameter $\gamma$ into the multiplicative hybrid M2 variant, producing the family of \texttt{m2\_robust\_gamma\{03, 05, 07, 10, 15\}} losses (corresponding to $\gamma = 0.3, 0.5, 0.7, 1.0, 1.5$ in the implementation; see Chapter~3 \S\ref{subsec:m2-robust-gamma} for the naming convention). Each variant is run across three random seeds using the same 24-month static window and the 5\% per-name portfolio cap (\texttt{cap05}). The purpose is to decouple the seed-42 ranking of \S5.3 from a claim about the expected performance of the loss under seed perturbation.
 
 Sharpe stability is reported as the coefficient of variation $\mathrm{CV} = \sigma_S / |\mu_S|$, where $\mu_S$ and $\sigma_S$ are the cross-seed mean and standard deviation of the annualised Sharpe (same $\sqrt{12}$-annualised convention as \S5.1 and \S5.2). Lower CV implies lower relative seed sensitivity.
 
 \begin{table}[H]
 \centering
-\caption{Phase 3a $\gamma$ refinement, multi-seed (3 seeds per row). Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, \texttt{cap05} portfolio cap. Each row aggregates three seeds. Source: see Appendix~B \SB.4.}
+\caption{Phase 3a $\gamma$ refinement, multi-seed (3 seeds per row). Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, \texttt{cap05} portfolio cap. Each row aggregates three seeds. Source: Appendix~B, Section~B.4.}
 \label{tab:gamma-refinement}
 \begin{tabular}{cccccc}
 \toprule
@@ -142,7 +144,7 @@ First, \texttt{m2\_robust\_gamma07} provides the best Sharpe-vs-stability trade-
 
 Second, \texttt{m2\_robust\_gamma10} has the highest mean Sharpe ($1.0043$) but also the highest CV among the strong variants ($0.5613$). Its per-seed Sharpe range is wide ($0.4587$ to $1.5847$). Interpreted cautiously, \texttt{gamma10} is a variant whose \emph{best} seed produces the best Sharpe of the entire $\gamma$ family, but whose \emph{average} seed has not materially improved on \texttt{gamma07}. A recommendation that selects the variant with the highest mean Sharpe should therefore come with an explicit seed-sensitivity caveat.
 
-Third, the $\gamma$ schedule exhibits a non-monotone relationship with Sharpe stability. \texttt{gamma03} collapses almost entirely (CV $1.0570$, minimum Sharpe negative), and \texttt{gamma15} -- past the stability peak -- also degrades sharply in CV ($0.4562$) even though its mean Sharpe remains respectable ($0.8163$). The stability peak near $\gamma = 0.07$ is thus an internal optimum of the robust component rather than the endpoint of a monotone trend. This is consistent with the design intent of the robust modifier: too little robustness under-weights the rank-preserving term; too much robustness flattens the loss surface and re-injects seed-level noise into the learned weights.
+Third, the $\gamma$ schedule exhibits a non-monotone relationship with Sharpe stability. \texttt{gamma03} has a negative seed and high CV ($1.0570$), indicating that $\gamma = 0.3$ provides insufficient variance regularisation for seed-robust performance. \texttt{gamma15} -- past the stability peak -- also degrades sharply in CV ($0.4562$) even though its mean Sharpe remains respectable ($0.8163$). The stability peak near $\gamma = 0.7$ (loss id \texttt{gamma07}) is thus an internal optimum of the variance-penalty strength rather than the endpoint of a monotone trend. This is consistent with the design intent of the variance regulariser: too little penalty under-regularises the prediction spread; too much penalty over-compresses the signal and re-injects seed-level noise into the learned weights.
 
 On this evidence alone, \texttt{m2\_robust\_gamma07} is the best-supported candidate for the primary recommendation in \S5.8. The fuller comparison in \S5.5 -- where \texttt{gamma07} is evaluated against $\alpha$- and $\beta$-sweep variants from other families -- confirms this ordering.
 
@@ -152,7 +154,7 @@ On this evidence alone, \texttt{m2\_robust\_gamma07} is the best-supported candi
 
 To rule out the possibility that the M2-robust $\gamma$ family is merely a locally good design in the hybrid-multiplicative corner of the loss space, Phase~2 also runs an integrated sweep over three other parameterised families: the IMADL-m2 $\alpha$ sweep, the IMADL-GMADL $\beta$ sweep, and an adaptive-$\lambda$ family. Table~\ref{tab:integrated-summary} reports selected grouped summaries; the complete table contains further fine-grained $\gamma$ variants (\texttt{gamma001}, \texttt{gamma01}) used for locating the $\gamma$ optimum. Note that \texttt{m2\_robust\_gamma07}, the primary recommendation, is reported in Table~\ref{tab:gamma-refinement} and serves as the reference line in Figure~\ref{fig:gamma-refinement}.
 
-Source: integrated grouped summary CSV (see Appendix~B \SB.3 for the exact branch path). All rows are 3-seed averages at \texttt{cap05} with the same 24-month window as Table~\ref{tab:gamma-refinement}.
+Source: integrated grouped summary CSV (Appendix~B, Section~B.3 records the exact branch path). All rows are 3-seed averages at \texttt{cap05} with the same 24-month window as Table~\ref{tab:gamma-refinement}.
 
 \begin{table}[H]
 \centering
@@ -185,7 +187,7 @@ Loss & Sharpe mean & Sharpe std & Cum.\ return mean & CV \\
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{figures/fig5_5_imadl_alpha_sweep.png}
-\caption[IMADL-m2 $\alpha$ sweep vs $\gamma$ reference]{IMADL-m2 $\alpha$ sweep vs $\gamma$ reference. Left: cross-seed mean annualised Sharpe with $\pm 1$ std error bars for $\alpha \in \{0.2, \ldots, 0.8\}$; dashed horizontal lines mark the mean Sharpe of \texttt{m2\_robust\_gamma07} (red) and \texttt{m2\_robust\_gamma10} (orange) as references. Right: coefficient of variation on a log scale, with the same $\gamma$ references. Evaluation window \texttt{1995-01..1996-12}, \texttt{cap05}, 3 seeds per row. Source: integrated grouped summary CSV and $\gamma$ refinement grouped summary (see Appendix~B \SB.3 for exact paths).}
+\caption[IMADL-m2 $\alpha$ sweep vs $\gamma$ reference]{IMADL-m2 $\alpha$ sweep vs $\gamma$ reference. Left: cross-seed mean annualised Sharpe with $\pm 1$ std error bars for $\alpha \in \{0.2, \ldots, 0.8\}$; dashed horizontal lines mark the mean Sharpe of \texttt{m2\_robust\_gamma07} (red) and \texttt{m2\_robust\_gamma10} (orange) as references. Right: coefficient of variation on a log scale, with the same $\gamma$ references. Evaluation window \texttt{1995-01..1996-12}, \texttt{cap05}, 3 seeds per row. Source: integrated grouped summary CSV and $\gamma$ refinement grouped summary; Appendix~B, Section~B.3 records the exact paths.}
 \label{fig:imadl-alpha-sweep}
 \end{figure}
 
@@ -197,12 +199,12 @@ The adaptive-$\lambda$ family, in which the relative weighting of the robust and
 
 Combining Table~\ref{tab:gamma-refinement} and Table~\ref{tab:integrated-summary} confirms that the two best candidates in the final recommendation come from the two self-consistent peaks: \texttt{m2\_robust\_gamma07} at Sharpe $0.9156$ / CV $0.1808$, and \texttt{imadl\_m2\_alpha06} at Sharpe $0.6895$ / CV $0.2443$.
 
-Figure~\ref{fig:sharpe-cv-frontier} places all multi-seed hybrid variants on a single Sharpe-stability plane, making the frontier structure visible. The preferred region -- high Sharpe, low CV -- is occupied exclusively by \texttt{gamma07}. \texttt{gamma10} lies outside the preferred region on the CV axis despite its higher mean Sharpe. \texttt{alpha06} lies inside the preferred region on the CV axis but below \texttt{gamma07} on the Sharpe axis. No other variant from the $\alpha$, $\beta$, or adaptive-$\lambda$ families reaches the preferred region. The frontier view confirms that the recommendation is not a local optimum within a single family but the dominant point across the full hybrid design space explored in this study.
+Figure~\ref{fig:sharpe-cv-frontier} places all multi-seed hybrid variants on a single Sharpe-stability plane, making the frontier structure visible. The preferred region -- high Sharpe, low CV ($\leq 0.35$) -- contains \texttt{gamma07} at the highest Sharpe among the low-CV points; \texttt{gamma05} and \texttt{alpha04} also satisfy the CV threshold but at substantially lower mean Sharpe. \texttt{gamma10} lies outside the preferred region on the CV axis despite its higher mean Sharpe. \texttt{alpha06} lies inside the preferred region on the CV axis but below \texttt{gamma07} on the Sharpe axis. No other variant from the $\beta$ or adaptive-$\lambda$ families reaches the preferred region. The frontier view confirms that \texttt{gamma07} achieves the best joint Sharpe-stability trade-off across the full hybrid design space explored in this study.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=0.9\textwidth]{figures/fig5_6_sharpe_cv_frontier.png}
-\caption[Sharpe-stability frontier across multi-seed hybrid families]{Sharpe-stability frontier across multi-seed hybrid families. Each point is a 3-seed grouped summary. x-axis: cross-seed CV (lower = more stable); y-axis: mean annualised Sharpe; marker size proportional to mean cumulative return. Blue shading marks the preferred region (CV $\leq 0.35$). Red star: \texttt{m2\_robust\_gamma07} (recommended); orange triangle: \texttt{m2\_robust\_gamma10}; green diamond: \texttt{imadl\_m2\_alpha06} (stable fallback). Rows with CV $> 8$ (IMADL-GMADL $\beta$07) are excluded and noted in the figure. Evaluation window \texttt{1995-01..1996-12}, \texttt{cap05}, 3 seeds per row.}
+\caption[Sharpe-stability frontier across multi-seed hybrid families]{Sharpe-stability frontier across multi-seed hybrid families. Each point is a 3-seed grouped summary. x-axis: cross-seed CV (lower = more stable); y-axis: mean annualised Sharpe; marker size proportional to mean cumulative return. Blue shading marks the preferred region (CV $\leq 0.35$). Red star: \texttt{m2\_robust\_gamma07} (recommended); orange triangle: \texttt{m2\_robust\_gamma10}; green diamond: \texttt{imadl\_m2\_alpha06} (stable fallback). Rows with CV $> 8$ (IMADL-GMADL $\beta$05 and $\beta$07) are excluded and noted in the figure. Evaluation window \texttt{1995-01..1996-12}, \texttt{cap05}, 3 seeds per row.}
 \label{fig:sharpe-cv-frontier}
 \end{figure}
 
@@ -216,7 +218,7 @@ Table~\ref{tab:normalisation-probe} summarises the probe. The scale ratios quote
 
 \begin{table}[H]
 \centering
-\caption{Loss-component normalisation probe. Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, \texttt{cap05}, 3 seeds per row. Source: see Appendix~B \SB.4.}
+\caption{Loss-component normalisation probe. Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, \texttt{cap05}, 3 seeds per row. Source: Appendix~B, Section~B.4.}
 \label{tab:normalisation-probe}
 \begin{tabular}{ccccc}
 \toprule
@@ -257,7 +259,7 @@ Two claim boundaries follow. First, \textbf{intra-phase comparison is strong}: w
 
 \label{sec:headline-findings}
 
-Figure~\ref{fig:cumulative-return-paths} shows the cumulative long-short return paths that underlie the summary statistics in \S5.2--\S5.5. The left panel places the Phase~1 baselines in time: MSE and IMADL produce negative or flat paths throughout the 24-month window, while the hybrid variants (M1, A3) accumulate positive returns steadily. The right panel shows the Phase~2 gamma robustness picture: \texttt{gamma07} (red) produces the most consistent upward path across all three seeds, with a narrow seed envelope; \texttt{gamma10} (orange) reaches a higher peak in its best seed but shows wider dispersion; \texttt{gamma03} collapses early and never recovers.
+Figure~\ref{fig:cumulative-return-paths} shows the cumulative long-short return paths that underlie the summary statistics in \S5.2--\S5.5. The left panel places the Phase~1 baselines in time: MSE and IMADL produce negative or flat paths throughout the 24-month window, while the hybrid variants (M1, A3) accumulate positive returns steadily. The right panel shows the Phase~2 gamma robustness picture: \texttt{gamma07} (red) produces the most consistent upward path across all three seeds, with a narrow seed envelope; \texttt{gamma10} (orange) reaches a higher peak in its best seed but shows wider dispersion; \texttt{gamma03} has a negative seed and high cross-seed variability (CV $1.0570$).
 
 \begin{figure}[H]
 \centering
@@ -274,4 +276,4 @@ The final loss recommendation rests on \S5.4--\S5.6, which together constitute t
 
 \textbf{Stable fallback: \texttt{imadl\_m2\_alpha06}.} Mean Sharpe $0.6895$, CV $0.2443$, mean cumulative return $+30.42\%$. This is the peak of the IMADL-m2 $\alpha$ sweep and its cumulative return is actually the largest of the three tiered candidates, though its Sharpe is lower than \texttt{gamma07}. It is selected as the stable fallback by its favourable stability/return trade-off rather than by Sharpe dominance, and it provides the next-best independent corroboration that a hybrid-multiplicative design with a robust component is the productive region of the loss space.
 
-In summary, the empirical answer to the research questions posed in Chapter~1 is: within the static 24-month protocol studied here, a hybrid-multiplicative loss with a tuned robust component ($\gamma = 0.07$) outperforms traditional regression losses and pure absolute-loss variants on seed-42 same-window Sharpe, and among the competitive Phase~2 multi-seed rows it achieves the best joint Sharpe-stability profile, with a stable fallback available through the IMADL-m2 $\alpha$ family at the same order of Sharpe. Scope limitations are discussed in Chapter~6.
+In summary, the empirical answer to the research questions posed in Chapter~1 is: within the static 24-month protocol studied here, a hybrid-multiplicative loss with a tuned variance-regularisation component (loss id \texttt{gamma07}, $\gamma = 0.7$) outperforms traditional regression losses and pure absolute-loss variants on seed-42 same-window Sharpe, and among the competitive Phase~2 multi-seed rows it achieves the best joint Sharpe-stability profile, with a stable fallback available through the IMADL-m2 $\alpha$ family at the same order of Sharpe. Scope limitations are discussed in Chapter~6.

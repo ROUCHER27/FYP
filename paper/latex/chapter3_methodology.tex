@@ -27,11 +27,13 @@ MLPConfig(
 )
 \end{lstlisting}
 
-The architecture comprises an input layer consuming the 15-column model input (see Appendix~B Table B.3), three hidden layers of width 64, 32, and 16 respectively with ReLU activations, a dropout layer of rate $p = 0.2$ applied after each ReLU, and a final linear projection to a scalar prediction $\hat y_{i,t}$. The 15 input columns consist of 10 X1 engineered features (cumulative returns and cumulative turnover at 5 horizons) together with the 5 base panel columns (RET, VOL, SHROUT, r, to). The forward pass reduces the final tensor from shape $(N, 1)$ to $(N,)$ by a trailing \texttt{squeeze(-1)}; this is the cross-sectional vector of one-month-ahead return predictions consumed by the loss function and by the portfolio construction module.
+The architecture comprises an input layer consuming the 15-column model input (see Appendix~B Table B.3), three hidden layers of width 64, 32, and 16 respectively with ReLU activations, a dropout layer of rate $p = 0.2$ applied after each ReLU, and a final linear projection to a scalar prediction $\hat y_{i,t}$. The 15 input columns consist of 10 X1 engineered features (cumulative returns and cumulative turnover at 5 horizons) together with the 5 base panel columns (VOL, RET, SHROUT, r, to). The forward pass reduces the final tensor from shape $(N, 1)$ to $(N,)$ by a trailing \texttt{squeeze(-1)}; this is the cross-sectional vector of one-month-ahead return predictions consumed by the loss function and by the portfolio construction module.
 
 The hidden-layer widths were selected by a grid search conducted on pre-test data during an earlier phase of the project (the winning configuration achieved training MSE $= 0.02252$). Once the search concluded, the architecture was frozen for every experiment in every phase; no architecture ablation is performed in this report. This design choice follows from the research question: the report measures the marginal effect of the \emph{loss function} conditional on a fixed architecture. A parallel study varying architecture while holding the loss function fixed would answer a different question.
 
 Dropout is active only during training; the evaluation loop sets the model to \texttt{eval} mode before forward passes on the test window, so inference is deterministic given the trained weights. The prediction has no output activation; the scalar is used directly by the loss function during training and by the portfolio construction during evaluation.
+
+\textbf{Phase-specific configuration note.} The architecture above (ReLU, dropout 0.2) applies to Phase~1 and Phase~2 single-seed evidence (Tables~5.1--5.2, produced on \texttt{main} at commit \texttt{6c0fbde}). Phase~3 multi-seed evidence (Tables~5.3--5.5, produced on branch \texttt{phase2.2-fix}) uses the same layer widths but substitutes tanh activation and sets dropout to 0.0. Within each phase the configuration is identical across all loss-function rows; the loss is the only varying factor.
 
 \section{Loss function families}
 
@@ -148,12 +150,14 @@ Figure~\ref{fig:hybrid-loss-surfaces} shows the four loss surfaces on the $(y, \
 
 \label{subsec:m2-robust-gamma}
 
-The M2-robust family is a generalisation of the M-series in which the gating factor becomes $\gamma$-parameterised and the Huber backbone is replaced by a smoothly saturating magnitude term. Conceptually, a robust M2 loss takes the form
+The M2-robust family is a generalisation of the M-series in which the base M2 loss is augmented with a prediction-variance regularisation term. The implemented formula is:
 \[
 L_{\mathrm{M2\text{-}robust}, \gamma}(y, \hat y)
-= \big(1 + \lambda_{\mathrm{dir}} \cdot D(y, \hat y)\big) \cdot H^{\gamma}(y - \hat y),
+= L_{\mathrm{M2}}(y, \hat y) \;+\; \gamma \cdot \mathrm{Var}(\hat y),
 \]
-where $H^{\gamma}$ is the $\gamma$-controlled robust magnitude term that saturates the contribution of large residuals. Small $\gamma$ flattens the loss surface and prioritises the directional component; large $\gamma$ approaches the Phase 2 M2 form. The five values scanned in Chapter~5 Table~\ref{tab:gamma-refinement} are $\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$. The Phase 3b integrated summary (Chapter~5 Table~\ref{tab:integrated-summary}) extends this with finer-grained values $\gamma \in \{0.001, 0.01, 0.10\}$, an IMADL-m2 $\alpha$ sweep ($\alpha$ is the weight on the IMADL-style directional rebalancing, scanned over $\{0.2, 0.3, \ldots, 0.8\}$), an IMADL-GMADL $\beta$ sweep ($\beta$ controls the composition of the two directional primitives), and an adaptive-$\lambda$ schedule that modulates the directional weight during training.
+where $L_{\mathrm{M2}}$ is the multiplicative hybrid with $\lambda_{\mathrm{dir}} = 2.0$ (as defined in \S\ref{subsec:hybrid-losses}) and $\mathrm{Var}(\hat y)$ is the within-batch variance of the prediction vector. The loss identifier \texttt{m2\_robust\_gamma07} corresponds to $\gamma = 0.7$ in the implementation; similarly, \texttt{gamma03}, \texttt{gamma05}, \texttt{gamma10}, and \texttt{gamma15} correspond to $\gamma = 0.3, 0.5, 1.0, 1.5$ respectively.\footnote{The naming convention uses the last two digits of the decimal value without the leading zero: \texttt{gamma07} $\to$ $\gamma = 0.7$, \texttt{gamma10} $\to$ $\gamma = 1.0$, etc.}
+
+The variance penalty discourages the model from producing excessively dispersed predictions within a batch. Small $\gamma$ applies minimal regularisation and the loss behaves like the base M2; large $\gamma$ penalises prediction spread more aggressively, which can over-compress the signal and degrade ranking quality. The five values scanned in Chapter~5 Table~\ref{tab:gamma-refinement} are $\gamma \in \{0.3, 0.5, 0.7, 1.0, 1.5\}$. The Phase 3b integrated summary (Chapter~5 Table~\ref{tab:integrated-summary}) extends this with finer-grained values $\gamma \in \{0.01, 0.1, 1.0\}$, an IMADL-m2 $\alpha$ sweep ($\alpha$ is the weight on the IMADL-style directional rebalancing, scanned over $\{0.2, 0.3, \ldots, 0.8\}$), an IMADL-GMADL $\beta$ sweep ($\beta$ controls the composition of the two directional primitives), and an adaptive-$\lambda$ schedule that modulates the directional weight during training.
 
 The exact implementations of the Phase 3 variants beyond the core Phase 2 A/M set live on a separate evidence branch alongside the run outputs cited by the grouped summaries. For the evidence used in Chapter~5, the authoritative reference is the grouped summary CSV (source path listed in each table caption). The design intent in every case is the same as the Phase 2 skeleton: a magnitude-controlling backbone combined with a directional-rebalancing factor, parameterised so that a scan can locate the stability peak under multi-seed evaluation.
 
@@ -259,7 +263,7 @@ The study proceeds in four phases plus one set of diagnostic checks. Each phase 
 
 \textbf{Phase 3: Multi-seed robust-hybrid refinement (3 seeds per row).} Comprises two sub-phases:
 \begin{itemize}
- \item \emph{Phase 3a --- $\gamma$ refinement.} Five $\gamma$ values of the M2-robust family ($\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$), three seeds each. Source: see Appendix~B \S B.4.
+ \item \emph{Phase 3a --- $\gamma$ refinement.} Five $\gamma$ values of the M2-robust family ($\gamma \in \{0.3, 0.5, 0.7, 1.0, 1.5\}$, loss ids \texttt{gamma03} through \texttt{gamma15}), three seeds each. Source: see Appendix~B \S B.4.
  \item \emph{Phase 3b --- Integrated $\alpha$/$\beta$/$\lambda$ sweeps.} Extends the comparison to IMADL-m2 $\alpha$ ($\alpha \in \{0.2, \ldots, 0.8\}$), IMADL-GMADL $\beta$ ($\beta \in \{0.3, 0.5, 0.7\}$), adaptive-$\lambda$ ($\lambda \in \{10, 50, 100\}$), and finer $\gamma$ values. Source: integrated grouped summary CSV on the same evidence branch.
 \end{itemize}
 
@@ -273,7 +277,7 @@ The study proceeds in four phases plus one set of diagnostic checks. Each phase 
 
 \label{sec:reproducibility}
 
-\textbf{Reproducibility.} Every table reported in Chapter~5 is reproducible from the local clone using the branch and path listed in Appendix~B \S B.4. Run manifests preserve the exact commands used to produce each Phase 1 and Phase 2 row. The Phase 3 grouped summaries record per-row \texttt{runs = 3} and aggregate statistics computed from the raw per-seed CSVs. The shared model configuration (MLP[64, 32, 16], ReLU, dropout 0.2, input\_dim 15) pins the architecture across phases. The CSV data files are versioned alongside the code.
+\textbf{Reproducibility.} Every table reported in Chapter~5 is reproducible from the local clone using the branch and path listed in Appendix~B \S B.4. Run manifests preserve the exact commands used to produce each Phase 1 and Phase 2 row. The Phase 3 grouped summaries record per-row \texttt{runs = 3} and aggregate statistics computed from the raw per-seed CSVs. The model architecture is MLP[64, 32, 16] with input\_dim 15 throughout; Phase~1 and Phase~2 single-seed evidence uses ReLU activation and dropout 0.2 (commit \texttt{6c0fbde} on \texttt{main}), while Phase~3 multi-seed evidence uses tanh activation and dropout 0.0 (branch \texttt{phase2.2-fix}). Within each phase the configuration is identical across rows. The CSV data files are versioned alongside the code.
 
 Two operational caveats apply. First, floating-point outputs from CUDA and MPS devices may differ in the last few decimals; all reported results were produced on CUDA and inherit that numerical convention. Second, the runner seeds Python, NumPy, and PyTorch but does not force CUDA determinism (\texttt{torch.backends.cudnn.deterministic}); small bit-level drift across reproductions is possible, but the grouped-summary figures in Chapter~5 are reported to be stable across re-runs within the same environment.
 

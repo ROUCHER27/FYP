@@ -117,7 +117,7 @@ At the feature-building stage, each \texttt{build\_feature\_set\_xN} function ad
 Two aspects are deliberately \emph{not} applied by the pipeline and are worth stating explicitly:
 
 \begin{itemize}
- \item \textbf{No winsorisation.} The raw \texttt{RET} distribution has extreme tails (training-era maximum of $+2400\%$ for a single name-month). The pipeline does not clip or winsorise the return series. Heavy tails are the motivation for robust-loss design; normalising them away at the data stage would obscure the effect the loss functions are intended to handle. Chapter~3 discusses how each loss family treats these outliers mathematically. Because the 15 model inputs include raw RET, VOL, SHROUT, r, and to (Appendix~B Table~B.3), extreme values in these base columns enter the MLP directly.
+ \item \textbf{No winsorisation.} The raw \texttt{RET} distribution has extreme tails (training-era maximum of $+2400\%$ for a single name-month). The pipeline does not clip or winsorise the return series. Heavy tails are the motivation for robust-loss design; normalising them away at the data stage would obscure the effect the loss functions are intended to handle. Chapter~3 discusses how each loss family treats these outliers mathematically. Because the 15 model inputs include raw VOL, RET, SHROUT, r, and to (Appendix~B Table~B.3), extreme values in these base columns enter the MLP directly.
  \item \textbf{No cross-sectional clipping of predictions.} Any clipping is performed inside the portfolio construction module (Chapter~3 \S3.5) on prediction $z$-scores, not on input features. Input features are used as-is.
 \end{itemize}
 
