@@ -9,7 +9,7 @@ The dataset is a CRSP-style monthly panel of US-listed equity observations, sour
 \begin{table}[H]
 \centering
 \caption{CRSP-style monthly panel schema.}\label{tab:crsp-schema}
-\begin{tabular}{lll}\toprule
+\begin{tabular}{ccc}\toprule
 Column & Description & Source role \\\midrule
 \texttt{PERMNO} & CRSP-style permanent security identifier & security key \\
 \texttt{date} & End-of-month calendar date & time index \\
@@ -30,7 +30,6 @@ At the training end of the panel the \texttt{89.12-94.csv} file contributes 449,
 \caption[Data coverage and training-era return distribution]{Data coverage and training-era return distribution.}
 \label{fig:data-coverage}
 \end{figure}
-
 
 \section{Sample construction}\label{sec:sample-construction}
 
@@ -59,7 +58,7 @@ The report uses a single static split, not a rolling or expanding-window scheme.
 \begin{table}[H]
 \centering
 \caption{Static train/test split.}\label{tab:train-test-split}
-\begin{tabular}{lllrl}\toprule
+\begin{tabular}{ccccc}\toprule
 Partition & Start & End & Months & Role \\\midrule
 Training & \texttt{1990-01} & \texttt{1994-12} & 60 & fit loss and compute gradients \\
 Test (main) & \texttt{1995-01} & \texttt{1996-12} & 24 & out-of-sample evaluation for every final headline table \\
@@ -69,11 +68,11 @@ Test (main) & \texttt{1995-01} & \texttt{1996-12} & 24 & out-of-sample evaluatio
 
 The split is defined by date, not by security. A given \texttt{PERMNO} can contribute to both the training and test partitions; the prohibition on leakage is enforced at the time dimension via the shift in \S\ref{sec:sample-construction} and via the strict month cutoff above. No retraining occurs during the test window; the test period is a held-out evaluation of a single model per loss and per seed.
 
-Chapter~5 labels every final headline number with the exact window start and end. A six-month variant of the test window (1995-01 to 1995-06) appears in very early sanity-check material stored under \texttt{sanity\_outputs/}; those files predate the final protocol and are not used as headline evidence anywhere in this report. Every final verification JSON confirms \texttt{row\_count = 24}, \texttt{first\_month = 1995-01}, and \texttt{last\_month = 1996-12} for the baseline and Phase~2 tables (see Appendix~B \S B.5). The multi-seed Phase~3 runs inherit the same window.
+Chapter~5 labels every final headline number with the exact window start and end. Every final verification JSON confirms \texttt{row\_count = 24}, \texttt{first\_month = 1995-01}, and \texttt{last\_month = 1996-12} for the baseline and Phase~2 tables (see Appendix~B \S B.5). The multi-seed Phase~3 runs inherit the same window.
 
 \section{Feature variables}\label{sec:feature-variables}
 
-The repository implements multiple feature sets (\texttt{Model\_Train/features.py}). The final report uses feature set \textbf{X1} throughout; alternative feature sets were not carried into the final empirical tables.
+The repository implements multiple feature sets. The final report uses feature set \textbf{X1} throughout; alternative feature sets were not carried into the final empirical tables.
 
 \subsection{X1 --- cumulative return and cumulative turnover (used throughout)}\label{subsec:x1}
 
@@ -96,7 +95,7 @@ Both aggregations require the full rolling window (\texttt{min\_periods = window
 
 The complete 15-column model input is listed in Appendix~B Table~B.3.
 
-X1 is the feature set used in every run that produces a Chapter~5 number. The \texttt{best\_hyperparameters.txt} configuration \texttt{\{input\_dim: 15, hidden\_dims: [64, 32, 16], activation: relu, dropout: 0.2\}} matches this feature width exactly, and every runner in \texttt{run\_sanity\_check\_\*.py} consumes X1 by construction.
+X1 is the feature set used in every run that produces a Chapter~5 number. The shared model configuration (\texttt{input\_dim}: 15, \texttt{hidden\_dims}: [64, 32, 16], \texttt{activation}: ReLU, \texttt{dropout}: 0.2) matches this feature width exactly.
 
 Alternative feature-set constructors exist in the codebase but were not run under the final 24-month protocol. Feature-set sensitivity is therefore excluded from the main report and listed as future work in Chapter~6.
 

@@ -18,7 +18,6 @@ footskip=0.25in]{geometry}
 \usepackage{color,soul}
 \usepackage{floatrow}
 \usepackage{graphicx}
-\usepackage[tc]{titlepic}
 \usepackage{enumerate}
 \usepackage{multirow}
 \usepackage{hhline}
@@ -34,6 +33,8 @@ footskip=0.25in]{geometry}
 \usepackage{float}
 \usepackage{caption}
 \usepackage{listings}
+\usepackage{tocloft}
+\setlength{\cfttabnumwidth}{3em}
 
 \setcounter{secnumdepth}{3}
 \numberwithin{figure}{chapter}
@@ -66,36 +67,39 @@ footskip=0.25in]{geometry}
 % Caption setup
 \captionsetup{font=small,labelfont=bf}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Title page — exact XJTLU template format
-\title{\bfseries {%
-\MakeUppercase{Loss Function Design for Cross-Sectional Stock-Return Prediction} \\[0.5cm]
-损失函数设计用于横截面股票收益预测 \\[2cm]
-}}
-\author{%
-a thesis \\[5pt]
-submitted to School of Mathematics \& Physics \\[5pt]
-of Xi'an Jiaotong-Liverpool University \\[5pt]
-in partial fulfilment for the award of the degree of \\[1.5cm]
-\textsc{\Large BSc Applied Mathematics} \\[5pt]
-By \\[5pt]
-\Large{Roucheng Li 1234567} \\[1cm]
-\normalsize Supervisor: Dr. XXXX XXXX \\[1cm]
-February 8, 2026 \\[1.5cm]
-\titlepic{\includegraphics[width=4cm]{xjtluicon.jpg}}
-}
-
 \begin{document}
 
-% === Title page ===
-\clearpage\maketitle
-\thispagestyle{empty}
+% === Title page (page 1) ===
+\begin{titlepage}
+\centering
+\vspace*{1.5cm}
+{\Large\textsc{Loss Function Design for Cross-Sectional Stock-Return Prediction} \\[0.5cm]}
+{\Large 面向股票策略的神经网络损失函数新设计 \\[2cm]}
 
-% === Blank page (required by template) ===
-\newpage
+{\scshape a thesis \\[5pt]
+submitted to School of Mathematics \& Physics \\[5pt]
+of Xi'an Jiaotong-Liverpool University \\[5pt]
+in partial fulfilment for the award of the degree of \\[1.5cm]}
+
+{\Large\textsc{BSc Applied Mathematics} \\[5pt]}
+By \\[5pt]
+{\Large Yirong Yu 2253235} \\[1cm]
+Supervisor: Dr. Yi Cao \\[1cm]
+February 8, 2026
+
+\vfill
+\includegraphics[width=4cm]{xjtluicon.jpg}
+\vspace{1cm}
+\end{titlepage}
+
+% === Blank page (page 2, required by template) ===
 \thispagestyle{empty}
 \mbox{}
 \newpage
+
+% === Front matter: roman numerals starting at ii ===
+\pagenumbering{roman}
+\setcounter{page}{2}
 
 % === Abstract ===
 \input{abstract}
@@ -103,13 +107,16 @@ February 8, 2026 \\[1.5cm]
 
 % === Acknowledgements ===
 \chapter*{Acknowledgements}
-I would like to express my sincere gratitude to my supervisor for their invaluable guidance and support throughout this project.\\
+I would like to express my sincere gratitude to my supervisor for their invaluable guidance and support throughout this project.
+\newpage
 
-\pagenumbering{roman}
+% === TOC, LoF, LoT ===
 \tableofcontents
 \listoffigures
 \listoftables
 \newpage
+
+% === Main body: arabic numerals starting at 1 ===
 \pagenumbering{arabic}
 
 % === Main body ===

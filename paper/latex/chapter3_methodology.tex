@@ -2,13 +2,13 @@
 
 \label{ch:methodology}
 
-This chapter describes the pipeline that produces every number reported in Chapter 5. The methodology is grounded in the actual training and evaluation code; where the text differs from older draft material, the implementation is authoritative.
+This chapter describes the pipeline that produces every number reported in Chapter~5. The methodology is grounded in the actual training and evaluation code; where the text differs from older draft material, the implementation is authoritative.
 
 \section{Research design}
 
 \label{sec:research-design}
 
-The research design is a controlled, single-factor comparison. Within each comparison table, data, features, model architecture, training protocol, and portfolio construction are fixed; the loss function is the only varying factor. Cross-phase comparisons are treated separately in \S3.8. This design gives a clean causal attribution of performance differences to the loss function at the cost of limited external validity across market regimes --- a trade-off revisited in \S3.8 and in Chapter 6.
+The research design is a controlled, single-factor comparison. Within each comparison table, data, features, model architecture, training protocol, and portfolio construction are fixed; the loss function is the only varying factor. Cross-phase comparisons are treated separately in \S3.8. This design gives a clean causal attribution of performance differences to the loss function at the cost of limited external validity across market regimes --- a trade-off revisited in \S3.8 and in Chapter~6.
 
 The study proceeds through four stages: a seed-42 baseline comparison, a seed-42 hybrid-variant sweep, a multi-seed robust-hybrid refinement, and diagnostic checks that define the evidence gate; \S3.7 lists the runner, seed, window, and artifact configuration for each stage.
 
@@ -27,7 +27,7 @@ MLPConfig(
 )
 \end{lstlisting}
 
-The architecture comprises an input layer consuming the 15-column model input (see Appendix B Table B.3), three hidden layers of width 64, 32, and 16 respectively with ReLU activations, a dropout layer of rate $p = 0.2$ applied after each ReLU, and a final linear projection to a scalar prediction $\hat y_{i,t}$. The 15 input columns consist of 10 X1 engineered features (cumulative returns and cumulative turnover at 5 horizons) together with the 5 base panel columns (RET, VOL, SHROUT, r, to). The forward pass reduces the final tensor from shape $(N, 1)$ to $(N,)$ by a trailing \texttt{squeeze(-1)}; this is the cross-sectional vector of one-month-ahead return predictions consumed by the loss function and by the portfolio construction module.
+The architecture comprises an input layer consuming the 15-column model input (see Appendix~B Table B.3), three hidden layers of width 64, 32, and 16 respectively with ReLU activations, a dropout layer of rate $p = 0.2$ applied after each ReLU, and a final linear projection to a scalar prediction $\hat y_{i,t}$. The 15 input columns consist of 10 X1 engineered features (cumulative returns and cumulative turnover at 5 horizons) together with the 5 base panel columns (RET, VOL, SHROUT, r, to). The forward pass reduces the final tensor from shape $(N, 1)$ to $(N,)$ by a trailing \texttt{squeeze(-1)}; this is the cross-sectional vector of one-month-ahead return predictions consumed by the loss function and by the portfolio construction module.
 
 The hidden-layer widths were selected by a grid search conducted on pre-test data during an earlier phase of the project (the winning configuration achieved training MSE $= 0.02252$). Once the search concluded, the architecture was frozen for every experiment in every phase; no architecture ablation is performed in this report. This design choice follows from the research question: the report measures the marginal effect of the \emph{loss function} conditional on a fixed architecture. A parallel study varying architecture while holding the loss function fixed would answer a different question.
 
@@ -37,7 +37,7 @@ Dropout is active only during training; the evaluation loop sets the model to \t
 
 \label{sec:loss-function-families}
 
-The loss functions used in this report fall into three families and one combined hybrid family. Full formulas and gradients are given in Appendix A; this section summarises each loss's role in the experimental design.
+The loss functions used in this report fall into three families and one combined hybrid family. Full formulas and gradients are given in Appendix~A; this section summarises each loss's role in the experimental design.
 
 \subsection{Regression losses}
 
@@ -58,7 +58,7 @@ The loss functions used in this report fall into three families and one combined
  \item \textbf{IMADL.} Batch-normalised directional penalty plus a squared-error magnitude term ($\lambda_{\mathrm{dir}} = \lambda_{\mathrm{mag}} = 1$, $\epsilon = 10^{-8}$). The batch normalisation decouples loss scale from batch composition.
 \end{itemize}
 
-All three are used as baseline comparisons in Chapter 5 \S5.2. See Appendix A \S A.2 for full expressions and derivatives.
+All three are used as baseline comparisons in Chapter~5 \S5.2. See Appendix~A \S A.2 for full expressions and derivatives.
 
 Figure~\ref{fig:loss-reward-penalty} illustrates how the directional gate and the multiplicative gating factor respond as the prediction $\hat y$ sweeps from $-20\%$ to $+20\%$ for four representative realised-return values. The key observation is that the gate is not symmetric: when the prediction sign is wrong, the directional gate rises and the multiplicative factor amplifies any magnitude loss; when the sign is correct, the gate relaxes toward zero and the loss reduces to the plain Huber backbone. The asymmetry is stronger for large $|y|$ (panels a and d) than for small $|y|$ (panels b and c), because the batch-normalised $|y|^b$ weight scales the gate with realised-return magnitude.
 
@@ -97,7 +97,7 @@ The five Phase 2 A-variants scan two hyperparameters simultaneously:
 \centering
 \caption{Phase 2 additive A-series loss hyperparameters.}
 \label{tab:a-series-hyperparameters}
-\begin{tabular}{lcc}
+\begin{tabular}{ccc}
 \toprule
 Variant & $\lambda_{\mathrm{dir}}$ & $\lambda_{\mathrm{hub}}$ \\
 \midrule
@@ -121,7 +121,7 @@ The four Phase 2 M-variants scan only $\lambda_{\mathrm{dir}}$:
 \centering
 \caption{Phase 2 multiplicative M-series loss hyperparameters.}
 \label{tab:m-series-hyperparameters}
-\begin{tabular}{lc}
+\begin{tabular}{cc}
 \toprule
 Variant & $\lambda_{\mathrm{dir}}$ \\
 \midrule
@@ -155,9 +155,9 @@ L_{\mathrm{M2\text{-}robust}, \gamma}(y, \hat y)
 \]
 where $H^{\gamma}$ is the $\gamma$-controlled robust magnitude term that saturates the contribution of large residuals. Small $\gamma$ flattens the loss surface and prioritises the directional component; large $\gamma$ approaches the Phase 2 M2 form. The five values scanned in Chapter~5 Table~\ref{tab:gamma-refinement} are $\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$. The Phase 3b integrated summary (Chapter~5 Table~\ref{tab:integrated-summary}) extends this with finer-grained values $\gamma \in \{0.001, 0.01, 0.10\}$, an IMADL-m2 $\alpha$ sweep ($\alpha$ is the weight on the IMADL-style directional rebalancing, scanned over $\{0.2, 0.3, \ldots, 0.8\}$), an IMADL-GMADL $\beta$ sweep ($\beta$ controls the composition of the two directional primitives), and an adaptive-$\lambda$ schedule that modulates the directional weight during training.
 
-The exact implementations of the Phase 3 variants beyond the core Phase 2 A/M set live on a separate evidence branch alongside the run outputs cited by the grouped summaries. For the evidence used in Chapter 5, the authoritative reference is the grouped summary CSV (source path listed in each table caption). The design intent in every case is the same as the Phase 2 skeleton: a magnitude-controlling backbone combined with a directional-rebalancing factor, parameterised so that a scan can locate the stability peak under multi-seed evaluation.
+The exact implementations of the Phase 3 variants beyond the core Phase 2 A/M set live on a separate evidence branch alongside the run outputs cited by the grouped summaries. For the evidence used in Chapter~5, the authoritative reference is the grouped summary CSV (source path listed in each table caption). The design intent in every case is the same as the Phase 2 skeleton: a magnitude-controlling backbone combined with a directional-rebalancing factor, parameterised so that a scan can locate the stability peak under multi-seed evaluation.
 
-Figure~\ref{fig:triple-property} illustrates the three properties that distinguish the multiplicative hybrid from plain regression and pure directional losses. Panel (a) shows the directional asymmetry: for a fixed realised return $y = +5\%$, the hybrid loss is substantially higher when the prediction sign is wrong than when it is correct, whereas MSE is symmetric. Panel (b) shows magnitude awareness: when the prediction is sign-wrong at $\hat y = -3\%$, the hybrid penalty grows faster than Huber as $|y|$ increases, because the batch-normalised $|y|^b$ weight in $D(y, \hat y)$ amplifies the gating factor for large realised returns. Panel (c) shows the implicit variance penalty: as prediction dispersion increases, more predictions fall into the sign-wrong region and the multiplicative gate amplifies the Huber backbone for each of them, causing expected batch loss to grow super-linearly --- a property absent from MSE and Huber. Together, these three panels explain why the M2-robust $\gamma$ family is the primary candidate for further empirical evaluation in Chapter 5.
+Figure~\ref{fig:triple-property} illustrates the three properties that distinguish the multiplicative hybrid from plain regression and pure directional losses. Panel (a) shows the directional asymmetry: for a fixed realised return $y = +5\%$, the hybrid loss is substantially higher when the prediction sign is wrong than when it is correct, whereas MSE is symmetric. Panel (b) shows magnitude awareness: when the prediction is sign-wrong at $\hat y = -3\%$, the hybrid penalty grows faster than Huber as $|y|$ increases, because the batch-normalised $|y|^b$ weight in $D(y, \hat y)$ amplifies the gating factor for large realised returns. Panel (c) shows the implicit variance penalty: as prediction dispersion increases, more predictions fall into the sign-wrong region and the multiplicative gate amplifies the Huber backbone for each of them, causing expected batch loss to grow super-linearly --- a property absent from MSE and Huber. Together, these three panels explain why the M2-robust $\gamma$ family is the primary candidate for further empirical evaluation in Chapter~5.
 
 \begin{figure}[H]
  \centering
@@ -182,7 +182,7 @@ Each experiment runs the following deterministic protocol.
 
 \textbf{Inference.} After training, the model is set to evaluation mode. For each test month, the runner selects that month's cross-section, produces predictions without gradient computation, and passes the prediction vector to the evaluation metrics (\S3.6) and portfolio construction (\S3.5). No retraining occurs during the test period.
 
-\textbf{Output and verification.} Per-month metrics and portfolio returns form a 24-row CSV per loss. A verification step confirms row count, first month, and last month; verification manifests record these checks for every run (see Appendix B \S B.5).
+\textbf{Output and verification.} Per-month metrics and portfolio returns form a 24-row CSV per loss. A verification step confirms row count, first month, and last month; verification manifests record these checks for every run (see Appendix~B \S B.5).
 
 \section{Portfolio construction}
 
@@ -209,7 +209,7 @@ Portfolio construction takes the cross-sectional prediction vector $\hat y_t = \
 
 \textbf{Step 5 --- bucket and long-short returns.} Each bucket return is the weighted inner product of the capped weight vector with the realised-target vector restricted to the bucket's indices. The long-short return is $r^{\mathcal{L}}_t - r^{\mathcal{S}}_t$.
 
-Two implementation details matter for interpreting the tables in Chapter 5. First, the construction is gross-of-cost: no transaction costs, financing costs, or borrow costs are applied. Second, the long and short legs are treated symmetrically in weighting; the report does not differentiate between positive-skew and negative-skew baskets. Both simplifications are discussed in the limitations section of Chapter 6.
+Two implementation details matter for interpreting the tables in Chapter~5. First, the construction is gross-of-cost: no transaction costs, financing costs, or borrow costs are applied. Second, the long and short legs are treated symmetrically in weighting; the report does not differentiate between positive-skew and negative-skew baskets. Both simplifications are discussed in the limitations section of Chapter~6.
 
 \section{Evaluation metrics}
 
@@ -226,7 +226,7 @@ Three categories of metric are reported for every run. The first two are compute
 \[
 R^2_t = 1 - \frac{\sum_i (y_{i,t+1} - \hat y_{i,t})^2}{\sum_i (y_{i,t+1} - \bar y_{t+1})^2}.
 \]
-The averages reported in Chapter 5 (\texttt{avg\_mse}, \texttt{avg\_medse}, \texttt{avg\_r2}) are arithmetic means over the 24 monthly values. As documented in Chapter 2 and \S5.2, R$^2$ can take extremely negative values for losses that do not control prediction magnitude (MedSE, MADL, GMADL). In this report it is read as a diagnostic that points at scale-calibration breakdowns, not as a primary performance metric.
+The averages reported in Chapter~5 (\texttt{avg\_mse}, \texttt{avg\_medse}, \texttt{avg\_r2}) are arithmetic means over the 24 monthly values. As documented in Chapter~2 and \S5.2, R$^2$ can take extremely negative values for losses that do not control prediction magnitude (MedSE, MADL, GMADL). In this report it is read as a diagnostic that points at scale-calibration breakdowns, not as a primary performance metric.
 
 \textbf{Per-month portfolio metric.} The monthly long-short return $r^{\mathcal{L}}_t - r^{\mathcal{S}}_t$ from \S3.5. \texttt{avg\_long\_short} is its arithmetic mean over the test window.
 
@@ -241,7 +241,7 @@ The averages reported in Chapter 5 (\texttt{avg\_mse}, \texttt{avg\_medse}, \tex
 \]
 where $\bar r$ is the sample mean. The $\sqrt{12}$ factor annualises the Sharpe from monthly frequency; the factor is explicit in \texttt{compute\_long\_short\_stats(periods\_per\_year=12)}.
 
-For multi-seed Phase 2 rows (Chapter 5 Tables 5.3 and 5.4), the reported summary is the cross-seed average of each quantity together with its cross-seed standard deviation, minimum, and maximum. The stability measure is the coefficient of variation,
+For multi-seed Phase 2 rows (Chapter~5 Tables~5.3 and 5.4), the reported summary is the cross-seed average of each quantity together with its cross-seed standard deviation, minimum, and maximum. The stability measure is the coefficient of variation,
 \[
 \mathrm{CV} = \frac{\mathrm{Stdev}(\text{Sharpe across seeds})}{|\text{mean(Sharpe across seeds)}|},
 \]
@@ -253,19 +253,19 @@ which the Phase 2 grouped summaries store in the \texttt{sharpe\_cv} column. Bec
 
 The study proceeds in four phases plus one set of diagnostic checks. Each phase is operationalised through distinct runner commands and output directories; full manifests and commands live alongside the result CSVs.
 
-\textbf{Phase 1: Baseline losses (seed 42, single-seed).} Seven loss functions (MSE, MedSE, MADL, GMADL, IMADL, hybrid\_mul\_m1, hybrid\_mul\_m2) evaluated on the static 24-month window at seed 42. CLI: \texttt{-{}-train-start 1990-01 -{}-train-end 1994-12 -{}-test-start 1995-01 -{}-test-months 24 -{}-max-epochs 20 -{}-batch-size 1024 -{}-seed 42}. Evidence paths: see Appendix B \S B.4.
+\textbf{Phase 1: Baseline losses (seed 42, single-seed).} Seven loss functions (MSE, MedSE, MADL, GMADL, IMADL, hybrid\_mul\_m1, hybrid\_mul\_m2) evaluated on the static 24-month window at seed 42. CLI: \texttt{-{}-train-start 1990-01 -{}-train-end 1994-12 -{}-test-start 1995-01 -{}-test-months 24 -{}-max-epochs 20 -{}-batch-size 1024 -{}-seed 42}. Evidence paths: see Appendix~B \S B.4.
 
-\textbf{Phase 2: Hybrid A/M variant sweep (seed 42, single-seed).} Nine parameterised hybrid variants (A1--A5 additive, M1--M4 multiplicative) evaluated at the same seed and window. Evidence paths: see Appendix B \S B.4.
+\textbf{Phase 2: Hybrid A/M variant sweep (seed 42, single-seed).} Nine parameterised hybrid variants (A1--A5 additive, M1--M4 multiplicative) evaluated at the same seed and window. Evidence paths: see Appendix~B \S B.4.
 
 \textbf{Phase 3: Multi-seed robust-hybrid refinement (3 seeds per row).} Comprises two sub-phases:
 \begin{itemize}
- \item \emph{Phase 3a --- $\gamma$ refinement.} Five $\gamma$ values of the M2-robust family ($\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$), three seeds each. Source: see Appendix B \S B.4.
+ \item \emph{Phase 3a --- $\gamma$ refinement.} Five $\gamma$ values of the M2-robust family ($\gamma \in \{0.03, 0.05, 0.07, 0.10, 0.15\}$), three seeds each. Source: see Appendix~B \S B.4.
  \item \emph{Phase 3b --- Integrated $\alpha$/$\beta$/$\lambda$ sweeps.} Extends the comparison to IMADL-m2 $\alpha$ ($\alpha \in \{0.2, \ldots, 0.8\}$), IMADL-GMADL $\beta$ ($\beta \in \{0.3, 0.5, 0.7\}$), adaptive-$\lambda$ ($\lambda \in \{10, 50, 100\}$), and finer $\gamma$ values. Source: integrated grouped summary CSV on the same evidence branch.
 \end{itemize}
 
 \textbf{Phase 4: Diagnostic checks.} Two components:
 \begin{itemize}
- \item \emph{Normalisation probe.} A three-seed re-run of the three strongest candidates with loss-component normalisation applied. Scale ratios are estimated rather than measured by a per-component logger. Source: see Appendix B \S B.4.
+ \item \emph{Normalisation probe.} A three-seed re-run of the three strongest candidates with loss-component normalisation applied. Scale ratios are estimated rather than measured by a per-component logger. Source: see Appendix~B \S B.4.
  \item \emph{Alignment diagnostics.} Cross-phase consistency checks that identify runner and formula differences between Phase 2 and Phase 3 implementations. These support the claim boundaries in \S3.8 but are not headline evidence.
 \end{itemize}
 
@@ -273,11 +273,11 @@ The study proceeds in four phases plus one set of diagnostic checks. Each phase 
 
 \label{sec:reproducibility}
 
-\textbf{Reproducibility.} Every table reported in Chapter 5 is reproducible from the local clone using the branch and path listed in Appendix B \S B.4. Run manifests preserve the exact commands used to produce each Phase 1 and Phase 2 row. The Phase 3 grouped summaries record per-row \texttt{runs = 3} and aggregate statistics computed from the raw per-seed CSVs. \texttt{best\_hyperparameters.txt} pins the MLP architecture across phases. The CSV data files are versioned alongside the code.
+\textbf{Reproducibility.} Every table reported in Chapter~5 is reproducible from the local clone using the branch and path listed in Appendix~B \S B.4. Run manifests preserve the exact commands used to produce each Phase 1 and Phase 2 row. The Phase 3 grouped summaries record per-row \texttt{runs = 3} and aggregate statistics computed from the raw per-seed CSVs. The shared model configuration (MLP[64, 32, 16], ReLU, dropout 0.2, input\_dim 15) pins the architecture across phases. The CSV data files are versioned alongside the code.
 
-Two operational caveats apply. First, floating-point outputs from CUDA and MPS devices may differ in the last few decimals; all reported results were produced on CUDA and inherit that numerical convention. Second, the runner seeds Python, NumPy, and PyTorch but does not force CUDA determinism (\texttt{torch.backends.cudnn.deterministic}); small bit-level drift across reproductions is possible, but the grouped-summary figures in Chapter 5 are reported to be stable across re-runs within the same environment.
+Two operational caveats apply. First, floating-point outputs from CUDA and MPS devices may differ in the last few decimals; all reported results were produced on CUDA and inherit that numerical convention. Second, the runner seeds Python, NumPy, and PyTorch but does not force CUDA determinism (\texttt{torch.backends.cudnn.deterministic}); small bit-level drift across reproductions is possible, but the grouped-summary figures in Chapter~5 are reported to be stable across re-runs within the same environment.
 
-\textbf{Claim strength taxonomy.} The evidence used in this report falls into three tiers, and claims are labelled accordingly throughout Chapter 5.
+\textbf{Claim strength taxonomy.} The evidence used in this report falls into three tiers, and claims are labelled accordingly throughout Chapter~5.
 
 \begin{itemize}
  \item \textbf{Strong.} Same runner, same window, same seed set, verified CSVs, grouped summary re-derivable from raw runs. Examples: Phase 1 baseline 24-month single-seed comparison (Table~\ref{tab:baseline-loss-comparison}), Phase 2 single-seed sweep (Table~\ref{tab:phase2-variants}), Phase 3a $\gamma$ refinement grouped summary (Table~\ref{tab:gamma-refinement}). Claims of the form ``variant X has a higher mean Sharpe than variant Y within phase P'' at this level are safe.
@@ -285,4 +285,4 @@ Two operational caveats apply. First, floating-point outputs from CUDA and MPS d
  \item \textbf{Weak / contextual.} Phase 2.5 alignment diagnostics, the Phase 2.2-fix1 normalisation probe (because scale ratios are estimated), and the original six-month sanity-check material. These are cited as scope-setting or consistency-checking evidence but are never quoted as headline performance numbers.
 \end{itemize}
 
-\textbf{Evidence gate.} A number may enter a final-report table if and only if: (a) it is listed in \texttt{paper/results\_source\_of\_truth.md} with its source CSV or JSON path; (b) its run's verification confirms 24 rows over \texttt{1995-01..1996-12} (for per-run values), or the grouped summary row records \texttt{runs = 3} with \texttt{cap\_tag = cap05} (for multi-seed values); (c) the parent runner CLI and \texttt{best\_hyperparameters.txt} are both available on the stated branch. Chapter 5 is written entirely within this gate.
+\textbf{Evidence gate.} A number may enter a final-report table if and only if: (a) it is listed in the project's source-of-truth evidence map with its source CSV or JSON path; (b) its run's verification confirms 24 rows over \texttt{1995-01..1996-12} (for per-run values), or the grouped summary row records \texttt{runs = 3} with \texttt{cap\_tag = cap05} (for multi-seed values); (c) the parent runner CLI and model configuration are both available on the stated branch. Chapter~5 is written entirely within this gate.
