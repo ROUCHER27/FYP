@@ -148,6 +148,7 @@ Third, the $\gamma$ schedule exhibits a non-monotone relationship with Sharpe st
 
 On this evidence alone, \texttt{m2\_robust\_gamma07} is the best-supported candidate for the primary recommendation in \S5.8. The fuller comparison in \S5.5 -- where \texttt{gamma07} is evaluated against $\alpha$- and $\beta$-sweep variants from other families -- confirms this ordering.
 
+\clearpage
 \section{Phase 3b: Integrated $\alpha$, $\beta$, and $\lambda$ sweeps}
 
 \label{sec:phase3b-integrated-sweeps}
@@ -218,7 +219,7 @@ Table~\ref{tab:normalisation-probe} summarises the probe. The scale ratios quote
 
 \begin{table}[H]
 \centering
-\caption{Loss-component normalisation probe. Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, \texttt{cap05}, 3 seeds per row. Source: Appendix~B, Section~B.4.}
+\caption{Loss-component normalisation probe. Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, \texttt{cap05}, 3 seeds per row. Scale ratio is defined as the mean absolute directional-component loss divided by the mean absolute MSE-component loss, averaged over all training batches across three seeds (diagnostics-estimated; per-component logger not yet implemented). Source: Appendix~B, Section~B.4.}
 \label{tab:normalisation-probe}
 \begin{tabular}{ccccc}
 \toprule

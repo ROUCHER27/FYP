@@ -110,9 +110,13 @@ February 8, 2026
 I would like to express my sincere gratitude to my supervisor for their invaluable guidance and support throughout this project.
 \newpage
 
-% === TOC, LoF, LoT ===
+% === TOC, LoF, LoT (each on its own page, listed in TOC) ===
 \tableofcontents
+\newpage
+\addcontentsline{toc}{chapter}{List of Figures}
 \listoffigures
+\newpage
+\addcontentsline{toc}{chapter}{List of Tables}
 \listoftables
 \newpage
 
@@ -127,14 +131,16 @@ I would like to express my sincere gratitude to my supervisor for their invaluab
 \input{chapter5_empirical_results}
 \input{chapter6_conclusion}
 
-% === Appendices ===
-\appendix
-\input{appendix_A_loss_definitions}
-\input{appendix_B_per_seed_raw}
-
 % === Bibliography ===
 \newpage
+\addcontentsline{toc}{chapter}{Bibliography}
 \bibliography{references}{}
 \bibliographystyle{siam}
+
+% === Appendices (not in TOC) ===
+\appendix
+\addtocontents{toc}{\protect\setcounter{tocdepth}{-1}}
+\input{appendix_A_loss_definitions}
+\input{appendix_B_per_seed_raw}
 
 \end{document}

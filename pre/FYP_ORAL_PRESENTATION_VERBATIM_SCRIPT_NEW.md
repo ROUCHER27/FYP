@@ -10,19 +10,25 @@ Source basis: actual 19-slide deck, final LaTeX chapters, `ppt_package/tables/`,
 
 Good morning, everyone. My name is Yirong Yu, student ID 2253235, from BSc Financial Mathematics. My final year project is titled "Multiplicative Directional-Robust Loss for Cross-Sectional Stock-Return Prediction," supervised by Dr. Yi Cao.
 
-The main idea is that stock-return models are usually trained to minimise prediction error, but the portfolio later trades the ranking of predictions. My project asks whether changing the loss function can better align model training with the long-short portfolio objective.
+The main idea of the topic is that stock-return models are usually trained to minimise prediction error through loss function, and the portfolio later trades the ranking of predictions. My project asks whether changing the loss function can better align model training with the long-short portfolio objective.
 
 ---
 
 ## Slide 2 - Background And Three Questions
 
-The starting point is a mismatch. In machine-learning return prediction, MSE is often the default training loss. MSE asks the model to match realised returns in numerical magnitude.
+Machine learning has been widely applied to financial return prediction and quantitative trading.
+Our goal is not to forecast exact return values but to identify which stocks will outperform and which will underperform.
 
-But a long-short portfolio does not use predictions in the same way. It ranks stocks cross-sectionally, buys the top group, and shorts the bottom group. So the downstream decision depends mainly on rank and direction, not on exact calibrated return values.
+A long-short portfolio uses these predictions in a specific way: it ranks all stocks by predicted return, buys the top group, and shorts the bottom group. The strategy's return is the spread between winners and losers. So what matters is the **ordering** — as long as the model correctly separates better stocks from worse stocks, the exact predicted number does not matter.
 
-The data makes this worse. Monthly stock returns are heavy-tailed. In my training sample, the standard deviation of monthly returns is 19.54 percent, and the maximum monthly return reaches plus 2400 percent. A quadratic loss can over-focus on these extreme observations, even though the portfolio later uses ranking. Under MSE, the best you get in this protocol is a negative Sharpe — the portfolio actually loses money.
+Here is the mismatch. MSE — mean squared error — is the most common training loss. It asks the model to match realised returns in numerical magnitude. MSE cares about estimator numerical precision, not ranking or direction.
+==**强调 MSE 的局限性**——它在乎的是预测本身的精确度，而不是方向或排名。==
 
-This leads to three research questions. First, how does loss choice affect prediction-level and portfolio-level performance? Second, which hybrid loss design gives the best Sharpe-stability trade-off? Third, do the leading candidates remain stable under component-normalisation diagnostics, or are they just scale artefacts?
+So the model is trained to minimise numerical error, but the portfolio trades on rank. 
+This leads to three research questions. 
+First, if and how does loss function choice affect prediction-level and portfolio-level performance?
+Second, which hybrid loss design gives the best Sharpe-stability trade-off? 
+Third, do the leading candidates remain stable under component-normalisation diagnostics, or are they just scale artefacts?
 
 ---
 
@@ -36,7 +42,7 @@ Second, robust regression. MSE is sensitive to outliers. Huber-style losses and 
 
 Third, directional losses. MADL and GMADL reward sign alignment between realised and predicted returns. That is closer to a trading problem, but pure directional losses may lose prediction-scale control.
 
-Previous work compares these families separately. No one has put them all under the same controlled portfolio protocol — and that is the gap. That is what this project does.
+Previous work compares these families separately. No one has put them all under the same controlled portfolio protocol — so this is the gap and I'm trying to figure out.
 
 ---
 

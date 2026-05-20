@@ -87,21 +87,21 @@ def mul_m2(Y, YHAT):
     return (1.0 + LAMBDA_DIR_M2 * dir_gate(Y, YHAT)) * huber(Y - YHAT)
 
 
-def add_overlays(ax, lim):
-    # Black lines — maximum contrast on both light-grey centre and coloured extremes
-    ax.axvline(0, color="black", lw=1.6, ls="-", alpha=0.85)
-    ax.axhline(0, color="black", lw=1.6, ls="-", alpha=0.85)
+def add_overlays(ax, lim, line_color="white", text_color="white"):
+    """Draw axis lines, diagonal, and quadrant labels inside the plot area."""
+    ax.axvline(0, color=line_color, lw=1.6, ls="-", alpha=0.85)
+    ax.axhline(0, color=line_color, lw=1.6, ls="-", alpha=0.85)
     diag = np.linspace(-lim, lim, 2)
-    ax.plot(diag, diag, color="black", lw=1.6, ls="--", alpha=0.85)
+    ax.plot(diag, diag, color=line_color, lw=1.6, ls="--", alpha=0.85)
     ax.text(lim * 0.55, lim * 0.82, "calibration\nline",
-            color="black", fontsize=7.5, ha="center", va="bottom", alpha=0.85)
+            color=line_color, fontsize=7.5, ha="center", va="bottom", alpha=0.85)
     for (tx, ty, txt) in [
         ( lim*0.55,  lim*0.55, "Sign\ncorrect"),
         (-lim*0.55, -lim*0.55, "Sign\ncorrect"),
         (-lim*0.55,  lim*0.55, "Sign\nwrong"),
         ( lim*0.55, -lim*0.55, "Sign\nwrong"),
     ]:
-        ax.text(tx, ty, txt, color="black", fontsize=7.5, ha="center", va="center",
+        ax.text(tx, ty, txt, color=text_color, fontsize=7.5, ha="center", va="center",
                 alpha=0.85, fontweight="bold")
     pct_fmt = mticker.FuncFormatter(lambda v, _: f"{v*100:.0f}%")
     ax.xaxis.set_major_formatter(pct_fmt)
@@ -109,7 +109,8 @@ def add_overlays(ax, lim):
     ax.tick_params(labelsize=8)
 
 
-def draw_panel(ax, Z, title, cmap, label, diverging=False):
+def draw_panel(ax, Z, title, cmap, label, diverging=False,
+               line_color="white", text_color="white"):
     vmax = np.percentile(np.abs(Z), 97)
     if diverging:
         im = ax.imshow(Z, origin="lower", extent=[-LIM, LIM, -LIM, LIM],
@@ -120,7 +121,7 @@ def draw_panel(ax, Z, title, cmap, label, diverging=False):
     cb = plt.colorbar(im, ax=ax, fraction=0.046, pad=0.03)
     cb.set_label(label, fontsize=8.5)
     cb.ax.tick_params(labelsize=7.5)
-    add_overlays(ax, LIM)
+    add_overlays(ax, LIM, line_color=line_color, text_color=text_color)
     ax.set_title(title, fontsize=10.5, pad=4)
     ax.set_xlabel(r"Realised return $y$", fontsize=9.5)
     ax.set_ylabel(r"Prediction $\hat{y}$", fontsize=9.5)
@@ -140,7 +141,7 @@ def main() -> None:
 
     draw_panel(axes[0, 0], Z_gmadl,
                r"(a) GMADL signed directional score",
-               CMAP_DIV, "GMADL signed score", diverging=True)
+               "viridis", "GMADL signed score", diverging=True)
     draw_panel(axes[0, 1], Z_huber,
                r"(b) Huber magnitude backbone ($\delta$=0.01)",
                "viridis", "Magnitude loss")
