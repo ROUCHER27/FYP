@@ -1,0 +1,507 @@
+{
+  "nodes": [
+    {
+      "id": "n0001",
+      "type": "text",
+      "x": -100,
+      "y": -900,
+      "width": 1000,
+      "height": 140,
+      "text": "# Multiplicative Directional-Robust Loss\n## Cross-Sectional Stock-Return Prediction — Research Flow",
+      "color": "6"
+    },
+    {
+      "id": "n0002",
+      "type": "text",
+      "x": -200,
+      "y": -650,
+      "width": 500,
+      "height": 200,
+      "text": "## 🔴 Problem\n\nMSE trains for **point calibration**\nbut portfolio trades **cross-sectional rank**\n\n→ R² and Sharpe can **decouple**\n\nHeavy-tailed returns (σ≈19.5%, max +2400%)\nmake MSE overfit outliers",
+      "color": "1"
+    },
+    {
+      "id": "n0003",
+      "type": "text",
+      "x": 400,
+      "y": -650,
+      "width": 500,
+      "height": 200,
+      "text": "## 3 Research Questions\n\n**RQ1**: How does loss choice affect prediction vs portfolio metrics?\n\n**RQ2**: Which hybrid loss gives best Sharpe-stability trade-off?\n\n**RQ3**: Are winners stable under component-normalisation probe?",
+      "color": "5"
+    },
+    {
+      "id": "n0004",
+      "type": "text",
+      "x": -400,
+      "y": -350,
+      "width": 280,
+      "height": 180,
+      "text": "## 📖 ML for Stock Prediction\n\nGu, Kelly & Xiu (2020)\nDaniel & Moskowitz (2016)\nMedhat & Schmeling (2021)\n\n→ Nonlinear > linear\n→ Features: CR, CO at 5 horizons",
+      "color": "4"
+    },
+    {
+      "id": "n0005",
+      "type": "text",
+      "x": -70,
+      "y": -350,
+      "width": 280,
+      "height": 180,
+      "text": "## 📖 Robust Regression\n\nHuber loss (1964)\nMedian Squared Error\n\n→ Limit outlier influence\n→ No directional encoding",
+      "color": "4"
+    },
+    {
+      "id": "n0006",
+      "type": "text",
+      "x": 260,
+      "y": -350,
+      "width": 280,
+      "height": 180,
+      "text": "## 📖 Directional Losses\n\nMADL: tanh × |y|\nGMADL: sigmoid × |y|^b\nIMADL: batch-normed\n\n→ Reward sign alignment\n→ Lose scale control",
+      "color": "4"
+    },
+    {
+      "id": "n0007",
+      "type": "text",
+      "x": 590,
+      "y": -350,
+      "width": 280,
+      "height": 180,
+      "text": "## 📖 Gap\n\nNo study compares regression,\nrobust, directional & hybrid\nlosses under **same** data,\nmodel, portfolio protocol",
+      "color": "2"
+    },
+    {
+      "id": "n0008",
+      "type": "text",
+      "x": -400,
+      "y": -80,
+      "width": 350,
+      "height": 220,
+      "text": "## 📊 Data\n\n**CRSP-style** US monthly equity panel\nPERMNO, date, RET, VOL, SHROUT\n\nTrain: 1990-01 → 1994-12 (60mo)\nTest:  1995-01 → 1996-12 (24mo)\n\n10,987 securities | 449K obs\n**No winsorisation** (heavy tails = the point)",
+      "color": "3"
+    },
+    {
+      "id": "n0009",
+      "type": "text",
+      "x": 0,
+      "y": -80,
+      "width": 300,
+      "height": 220,
+      "text": "## 🧮 Features: X1\n\n15 columns total:\n- 10 engineered: CR & CO at 1/3/6/9/12mo\n- 5 base: RET, VOL, SHROUT, r, to\n\nTarget: y = r(t+1)\nNo look-ahead leakage",
+      "color": "3"
+    },
+    {
+      "id": "n0010",
+      "type": "text",
+      "x": 350,
+      "y": -80,
+      "width": 300,
+      "height": 220,
+      "text": "## 🤖 Model: MLP\n\n`MLP[64, 32, 16]`\n- Phase 1/2: ReLU, dropout=0.2\n- Phase 3:   tanh,  dropout=0.0\n\nAdam lr=0.001, batch=1024, 20 epochs\nSingle scalar output ŷ per stock-month",
+      "color": "3"
+    },
+    {
+      "id": "n0011",
+      "type": "text",
+      "x": -500,
+      "y": 220,
+      "width": 240,
+      "height": 170,
+      "text": "## Regression\n\n**MSE**: mean squared error\n**MedSE**: median squared error\n\n→ Baselines\n→ MSE portfolio: Sharpe -0.46",
+      "color": "1"
+    },
+    {
+      "id": "n0012",
+      "type": "text",
+      "x": -210,
+      "y": 220,
+      "width": 240,
+      "height": 170,
+      "text": "## Directional\n\n**MADL**: tanh × |y|\n**GMADL**: sigmoid × |y|^b\n**IMADL**: batch-normed\n\n→ R² → -∞ but portfolio OK",
+      "color": "2"
+    },
+    {
+      "id": "n0013",
+      "type": "text",
+      "x": 80,
+      "y": 220,
+      "width": 280,
+      "height": 200,
+      "text": "## ⭐ Additive Hybrid (A1-A5)\n\nL = λ_dir·D(y,ŷ) + λ_hub·H(ŷ)\n\nPeak: **A3** Sharpe=0.57\nBut R² scale issues\n→ Not carried to Phase 3",
+      "color": "6"
+    },
+    {
+      "id": "n0014",
+      "type": "text",
+      "x": 410,
+      "y": 220,
+      "width": 300,
+      "height": 230,
+      "text": "## ⭐ Multiplicative Hybrid (M1-M4)\n\nL = (1 + λ_dir·D(y,ŷ)) · H(ŷ)\n\n**Directional gate** amplifies\nHuber when sign is wrong\n\nPeak: **M1** Sharpe=0.44\n→ Carried to M2-robust γ family",
+      "color": "6"
+    },
+    {
+      "id": "n0015",
+      "type": "text",
+      "x": 80,
+      "y": 510,
+      "width": 500,
+      "height": 170,
+      "text": "## 🎯 M2-Robust γ Family\n\nL = L_M2 + γ · Var(ŷ)\n\nPrediction-variance regularisation\nγ too small → unstable | γ too large → over-compressed\n\nScanned: γ ∈ {0.3, 0.5, 0.7, 1.0, 1.5}",
+      "color": "5"
+    },
+    {
+      "id": "n0030",
+      "type": "text",
+      "x": -500,
+      "y": 510,
+      "width": 240,
+      "height": 200,
+      "text": "## 💼 Portfolio\n\n1. Rank predictions\n2. Top/bottom 10% → long/short\n3. Z-score clip [-3, 3]\n4. Sign-consistent weights\n5. 5% per-name cap\n6. Long-short return\n\n**Gross of costs**",
+      "color": "4"
+    },
+    {
+      "id": "n0020",
+      "type": "text",
+      "x": -500,
+      "y": 770,
+      "width": 220,
+      "height": 160,
+      "text": "## Phase 1: Baselines\n7 losses, seed 42\n\nhybrid_mul_m1 → best\nSharpe 0.4435",
+      "color": "2"
+    },
+    {
+      "id": "n0021",
+      "type": "text",
+      "x": -230,
+      "y": 770,
+      "width": 220,
+      "height": 160,
+      "text": "## Phase 2: A/M Sweep\n9 variants, seed 42\n\nA3 peak: 0.5738\nM1 peak: 0.4435\n→ M-family more controlled",
+      "color": "2"
+    },
+    {
+      "id": "n0022",
+      "type": "text",
+      "x": 40,
+      "y": 770,
+      "width": 240,
+      "height": 160,
+      "text": "## Phase 3a: γ Refinement\n5 γ values × 3 seeds\n\n**γ=07**: Sharpe 0.92, CV 0.18\nγ=10: Sharpe 1.00, CV 0.56\n→ γ=07 best joint criterion",
+      "color": "2"
+    },
+    {
+      "id": "n0023",
+      "type": "text",
+      "x": 330,
+      "y": 770,
+      "width": 240,
+      "height": 160,
+      "text": "## Phase 3b: α/β/λ Sweeps\nIMADL-m2 α, GMADL β, adaptive-λ\n\n**α=06**: Sharpe 0.69, CV 0.24\nβ family: unstable (CV 4~140)\n→ Corroborates hybrid-mul direction",
+      "color": "2"
+    },
+    {
+      "id": "n0024",
+      "type": "text",
+      "x": 620,
+      "y": 770,
+      "width": 240,
+      "height": 160,
+      "text": "## Phase 4: Normalisation Probe\nComponent-scale equalisation, 3 seeds\n\n**γ=07**: 0.9156→0.9112 ✅ stable\nγ=10: 1.0043→0.4072 ❌\nα=06: 0.6895→-0.0161 ❌",
+      "color": "2"
+    },
+    {
+      "id": "n0040",
+      "type": "text",
+      "x": -100,
+      "y": 1040,
+      "width": 400,
+      "height": 250,
+      "text": "## 🏆 Final Recommendation\n\n**Primary: m2_robust_gamma07**\nMean Sharpe 0.9156 | CV 0.1808 | CumRet +28.0%\nStable under normalisation probe ✅\n\n**High-return: m2_robust_gamma10**\nSharpe 1.0043 | CV 0.5613 (3× less stable)\nOnly if accepting seed-sensitivity\n\n**Fallback: imadl_m2_alpha06**\nSharpe 0.6895 | CV 0.2443 | CumRet +30.4%",
+      "color": "6"
+    },
+    {
+      "id": "n0041",
+      "type": "text",
+      "x": 400,
+      "y": 1040,
+      "width": 400,
+      "height": 250,
+      "text": "## 📌 Answering RQs\n\n**RQ1**: Loss matters — R² and Sharpe decouple\nbecause portfolio trades **ranks**, not calibration\n\n**RQ2**: M2-robust γ=07 gives best joint\nSharpe-stability on multi-seed evidence\n\n**RQ3**: Only γ=07 survives normalisation probe\n(γ=10 and α=06 degrade materially)",
+      "color": "5"
+    },
+    {
+      "id": "n0050",
+      "type": "text",
+      "x": -500,
+      "y": 1120,
+      "width": 350,
+      "height": 200,
+      "text": "## ⚠️ Limitations\n\n- Single US equity monthly panel\n- One static 24-month window\n- 3 seeds (need ≥10)\n- One feature set (X1)\n- One architecture (MLP)\n- Gross-of-cost portfolio\n- No per-component logger yet",
+      "color": "1"
+    },
+    {
+      "id": "n0051",
+      "type": "text",
+      "x": -500,
+      "y": 1380,
+      "width": 350,
+      "height": 150,
+      "text": "## 🔮 Future Work\n\n- Rolling-window across regimes\n- ≥10 seeds for tight CI\n- Transaction-cost-aware eval\n- Feature-set sensitivity\n- Per-component loss logger",
+      "color": "4"
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0001",
+      "fromNode": "n0001",
+      "fromSide": "bottom",
+      "toNode": "n0002",
+      "toSide": "top",
+      "color": "1"
+    },
+    {
+      "id": "e0002",
+      "fromNode": "n0001",
+      "fromSide": "bottom",
+      "toNode": "n0003",
+      "toSide": "top",
+      "color": "6"
+    },
+    {
+      "id": "e0003",
+      "fromNode": "n0004",
+      "fromSide": "right",
+      "toNode": "n0007",
+      "toSide": "left",
+      "color": "4"
+    },
+    {
+      "id": "e0004",
+      "fromNode": "n0005",
+      "fromSide": "right",
+      "toNode": "n0007",
+      "toSide": "left",
+      "color": "4"
+    },
+    {
+      "id": "e0005",
+      "fromNode": "n0006",
+      "fromSide": "right",
+      "toNode": "n0007",
+      "toSide": "left",
+      "color": "4"
+    },
+    {
+      "id": "e0006",
+      "fromNode": "n0002",
+      "fromSide": "bottom",
+      "toNode": "n0004",
+      "toSide": "top",
+      "color": "1"
+    },
+    {
+      "id": "e0007",
+      "fromNode": "n0003",
+      "fromSide": "bottom",
+      "toNode": "n0007",
+      "toSide": "top",
+      "color": "5"
+    },
+    {
+      "id": "e0008",
+      "fromNode": "n0004",
+      "fromSide": "bottom",
+      "toNode": "n0008",
+      "toSide": "top",
+      "color": "4"
+    },
+    {
+      "id": "e0009",
+      "fromNode": "n0007",
+      "fromSide": "bottom",
+      "toNode": "n0008",
+      "toSide": "top",
+      "color": "2"
+    },
+    {
+      "id": "e0010",
+      "fromNode": "n0008",
+      "fromSide": "right",
+      "toNode": "n0009",
+      "toSide": "left",
+      "color": "3"
+    },
+    {
+      "id": "e0011",
+      "fromNode": "n0009",
+      "fromSide": "right",
+      "toNode": "n0010",
+      "toSide": "left",
+      "color": "3"
+    },
+    {
+      "id": "e0012",
+      "fromNode": "n0010",
+      "fromSide": "bottom",
+      "toNode": "n0011",
+      "toSide": "top",
+      "color": "3"
+    },
+    {
+      "id": "e0013",
+      "fromNode": "n0010",
+      "fromSide": "bottom",
+      "toNode": "n0012",
+      "toSide": "top",
+      "color": "3"
+    },
+    {
+      "id": "e0014",
+      "fromNode": "n0010",
+      "fromSide": "bottom",
+      "toNode": "n0013",
+      "toSide": "top",
+      "color": "3"
+    },
+    {
+      "id": "e0015",
+      "fromNode": "n0010",
+      "fromSide": "bottom",
+      "toNode": "n0014",
+      "toSide": "top",
+      "color": "3"
+    },
+    {
+      "id": "e0016",
+      "fromNode": "n0011",
+      "fromSide": "right",
+      "toNode": "n0013",
+      "toSide": "left",
+      "color": "1",
+      "label": "motivates"
+    },
+    {
+      "id": "e0017",
+      "fromNode": "n0012",
+      "fromSide": "right",
+      "toNode": "n0014",
+      "toSide": "left",
+      "color": "2",
+      "label": "motivates"
+    },
+    {
+      "id": "e0018",
+      "fromNode": "n0014",
+      "fromSide": "bottom",
+      "toNode": "n0015",
+      "toSide": "top",
+      "color": "6",
+      "label": "extends"
+    },
+    {
+      "id": "e0019",
+      "fromNode": "n0011",
+      "fromSide": "bottom",
+      "toNode": "n0030",
+      "toSide": "top",
+      "color": "1"
+    },
+    {
+      "id": "e0020",
+      "fromNode": "n0012",
+      "fromSide": "bottom",
+      "toNode": "n0030",
+      "toSide": "top",
+      "color": "2"
+    },
+    {
+      "id": "e0021",
+      "fromNode": "n0030",
+      "fromSide": "bottom",
+      "toNode": "n0020",
+      "toSide": "top",
+      "color": "4"
+    },
+    {
+      "id": "e0022",
+      "fromNode": "n0015",
+      "fromSide": "bottom",
+      "toNode": "n0020",
+      "toSide": "top",
+      "color": "5"
+    },
+    {
+      "id": "e0023",
+      "fromNode": "n0020",
+      "fromSide": "right",
+      "toNode": "n0021",
+      "toSide": "left",
+      "color": "2"
+    },
+    {
+      "id": "e0024",
+      "fromNode": "n0021",
+      "fromSide": "right",
+      "toNode": "n0022",
+      "toSide": "left",
+      "color": "2"
+    },
+    {
+      "id": "e0025",
+      "fromNode": "n0022",
+      "fromSide": "right",
+      "toNode": "n0023",
+      "toSide": "left",
+      "color": "2"
+    },
+    {
+      "id": "e0026",
+      "fromNode": "n0023",
+      "fromSide": "right",
+      "toNode": "n0024",
+      "toSide": "left",
+      "color": "2"
+    },
+    {
+      "id": "e0027",
+      "fromNode": "n0024",
+      "fromSide": "bottom",
+      "toNode": "n0040",
+      "toSide": "top",
+      "color": "6"
+    },
+    {
+      "id": "e0028",
+      "fromNode": "n0022",
+      "fromSide": "bottom",
+      "toNode": "n0040",
+      "toSide": "top",
+      "color": "2"
+    },
+    {
+      "id": "e0029",
+      "fromNode": "n0040",
+      "fromSide": "right",
+      "toNode": "n0041",
+      "toSide": "left",
+      "color": "5"
+    },
+    {
+      "id": "e0030",
+      "fromNode": "n0040",
+      "fromSide": "bottom",
+      "toNode": "n0050",
+      "toSide": "top",
+      "color": "1"
+    },
+    {
+      "id": "e0031",
+      "fromNode": "n0050",
+      "fromSide": "bottom",
+      "toNode": "n0051",
+      "toSide": "top",
+      "color": "4"
+    }
+  ]
+}
