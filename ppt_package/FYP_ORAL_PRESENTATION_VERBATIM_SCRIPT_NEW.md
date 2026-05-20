@@ -1,4 +1,4 @@
-# FYP Oral Presentation Verbatim Script - New Draft
+# FYP Oral Presentation Verbatim Script - New Draft (Revised)
 
 Target delivery: 15 to 20 minutes for the talk, plus the required 5 to 10 minutes for examiner questions. The main script deliberately spends more time on loss-function design, data, and methodology.
 
@@ -20,9 +20,9 @@ The starting point is a mismatch. In machine-learning return prediction, MSE is 
 
 But a long-short portfolio does not use predictions in the same way. It ranks stocks cross-sectionally, buys the top group, and shorts the bottom group. So the downstream decision depends mainly on rank and direction, not on exact calibrated return values.
 
-The data make this mismatch more serious. Monthly stock returns are heavy-tailed. In my training sample, the standard deviation of monthly returns is 19.54 percent, and the maximum monthly return reaches plus 2400 percent. A quadratic loss can over-focus on these extreme observations, even though the portfolio later uses ranking.
+The data makes this worse. Monthly stock returns are heavy-tailed. In my training sample, the standard deviation of monthly returns is 19.54 percent, and the maximum monthly return reaches plus 2400 percent. A quadratic loss can over-focus on these extreme observations, even though the portfolio later uses ranking. Under MSE, the best you get in this protocol is a negative Sharpe — the portfolio actually loses money.
 
-This motivates three research questions. First, how does loss choice affect prediction-level and portfolio-level performance? Second, which hybrid loss design gives the best Sharpe-stability trade-off? Third, do the leading candidates remain stable under component-normalisation diagnostics, or are they just scale artefacts?
+This leads to three research questions. First, how does loss choice affect prediction-level and portfolio-level performance? Second, which hybrid loss design gives the best Sharpe-stability trade-off? Third, do the leading candidates remain stable under component-normalisation diagnostics, or are they just scale artefacts?
 
 ---
 
@@ -36,7 +36,7 @@ Second, robust regression. MSE is sensitive to outliers. Huber-style losses and 
 
 Third, directional losses. MADL and GMADL reward sign alignment between realised and predicted returns. That is closer to a trading problem, but pure directional losses may lose prediction-scale control.
 
-The gap is that previous work does not compare regression, robust, directional, and hybrid robust-directional losses under the same controlled portfolio protocol. That is what this project does.
+Previous work compares these families separately. No one has put them all under the same controlled portfolio protocol — and that is the gap. That is what this project does.
 
 ---
 
@@ -46,7 +46,7 @@ The methodology is a controlled single-factor comparison.
 
 The pipeline has five blocks: data, MLP model, loss function, portfolio construction, and evaluation. Within each comparison table, the data, features, training window, test window, portfolio construction, and evaluation metrics are fixed. The loss function is the treatment.
 
-This design is important because the project is not an architecture-search study. The question is narrower: conditional on a fixed prediction pipeline, can loss-function design improve the portfolio signal?
+This design is important because the project is not an architecture-search study. The question is narrower: given a fixed pipeline, can loss design alone improve the portfolio signal?
 
 The final recommendation is scoped to one static 24-month test window, one feature set, one MLP width configuration, and three-seed robustness rows.
 
@@ -62,7 +62,7 @@ Second, I extend the multiplicative family into an M2-robust gamma family by add
 
 Third, I use staged evidence: single-seed baselines, single-seed hybrid sweeps, multi-seed robustness tests, and a component-normalisation probe.
 
-Fourth, I give a bounded recommendation: gamma07 as the primary choice, gamma10 as a high-return but seed-sensitive alternative, and alpha06 as a stable fallback.
+Fourth, I give a recommendation with clear limits: gamma07 as the primary choice, gamma10 as a high-return but seed-sensitive alternative, and alpha06 as a stable fallback.
 
 ---
 
@@ -70,47 +70,29 @@ Fourth, I give a bounded recommendation: gamma07 as the primary choice, gamma10 
 
 The model is a multi-layer perceptron with 15 inputs and hidden widths 64, 32, and 16. The output is one scalar predicted one-month-ahead return for each stock-month observation.
 
-The 15 inputs come from feature set X1. There are 10 engineered columns: cumulative return and cumulative turnover at 1, 3, 6, 9, and 12-month horizons. These are combined with 5 base panel columns: RET, VOL, SHROUT, r, and turnover.
+The 15 inputs come from feature set X1. There are 10 engineered features — cumulative return and cumulative turnover, each at five lookback windows from 1 month to 12 months. These are combined with 5 base panel columns: RET, VOL, SHROUT, r, and turnover.
 
 The training window is January 1990 to December 1994. The test window is January 1995 to December 1996, giving 24 out-of-sample monthly portfolio returns. Training uses Adam with learning rate 0.001, batch size 1024, and 20 epochs.
-
-One technical boundary matters. Phase 1 and Phase 2 use ReLU with dropout 0.2. Phase 3 keeps the same layer widths but uses tanh with dropout 0.0. Therefore, within-phase comparisons are the strongest evidence. Cross-phase comparisons are useful for design interpretation, but I do not treat them as exact single-factor improvement claims.
 
 ---
 
 ## Slide 7 - Loss Function Families
 
-This is the key methodology slide.
+This is the key methodology slide. There are four loss families, shown here from simple to most complex.
 
-The first family is regression loss. MSE is the standard squared residual loss. MedSE is the median of squared residuals, so it is more robust to extreme observations in each batch.
+**Family one: regression.** MSE is the standard baseline — it minimises squared error. MedSE replaces the mean with the median, so it is more robust to outliers. But neither of them cares about prediction direction.
 
-The second family is directional loss. MADL and GMADL use the product y times y_hat. If this product is positive, realised and predicted returns have the same sign. If it is negative, the sign is wrong. Directional losses are closer to the trading objective, but they can lose control over prediction magnitude.
+**Family two: directional.** MADL and GMADL reward the model when predicted and realised returns share the same sign. This is closer to what a portfolio actually needs. But pure directional losses can lose control over prediction scale — the model may predict the right direction at a completely wrong magnitude.
 
-The third family is additive hybrid loss:
+**Family three: additive hybrid.** As shown in the formula here — we simply add a directional penalty and a Huber magnitude term together. It works, but the two components can fight each other at different scales.
 
-L_add = lambda_dir D(y, y_hat) + lambda_hub H_delta(y - y_hat).
+**Family four: multiplicative hybrid — my main design focus.** The formula is here. The intuition is simple: the Huber term is the backbone that controls magnitude. The directional gate — D, shown on the slide with a equals 100 and b equals 2 in the implementation — acts as a multiplier. When direction is correct, D is near zero, and the loss is just Huber. When direction is wrong, D amplifies the Huber loss. So wrong-direction predictions on large-return stocks get penalised the most.
 
-This adds a directional penalty and a Huber magnitude term.
+One more extension — and I will show the results on this later in Slide 13 — we add a prediction-variance penalty controlled by a parameter gamma. The base multiplicative loss here uses lambda_dir equal to 2. Gamma controls how much the model is allowed to spread its predictions apart. Too little gamma means instability across seeds; too much gamma compresses the signal. The experiment scans gamma from 0.3 to 1.5 to find the sweet spot.
 
-The fourth family is my main design focus: the multiplicative hybrid:
+To summarise: we move from MSE, which ignores direction, through directional losses that ignore magnitude, to a multiplicative hybrid that handles both — and then add variance control on top.
 
-L_mul = (1 + lambda_dir D(y, y_hat)) H_delta(y - y_hat).
-
-Here, H_delta is the Huber backbone. It is quadratic for small residuals and linear for large residuals, so it gives magnitude control without letting outliers dominate.
-
-D(y, y_hat) is the directional gate:
-
-D = [1 - sigmoid(a y y_hat)] |y|^b / (batch mean of |y|^b + epsilon).
-
-This gate has three roles. First, it is sign-sensitive: it is small when the prediction sign is correct, and larger when the sign is wrong. Second, it is magnitude-aware: wrong signs on large realised returns receive more penalty. Third, it is batch-normalised, so the directional scale is not driven only by which observations appear in a mini-batch.
-
-The multiplicative interpretation is direct. When direction is correct, the loss is close to Huber. When direction is wrong, the Huber loss is amplified.
-
-The M2-robust extension adds prediction-variance regularisation:
-
-L_M2-robust = L_M2 + gamma Var(y_hat).
-
-Gamma controls stability. Too little gamma can under-regularise predictions; too much can over-compress the ranking signal. The experiment scans gamma from 0.3 to 1.5.
+Remember, MSE gives Sharpe minus 0.46. Everything I design next is trying to beat that.
 
 ---
 
@@ -122,7 +104,7 @@ For each test month, the model produces a cross-sectional prediction vector. I r
 
 Within each bucket, predictions are converted to z-scores and clipped to the range from minus 3 to plus 3. Then I apply sign-consistent weights, so stronger positive signals receive more long weight and stronger negative signals receive more short weight. Finally, each stock weight is capped at 5 percent.
 
-The long-short return is the long bucket return minus the short bucket return.
+The portfolio return is simply long minus short.
 
 The main metric is annualised Sharpe, computed as sqrt(12) times monthly mean divided by monthly standard deviation. For multi-seed rows, I use CV, equal to Sharpe standard deviation across seeds divided by absolute mean Sharpe. R-squared is reported only as a scale diagnostic.
 
@@ -136,6 +118,8 @@ Phase 1 compares seven baseline losses at seed 42. Phase 2 sweeps nine hybrid va
 
 Phase 3a evaluates five gamma values in the M2-robust family with three seeds per row. Phase 3b compares other alpha, beta, and adaptive-lambda families. Phase 4 applies component normalisation to the leading candidates.
 
+One operational note: Phase 1 and 2 use ReLU with dropout 0.2; Phase 3 uses tanh with dropout zero. This happened because the multi-seed branch was developed separately and inherited a different config. The important point is: within each phase, every row shares exactly the same model — only the loss changes. My final recommendation draws entirely from within-Phase-3 evidence, so the activation difference does not affect the conclusion.
+
 All headline rows use the same 24-month test window from 1995-01 to 1996-12. But single-seed and multi-seed tables support different claim strengths, so I keep their interpretations separate.
 
 ---
@@ -144,7 +128,7 @@ All headline rows use the same 24-month test window from 1995-01 to 1996-12. But
 
 The data are a CRSP-style monthly US equity panel. The raw files cover December 1989 to December 2024, but the main experiments use a static split.
 
-The training period is January 1990 to December 1994. In the training-era source file, there are 449,018 observations and 10,987 unique securities. The test period is January 1995 to December 1996, with 24 monthly out-of-sample portfolio returns.
+The training period is January 1990 to December 1994. The training-era source file contains 449,018 rows covering 10,987 unique securities across 60 training months. The test period is January 1995 to December 1996, with 24 monthly out-of-sample portfolio returns.
 
 The target is one-month-ahead return for the same security. It is created by shifting return forward within each PERMNO. Features at time t use information known at or before time t, while the target is realised at t plus 1. This prevents look-ahead leakage.
 
@@ -158,13 +142,15 @@ The data limitations are also clear: US monthly equities only, one static window
 
 ## Slide 11 - Phase 1 Baseline Loss Comparison
 
-Phase 1 compares seven baseline losses at seed 42.
+Phase 1 compares seven losses at seed 42.
 
 MSE performs poorly as a portfolio objective here: Sharpe is minus 0.4643 and cumulative return is minus 11.25 percent. MedSE is only slightly positive, with Sharpe 0.0932 and cumulative return plus 0.60 percent.
 
 A more important observation is that R-squared and portfolio performance can decouple. GMADL has average R-squared around minus 7.02 times 10 to the 9, but its portfolio Sharpe is positive at 0.2025. This happens because R-squared measures calibrated point prediction, while the portfolio trades ranks.
 
-The best baseline row is hybrid_mul_m1, with Sharpe 0.4435 and cumulative return plus 5.09 percent. This suggests that combining a directional component with robust magnitude control gives a better ranking signal than MSE or pure directional loss alone.
+The best-performing row in Phase 1 is hybrid_mul_m1, with Sharpe 0.4435 and cumulative return plus 5.09 percent. This suggests that combining a directional component with robust magnitude control gives a better ranking signal than MSE or pure directional loss alone.
+
+Notice the key decoupling: GMADL has the worst R-squared in the table — minus 7 billion — but its portfolio Sharpe is positive. This tells us the portfolio trades ranks, not calibrated values. Once you accept this, the question becomes: how do we design a loss that produces better ranks? That is exactly what the next slides answer.
 
 ---
 
@@ -172,9 +158,11 @@ The best baseline row is hybrid_mul_m1, with Sharpe 0.4435 and cumulative return
 
 Phase 2 compares additive and multiplicative hybrid variants.
 
-The additive family peaks at A3, with Sharpe 0.5738 and cumulative return plus 8.13 percent. The multiplicative family peaks at M1, with Sharpe 0.4435 and cumulative return plus 5.09 percent.
+The additive family peaks at A3, with Sharpe 0.5738 and cumulative return plus 8.13 percent. A3 reaches 0.57 — already more than double what any pure regression or directional baseline achieves. The multiplicative family peaks at M1, with Sharpe 0.4435 and cumulative return plus 5.09 percent.
 
 But the table also shows sensitivity. A5 collapses to Sharpe minus 0.4110, and M3 collapses to minus 0.9691. So the conclusion is not that all hybrids work. The form and weighting of the components matter.
+
+Why do A5 and M3 collapse? In both cases, the directional weight is too large relative to the magnitude backbone. The model starts chasing sign-correctness so aggressively that it distorts the ranking signal. This is why the later gamma family adds explicit variance control — to prevent this kind of over-correction.
 
 The reason the later phase focuses on the multiplicative side is that its prediction scale remains more controlled in this comparison. Phase 2 therefore motivates a multi-seed refinement of the multiplicative robust design through the gamma variance penalty.
 
@@ -184,29 +172,29 @@ The reason the later phase focuses on the multiplicative side is that its predic
 
 Phase 3a is the core robustness evidence.
 
-The M2-robust gamma loss is:
+The M2-robust gamma loss is: L = L_M2 + gamma times Var(y_hat). Gamma controls prediction dispersion. If gamma is too small, predictions can be unstable. If gamma is too large, predictions can be over-compressed and lose ranking signal.
 
-L = L_M2 + gamma Var(y_hat).
+Remember MSE gives Sharpe minus 0.46. Now look at the results — they show a non-monotone trade-off.
 
-Gamma controls prediction dispersion. If gamma is too small, predictions can be unstable. If gamma is too large, predictions can be over-compressed and lose ranking signal.
-
-The results show a non-monotone trade-off. Gamma03 is unstable, with mean Sharpe 0.3234 and CV 1.0570. Gamma05 improves to Sharpe 0.7054 and CV 0.2109. Gamma07 achieves mean Sharpe 0.9156, mean cumulative return plus 27.99 percent, and the lowest CV, 0.1808.
+Gamma03 is unstable, with mean Sharpe 0.3234 and CV 1.0570 — meaning some seeds produce negative Sharpe. Gamma05 improves to Sharpe 0.7054 and CV 0.2109. Gamma07 achieves mean Sharpe 0.9156, mean cumulative return plus 27.99 percent, and the lowest CV, 0.1808. That is a swing of nearly 1.4 Sharpe units from MSE, with the lowest CV in the table.
 
 Gamma10 has the highest mean Sharpe, 1.0043, but CV is 0.5613, about three times larger than gamma07. Gamma15 also loses stability compared with gamma07.
 
-So gamma07 is not selected because it maximises one metric. It is selected because it gives the best joint Sharpe-stability profile.
+Why does gamma07 work? The intuition is: gamma 0.7 allows enough prediction spread to preserve ranking differences between stocks, but not so much that the model's output becomes unstable across seeds. Below 0.7, the model is under-regularised and seed-sensitive. Above 0.7, the signal gets compressed and you start losing return.
+
+So gamma07 is not selected because it maximises one metric. It is selected because it balances high Sharpe and low seed sensitivity — the best of both.
 
 ---
 
 ## Slide 14 - Integrated Alpha, Beta, And Lambda Sweeps
 
-The integrated sweep checks whether gamma07 is just a local success.
+The gamma sweep gives us one winner. But is gamma07 just a lucky point? Or is the whole hybrid-multiplicative region productive?
 
-The IMADL-m2 alpha family provides useful corroboration. Alpha06 reaches mean Sharpe 0.6895, CV 0.2443, and cumulative return plus 30.42 percent. It is below gamma07 in Sharpe, but it is a stable positive result from a related parameterisation.
+The answer is: the region is productive. Alpha06 — a related parameterisation from the IMADL-m2 family — reaches mean Sharpe 0.6895, CV 0.2443, and cumulative return plus 30.42 percent. It is below gamma07, but it is stably positive. This corroborates the broader design direction.
 
-The beta family does not produce robust positive Sharpe; its CV values can become extremely large. The adaptive-lambda family also underperforms on stability.
+On the other hand, the beta family and the adaptive-lambda family do not reach the stability zone. Their CV values are large and their mean Sharpe is inconsistent.
 
-This supports the broader conclusion that the productive region is hybrid-multiplicative plus robust control, not pure directional loss or arbitrary adaptive weighting.
+So the conclusion is not just "gamma07 is good." It is: "multiplicative hybrid plus variance control is the productive design space. Gamma07 is the best point within it."
 
 ---
 
@@ -214,7 +202,7 @@ This supports the broader conclusion that the productive region is hybrid-multip
 
 This slide tests a possible objection: maybe the leading results are caused by scale imbalance between loss components.
 
-The normalisation probe equalises component scales and re-runs three leading candidates across three seeds.
+The normalisation probe forces the two loss components to have equal scale, then re-runs the experiments — three leading candidates across three seeds.
 
 Gamma07 is approximately stable. Its mean Sharpe changes from 0.9156 to 0.9112, which is a very small change relative to seed dispersion.
 
@@ -230,7 +218,7 @@ The caveat is that the scale ratios are diagnostics-estimated. A future version 
 
 The cumulative return paths make the same result visible.
 
-MSE sends the portfolio downward over the test window. Gamma10 can reach a higher best-seed path, but its seed envelope is wide. Gamma07 produces a more consistent upward path across all three seeds.
+While MSE loses 11 percent over two years, gamma07 gains 28 percent. Gamma10 can reach a higher best-seed path, but its seed envelope is wide. Gamma07 produces a more consistent upward path across all three seeds.
 
 This is why the final answer is conditional but actionable: gamma07 is positive, stable, and probe-resistant within the studied protocol.
 
@@ -240,13 +228,13 @@ This is why the final answer is conditional but actionable: gamma07 is positive,
 
 Returning to the research questions:
 
-For RQ1, loss choice matters. R-squared and Sharpe can decouple because the portfolio trades ranks, not calibrated values.
+For RQ1, loss choice matters. R-squared and Sharpe can decouple because the portfolio trades ranks, not calibrated values. Loss choice takes you from minus 0.46 to plus 0.92 — a swing of 1.38 Sharpe units.
 
-For RQ2, the best supported hybrid design is m2_robust_gamma07: mean Sharpe 0.9156, CV 0.1808, and cumulative return plus 27.99 percent across three seeds.
+For RQ2, the best supported hybrid design is m2_robust_gamma07: mean Sharpe 0.9156, CV 0.1808, and cumulative return plus 27.99 percent across three seeds. That is roughly 20 times the best regression baseline MedSE, and twice the best single-seed hybrid.
 
 For RQ3, only gamma07 is approximately stable under the component-normalisation probe. Gamma10 and alpha06 degrade materially.
 
-So the answers are not universal claims, but they are clear within this evidence boundary.
+These are not universal claims — they hold within this specific protocol.
 
 ---
 
@@ -270,7 +258,7 @@ Future work should use rolling windows, at least 10 seeds, transaction-cost-awar
 
 The references listed here cover machine-learning asset pricing, momentum features, robust regression, directional loss design, and Sharpe-ratio evaluation.
 
-The main takeaway is that loss-function design should be treated as a first-class design variable for portfolio-oriented prediction. Under the controlled protocol in this project, a multiplicative directional-robust loss with gamma equal to 0.7 gives the best supported Sharpe-stability trade-off.
+The takeaway is: how you define the loss function matters as much as how you build the model. Under the controlled protocol in this project, a multiplicative directional-robust loss with gamma equal to 0.7 gives the best supported Sharpe-stability trade-off.
 
 Thank you for listening. I am happy to take your questions.
 
@@ -292,7 +280,9 @@ Gamma10 has higher mean Sharpe, but it is much less stable: CV 0.5613 versus 0.1
 
 ## Q4. Does the Phase 3 architecture difference weaken the claim?
 
-It weakens direct cross-phase improvement claims, which is why the report avoids them. The final recommendation relies on within-Phase-3 and Phase-4 comparisons, where rows share the same configuration.
+The activation and dropout difference affects Sharpe absolute values, but is unlikely to change the relative ranking among gamma values. The reason is that the optimal strength of the variance penalty follows a non-monotone pattern — too small is unstable, too large kills the signal — and this pattern is a mathematical property of the penalty itself, not dependent on which activation the hidden layers use. The Phase 3 ranking conclusion — gamma07 is the best balance point — is safe under this level of perturbation.
+
+More specifically: within Phase 3, every row shares exactly the same config (tanh, dropout zero, same seeds). The final recommendation draws entirely from within-Phase-3 evidence. I do not claim that gamma07 beats MSE by exactly 1.38 Sharpe units across configurations — I claim that among the M2-robust family under identical conditions, gamma07 has the best Sharpe-CV trade-off.
 
 ## Q5. Why only three seeds?
 
@@ -318,6 +308,14 @@ A3 is a strong seed-42 result, but it does not have the same multi-seed robustne
 
 The project shows a controlled way to treat the loss function as a portfolio-design variable. A loss can encode directional correctness, robust magnitude control, and prediction-dispersion regularisation, and these choices materially affect portfolio performance.
 
+## Q11. Why did Phase 3 change from ReLU to tanh and dropout 0.2 to 0.0?
+
+Phase 3's core purpose is testing the gamma variance penalty — L = L_M2 + gamma * Var(y_hat). If we keep ReLU plus dropout 0.2, the model already contains two mechanisms that affect prediction dispersion: ReLU truncates negative activations creating sparse representations, and dropout randomly shuts down hidden units during training. These mechanisms themselves change prediction variance, making it harder to isolate gamma's effect.
+
+Tanh preserves information in both positive and negative directions and has bounded output; dropout zero avoids additional random masking during training. This cannot eliminate all confounding, but it lets the gamma sweep more directly reflect the variance penalty's influence.
+
+The key evidence is: if the activation alone drove the results, all gamma values would perform similarly — but they do not. Gamma03 is unstable (CV 1.06), gamma07 is balanced, gamma15 over-compresses. The non-monotone pattern confirms that gamma is doing additional work beyond what tanh provides.
+
 ---
 
 # If Time Is Short
@@ -326,6 +324,6 @@ Keep Slides 7, 10, 13, 15, and 18 at full length.
 
 Compress Slide 3 to the three literature streams only.
 
-Compress Slide 5 to one sentence: "The contribution is hybrid loss design, variance regularisation, staged evidence, and a bounded recommendation."
+Compress Slide 5 to one sentence: "The contribution is hybrid loss design, variance regularisation, staged evidence, and a qualified recommendation."
 
 Compress Slide 14 to one sentence: "Alpha06 corroborates the hybrid-multiplicative region, while beta and adaptive-lambda do not reach the preferred stability zone."
