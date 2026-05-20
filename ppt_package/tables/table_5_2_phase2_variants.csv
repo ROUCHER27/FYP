@@ -1,0 +1,10 @@
+Variant,Loss_ID,Sharpe,Cum_Return,Avg_R2
+A1,hybrid_add_a1,0.1241,0.0133,-2105.95
+A2,hybrid_add_a2,0.2173,0.0450,-484.75
+A3,hybrid_add_a3,0.5738,0.0813,-1383.64
+A4,hybrid_add_a4,0.2311,0.0463,-11229.79
+A5,hybrid_add_a5,-0.4110,-0.2080,-507162.38
+M1,hybrid_mul_m1,0.4435,0.0509,-4.79
+M2,hybrid_mul_m2,-0.0017,-0.0032,-1.03
+M3,hybrid_mul_m3,-0.9691,-0.0903,-0.44
+M4,hybrid_mul_m4,-0.3440,-0.0409,-0.06

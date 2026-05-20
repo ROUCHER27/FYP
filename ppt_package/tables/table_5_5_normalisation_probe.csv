@@ -1,0 +1,4 @@
+Loss,Scale_Ratio,Original_Mean_Sharpe,Normalised_Mean_Sharpe,Normalised_Per_Seed_Sharpes
+m2_robust_gamma07,~113,0.9156,0.9112,"0.5956, 1.4064, 0.7317"
+m2_robust_gamma10,~113,1.0043,0.4072,"0.6254, 0.1181, 0.4780"
+imadl_m2_alpha06,~34,0.6895,-0.0161,"0.5628, -0.8335, 0.2224"

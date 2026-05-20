@@ -1,0 +1,13 @@
+Statistic,Value
+Source,CRSP-style US equity monthly panel
+Training Period,1990-01 to 1994-12 (60 months)
+Test Period,1995-01 to 1996-12 (24 months)
+Training Rows,449018
+Unique Securities (train),10987
+Monthly Sections (source file),61
+Mean Monthly Return,1.00%
+Std Monthly Return,19.54%
+Min Monthly Return,-98.8%
+Max Monthly Return,+2400%
+Feature Set,X1 (15 columns)
+Features Detail,"cum_ret_1/3/6/9/12m + cum_to_1/3/6/9/12m + RET/VOL/SHROUT/r/to"

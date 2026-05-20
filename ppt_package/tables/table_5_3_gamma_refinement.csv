@@ -1,0 +1,6 @@
+Loss,Runs,Sharpe_Mean,Sharpe_Std,Cum_Return_Mean,CV
+m2_robust_gamma03,3,0.3234,0.3418,0.0818,1.0570
+m2_robust_gamma05,3,0.7054,0.1488,0.2392,0.2109
+m2_robust_gamma07,3,0.9156,0.1655,0.2799,0.1808
+m2_robust_gamma10,3,1.0043,0.5638,0.2368,0.5613
+m2_robust_gamma15,3,0.8163,0.3724,0.2277,0.4562

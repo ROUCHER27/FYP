@@ -1,0 +1,146 @@
+% FYP Final Report — Loss Function Design for Cross-Sectional Stock-Return Prediction
+% Based on XJTLU MAP FYP Template
+% Compile with: xelatex main.tex && bibtex main && xelatex main.tex && xelatex main.tex
+
+\documentclass[openany]{book}
+\linespread{1.5}
+\setlength{\parindent}{0pt}
+\usepackage[a4paper,bindingoffset=0.2in,
+left=1in,right=1in,top=1in,bottom=1in,
+footskip=0.25in]{geometry}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{tikz,mathpazo}
+\usepackage{amssymb}
+\usepackage[UTF8]{ctex}
+\usepackage[hidelinks]{hyperref}
+\usepackage{paralist}
+\usepackage{color,soul}
+\usepackage{floatrow}
+\usepackage{graphicx}
+\usepackage{enumerate}
+\usepackage{multirow}
+\usepackage{hhline}
+\usepackage{fancyhdr}
+\usepackage{textcomp}
+\usepackage{indentfirst}
+\usepackage{amsfonts}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{tcolorbox}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{listings}
+\usepackage{tocloft}
+\setlength{\cfttabnumwidth}{3em}
+
+\setcounter{secnumdepth}{3}
+\numberwithin{figure}{chapter}
+\numberwithin{equation}{chapter}
+
+% Highlight macros for tables
+\definecolor{bestred}{HTML}{FF0000}
+\definecolor{secondblue}{HTML}{0000FF}
+\definecolor{gaingreen}{HTML}{008000}
+\newcommand{\best}[1]{\textcolor{bestred}{\textbf{#1}}}
+\newcommand{\second}[1]{\textcolor{secondblue}{\underline{#1}}}
+\newcommand{\gain}[1]{\textcolor{gaingreen}{#1}}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhead[L]{\nouppercase\leftmark}
+\fancyhead[R]{School of Mathematics \& Physics}
+
+% Code listings
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny,
+  columns=fullflexible,
+  keepspaces=true,
+}
+
+% Caption setup
+\captionsetup{font=small,labelfont=bf}
+
+\begin{document}
+
+% === Title page (page 1) ===
+\begin{titlepage}
+\centering
+\vspace*{1.5cm}
+{\Large\textsc{Multiplicative Directional-Robust Loss for Cross-Sectional Stock-Return Prediction} \\[0.5cm]}
+{\Large 方向与稳健的乘法融合：横截面股票收益预测新损失函数 \\[2cm]}
+
+{\scshape a thesis \\[5pt]
+submitted to School of Mathematics \& Physics \\[5pt]
+of Xi'an Jiaotong-Liverpool University \\[5pt]
+in partial fulfilment for the award of the degree of \\[1.5cm]}
+
+{\Large\textsc{BSc Applied Mathematics} \\[5pt]}
+By \\[5pt]
+{\Large Yirong Yu 2253235} \\[1cm]
+Supervisor: Dr. Yi Cao \\[1cm]
+February 8, 2026
+
+\vfill
+\includegraphics[width=4cm]{xjtluicon.jpg}
+\vspace{1cm}
+\end{titlepage}
+
+% === Blank page (page 2, required by template) ===
+\thispagestyle{empty}
+\mbox{}
+\newpage
+
+% === Front matter: roman numerals starting at ii ===
+\pagenumbering{roman}
+\setcounter{page}{2}
+
+% === Abstract ===
+\input{abstract}
+\newpage
+
+% === Acknowledgements ===
+\chapter*{Acknowledgements}
+I would like to express my sincere gratitude to my supervisor for their invaluable guidance and support throughout this project.
+\newpage
+
+% === TOC, LoF, LoT (each on its own page, listed in TOC) ===
+\tableofcontents
+\newpage
+\addcontentsline{toc}{chapter}{List of Figures}
+\listoffigures
+\newpage
+\addcontentsline{toc}{chapter}{List of Tables}
+\listoftables
+\newpage
+
+% === Main body: arabic numerals starting at 1 ===
+\pagenumbering{arabic}
+
+% === Main body ===
+\input{chapter1_introduction}
+\input{chapter2_literature_review}
+\input{chapter3_methodology}
+\input{chapter4_data}
+\input{chapter5_empirical_results}
+\input{chapter6_conclusion}
+
+% === Bibliography ===
+\newpage
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliography{references}{}
+\bibliographystyle{siam}
+
+% === Appendices (not in TOC) ===
+\appendix
+\addtocontents{toc}{\protect\setcounter{tocdepth}{-1}}
+\input{appendix_A_loss_definitions}
+\input{appendix_B_per_seed_raw}
+
+\end{document}

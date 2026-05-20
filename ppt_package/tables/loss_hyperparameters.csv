@@ -1,0 +1,20 @@
+Family,Loss_ID,Key_Parameters,Description
+Regression,MSE,reduction=mean,Standard mean squared error
+Regression,MedSE,reduction=median,Median of squared residuals (robust)
+Directional,MADL,"a=25, |y| weight",Smooth tanh-based directional loss
+Directional,GMADL,"a=100, b=2, |y|^b weight",Sigmoid-based directional loss
+Directional,IMADL,"λ_dir=1, λ_mag=1, ε=1e-8",Batch-normalised directional + squared-error
+Hybrid Additive,A1,"λ_dir=5.0, λ_hub=1.0",Additive: λ_dir·D + λ_hub·H
+Hybrid Additive,A2,"λ_dir=10.0, λ_hub=1.0",Additive
+Hybrid Additive,A3,"λ_dir=1.0, λ_hub=0.1",Additive (Phase 2 peak)
+Hybrid Additive,A4,"λ_dir=5.0, λ_hub=0.1",Additive
+Hybrid Additive,A5,"λ_dir=10.0, λ_hub=0.1",Additive
+Hybrid Multiplicative,M1,λ_dir=2.0,Multiplicative: (1+λ·D)·H
+Hybrid Multiplicative,M2,λ_dir=5.0,Multiplicative
+Hybrid Multiplicative,M3,λ_dir=0.5,Multiplicative
+Hybrid Multiplicative,M4,λ_dir=0.1,Multiplicative
+M2-Robust,gamma03,γ=0.3,L_M2 + γ·Var(ŷ)
+M2-Robust,gamma05,γ=0.5,L_M2 + γ·Var(ŷ)
+M2-Robust,gamma07,γ=0.7,L_M2 + γ·Var(ŷ) (RECOMMENDED)
+M2-Robust,gamma10,γ=1.0,L_M2 + γ·Var(ŷ)
+M2-Robust,gamma15,γ=1.5,L_M2 + γ·Var(ŷ)

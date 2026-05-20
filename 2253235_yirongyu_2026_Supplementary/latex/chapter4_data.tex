@@ -1,0 +1,137 @@
+\chapter{Data}\label{ch:data}
+
+This chapter describes the data that underlies every empirical claim in Chapter~5. It specifies the raw source, the panel construction, the static train/test split, the feature variables, the preprocessing pipeline, and the data limitations that scope the report's conclusions.
+
+\section{Data source}\label{sec:data-source}
+
+The dataset is a CRSP-style monthly panel of US-listed equity observations, sourced from the Center for Research in Security Prices (CRSP) monthly stock file \cite{refA4}. The term ``CRSP-style'' is used because the project's data snapshot has not been independently verified against the official CRSP database for completeness or delisting-return handling (see \S\ref{sec:data-limitations}). Seven CSV files at the repository root cover the period from December 1989 to December 2024, each file holding roughly five years of observations with a one-month overlap at boundaries. Every file shares the same schema:
+
+\begin{table}[H]
+\centering
+\caption{CRSP-style monthly panel schema.}\label{tab:crsp-schema}
+\begin{tabular}{ccc}\toprule
+Column & Description & Source role \\\midrule
+\texttt{PERMNO} & CRSP-style permanent security identifier & security key \\
+\texttt{date} & End-of-month calendar date & time index \\
+\texttt{RET} & Total monthly return, simple & prediction target and momentum input \\
+\texttt{VOL} & Monthly trading volume (shares) & turnover numerator \\
+\texttt{SHROUT} & Shares outstanding (thousands) & turnover denominator \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The loader reads every matching CSV from a given directory, concatenates the frames vertically, and emits a single long-format panel keyed on \texttt{(PERMNO, date)}. Dates are parsed to pandas \texttt{datetime} and the panel is sorted first by \texttt{PERMNO} and then by \texttt{date} before any downstream step runs. The panel is monthly --- one row per security per month --- and no intra-month granularity is used.
+
+At the training end of the panel the \texttt{89.12-94.csv} file contributes 449,018 rows covering 10,987 unique \texttt{PERMNO} values; the source file contains 61 month-sections (including 1989-12); the training partition uses 60 (1990-01 to 1994-12). Mean raw monthly return is $0.0100$ with a standard deviation of $0.1954$ and realised extremes of $-0.988$ and $+24.0$ across the training era; this heavy-tailed return distribution is a key motivation for the robust loss variants studied in Chapters~3 and~5.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\textwidth]{figures/fig4_1_data_coverage.png}
+\caption[Data coverage and training-era return distribution]{Data coverage and training-era return distribution.}
+\label{fig:data-coverage}
+\end{figure}
+
+\section{Sample construction}\label{sec:sample-construction}
+
+Three derived variables are computed on the raw panel before any feature set is built:
+
+\begin{enumerate}
+ \item Simple return $r_{i,t}$ is a numeric copy of \texttt{RET}, with any non-numeric entries coerced to \texttt{NaN} and dropped downstream.
+ \item Monthly turnover is
+ \[
+ \text{to}_{i,t} = \frac{\text{VOL}_{i,t}}{\text{SHROUT}_{i,t} \times 1000},
+ \]
+ with zero-denominator rows set to \texttt{NaN} and infinities replaced by \texttt{NaN}. The factor of $1000$ converts shares-outstanding from CRSP's thousand-share unit into absolute shares, so \texttt{to} is a dimensionless volume-to-float ratio.
+ \item The prediction target is the one-month-ahead return of the same security,
+ \[
+ y_{i,t} = r_{i,t+1},
+ \]
+ computed by a within-\texttt{PERMNO} one-step forward shift. Rows with missing $y_{i,t}$ are dropped. This definition prevents look-ahead leakage because features at time $t$ are constructed from information known at or before $t$ (see \S\ref{sec:feature-variables}) while $y_{i,t}$ only uses the realised return at $t+1$, provided that feature rows are built only from lagged variables as described in \S\ref{sec:feature-variables}.
+\end{enumerate}
+
+After these steps, any row missing any of \texttt{\{r, to, target\_ret\}} is dropped. The resulting panel is what every loss function consumes during training and evaluation.
+
+\section{Train/test split}\label{sec:train-test-split}
+
+The report uses a single static split, not a rolling or expanding-window scheme. The split is:
+
+\begin{table}[H]
+\centering
+\caption{Static train/test split.}\label{tab:train-test-split}
+\begin{tabular}{ccccc}\toprule
+Partition & Start & End & Months & Role \\\midrule
+Training & \texttt{1990-01} & \texttt{1994-12} & 60 & fit loss and compute gradients \\
+Test (main) & \texttt{1995-01} & \texttt{1996-12} & 24 & out-of-sample evaluation for every final headline table \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The split is defined by date, not by security. A given \texttt{PERMNO} can contribute to both the training and test partitions; the prohibition on leakage is enforced at the time dimension via the shift in \S\ref{sec:sample-construction} and via the strict month cutoff above. No retraining occurs during the test window; the test period is a held-out evaluation of a single model per loss and per seed.
+
+Chapter~5 labels every final headline number with the exact window start and end. Every final verification JSON confirms \texttt{row\_count = 24}, \texttt{first\_month = 1995-01}, and \texttt{last\_month = 1996-12} for the baseline and Phase~2 tables (see Appendix~B \S B.5). The multi-seed Phase~3 runs inherit the same window.
+
+\section{Feature variables}\label{sec:feature-variables}
+
+The repository implements multiple feature sets. The final report uses feature set \textbf{X1} throughout; alternative feature sets were not carried into the final empirical tables.
+
+\subsection{X1 --- cumulative return and cumulative turnover (used throughout)}\label{subsec:x1}
+
+The X1 feature set contributes 10 engineered columns (5 horizons $\times$ 2 variables), following the cumulative-return and cumulative-turnover construction of Medhat and Schmeling (2021) \cite{ref11} and Daniel and Moskowitz (2016) \cite{ref3}. The model input is 15 columns comprising these 10 X1 columns together with the 5 base panel columns (RET, VOL, SHROUT, r, to) that \texttt{assemble\_feature\_matrix} retains.
+
+Formally, with $r_{i,t-1}$ denoting the one-month-lagged simple return (to avoid look-ahead for the $t+1$ target) and $\text{to}_{i,t-1}$ the one-month-lagged turnover:
+
+\begin{itemize}
+ \item Cumulative return over $w$ months:
+ \[
+ \mathrm{cr}^{(w)}_{i,t} = \prod_{k=1}^{w} \big(1 + r_{i,t-k}\big) - 1.
+ \]
+ \item Cumulative turnover over $w$ months:
+ \[
+ \mathrm{co}^{(w)}_{i,t} = \sum_{k=1}^{w} \text{to}_{i,t-k}.
+ \]
+\end{itemize}
+
+Both aggregations require the full rolling window (\texttt{min\_periods = window}); rows for which any of the 15 columns is \texttt{NaN} are dropped. This is why the effective training sample begins roughly twelve months after the raw start date: the panel truncates naturally at the longest lookback.
+
+The complete 15-column model input is listed in Appendix~B Table~B.3.
+
+X1 is the feature set used in every run that produces a Chapter~5 number. The shared model configuration (\texttt{input\_dim}: 15, \texttt{hidden\_dims}: [64, 32, 16], \texttt{activation}: ReLU, \texttt{dropout}: 0.2) matches this feature width exactly.
+
+Alternative feature-set constructors exist in the codebase but were not run under the final 24-month protocol. Feature-set sensitivity is therefore excluded from the main report and listed as future work in Chapter~6.
+
+\section{Preprocessing}\label{sec:preprocessing}
+
+The end-to-end preprocessing pipeline executes the following steps in order, on the concatenated raw panel:
+
+\begin{enumerate}
+ \item \textbf{Date parsing.} \texttt{date} is coerced to pandas \texttt{datetime}; any unparsable value raises an error, forcing the caller to confront malformed input rather than silently drop rows.
+ \item \textbf{Column validation.} The loader checks that \texttt{\{PERMNO, date, RET, VOL, SHROUT\}} are present. Missing columns raise a \texttt{KeyError} before any numeric work runs.
+ \item \textbf{Missing-value filling.} Within each \texttt{PERMNO}, \texttt{\{RET, VOL, SHROUT\}} are forward-filled (default \texttt{method='ffill'}). This treats a missing observation as the continuation of the last observed value for that security. Forward-filling returns can fabricate an observation for a genuinely inactive name-month; this is an implementation choice rather than a universally conservative treatment, and is noted as a data limitation in \S\ref{sec:data-limitations}. Any row that remains \texttt{NaN} after the fill is dropped.
+ \item \textbf{Basic-variable construction.} Numeric \texttt{r} and \texttt{to} are computed as described in \S\ref{sec:sample-construction}. Any $\pm\infty$ produced by zero-share-outstanding rows is replaced by \texttt{NaN}.
+ \item \textbf{Target construction.} \texttt{target\_ret = r.shift(-1)} within each \texttt{PERMNO}. Rows without a valid \texttt{target\_ret} are dropped.
+ \item \textbf{Row-level completeness filter.} Any row still missing any of \texttt{\{r, to, target\_ret\}} is dropped.
+\end{enumerate}
+
+At the feature-building stage, each \texttt{build\_feature\_set\_xN} function additionally drops rows whose feature columns contain any \texttt{NaN}. For X1 this cascades through every 1-, 3-, 6-, 9-, and 12-month lookback window.
+
+Two aspects are deliberately \emph{not} applied by the pipeline and are worth stating explicitly:
+
+\begin{itemize}
+ \item \textbf{No winsorisation.} The raw \texttt{RET} distribution has extreme tails (training-era maximum of $+2400\%$ for a single name-month). The pipeline does not clip or winsorise the return series. Heavy tails are the motivation for robust-loss design; normalising them away at the data stage would obscure the effect the loss functions are intended to handle. Chapter~3 discusses how each loss family treats these outliers mathematically. Because the 15 model inputs include raw VOL, RET, SHROUT, r, and to (Appendix~B Table~B.3), extreme values in these base columns enter the MLP directly.
+ \item \textbf{No cross-sectional clipping of predictions.} Any clipping is performed inside the portfolio construction module (Chapter~3 \S3.5) on prediction $z$-scores, not on input features. Input features are used as-is.
+\end{itemize}
+
+\section{Data limitations}\label{sec:data-limitations}
+
+Several limitations of the data scope the empirical claims of this report:
+
+\begin{enumerate}
+ \item \textbf{Single market and single frequency.} The panel is US-listed equities at monthly frequency. Results do not generalise directly to higher frequencies (daily, intraday), other asset classes, or non-US markets. Any extension of the loss-design conclusions to those regimes requires re-estimation.
+ \item \textbf{Single evaluation window.} The main test window is fixed at 1995-01 to 1996-12. Macroeconomic regime effects are not sampled; in particular, the window spans a sustained bull market and does not include the 1997--98 crises, the 2000 tech correction, or the 2008 financial crisis. Robustness across regimes is listed as future work in Chapter~6.
+ \item \textbf{Heavy-tailed returns.} As quoted in \S\ref{sec:data-source}, the training-era \texttt{RET} series includes name-months with returns exceeding $+1000\%$. Such extremes dominate any scale-sensitive quantity (MSE, R$^{2}$) and drive the divergent R$^{2}$ values observed in Chapter~5. Readers should interpret R$^{2}$ as a diagnostic rather than a primary performance metric in this setting.
+ \item \textbf{Sample coverage changes over time.} The training window contains 10,987 unique \texttt{PERMNO}s; the source file covers 61 month-sections. The panel grows substantially in later files (for example, 94-99.csv contains 12,836 unique \texttt{PERMNO}s). The Phase~2 multi-seed runs still use the 1990--1996 window, so this sample-growth effect does not bias the comparison; however, any rolling-window extension would need to account for sample composition drift.
+ \item \textbf{No survivorship-bias correction.} The pipeline does not filter delisted securities or adjust for delisting returns. CRSP monthly files typically include delisting rows via \texttt{RET}, but bias from partial delisting data has not been verified. Long-short performance can be biased materially by missing delisting returns, particularly in the short leg where delistings cluster. Conclusions drawn from long-short Sharpe should be read with this implicit assumption in mind.
+ \item \textbf{Feature-set restriction.} All Chapter~5 evidence uses X1. Feature sensitivity is untested because alternative feature sets were not run under the final protocol.
+\end{enumerate}
+
+These limitations are revisited in Chapter~6 together with the methodological limitations of the static-window protocol.

@@ -1,0 +1,35 @@
+\chapter{Conclusion}
+
+\label{ch:conclusion}
+
+\section{Summary of findings}
+
+\label{sec:summary-of-findings}
+
+This report conducted a controlled, single-factor study of loss-function design for cross-sectional stock-return prediction with a multi-layer perceptron. Within each comparison table, data, features, architecture, training protocol, portfolio construction, and evaluation metrics were fixed; only the loss function was varied. Under this protocol, the empirical evidence in Chapter~5 supports the following direct answers to the three research questions posed in Chapter~1.
+
+\textbf{RQ1: How do prediction-level and portfolio-level metrics change when only the loss function is altered?} At the single-seed baseline (Chapter~5 \S5.2), prediction-level and portfolio-level metrics decouple substantially. Losses that produce extremely negative R² (the absolute-loss family) can still yield competitive portfolio Sharpes, because the portfolio depends on cross-sectional ranks rather than calibrated magnitudes. R² is therefore a scale diagnostic rather than a primary performance metric in this setting. Among baseline losses, the hybrid multiplicative variant \texttt{hybrid\_mul\_m1} produces the best single-seed Sharpe, motivating the hybrid-loss design direction that Phase 2 and Phase 3 extend.
+
+\textbf{RQ2: Within the hybrid-loss design space, which combination of directional and robust components performs best on the joint Sharpe-stability criterion?} The multi-seed evidence (Chapter~5 \S5.4 and \S5.5, three seeds per row) identifies the M2-robust $\gamma$ family as the productive region of the loss space. This family augments the base multiplicative hybrid (M2) with an explicit prediction-variance penalty: $L = L_{\mathrm{M2}} + \gamma \cdot \mathrm{Var}(\hat y)$. Within that family, \texttt{m2\_robust\_gamma07} ($\gamma = 0.7$) achieves mean Sharpe $0.9156$ with coefficient of variation $0.1808$ and mean cumulative return $+27.99\%$ over 24 months. \texttt{m2\_robust\_gamma10} has a higher mean Sharpe ($1.0043$) but three times the CV, and its per-seed Sharpe range is wide ($0.4587$ to $1.5847$). The integrated sweep shows that the IMADL-m2 $\alpha$ family peaks at $\alpha = 0.6$ (mean Sharpe $0.6895$, CV $0.2443$), that the IMADL-GMADL $\beta$ family does not produce robust positive Sharpes (CV values from 4.0 to 139.5), and that the adaptive-$\lambda$ family underperforms both on Sharpe and on stability. \texttt{m2\_robust\_gamma07} emerges as the single best candidate on the joint Sharpe-stability criterion; \texttt{imadl\_m2\_alpha06} corroborates the multiplicative-hybrid direction from an independent parameterisation.
+
+\textbf{RQ3: Are the observed winners approximately stable under the diagnostic loss-component normalisation probe?} The normalisation probe (Chapter~5 \S5.6) applies component normalisation to the three strongest candidates. \texttt{m2\_robust\_gamma07} is approximately flat under normalisation (mean Sharpe $0.9156 \to 0.9112$, a change smaller than the per-seed dispersion). Both \texttt{m2\_robust\_gamma10} ($1.0043 \to 0.4072$) and \texttt{imadl\_m2\_alpha06} ($0.6895 \to -0.0161$) degrade materially. The operational conclusion is that component normalisation is \emph{not} a universal fix, and that \texttt{m2\_robust\_gamma07} is the only one of the three candidates whose signal is approximately stable in the diagnostic normalisation probe. The probe itself acknowledges that its scale ratios are diagnostics-estimated rather than measured by a fully instrumented per-component logger; that limitation is recorded as a future-work item.
+
+\textbf{Final recommendation.} Combining the answers to RQ1--RQ3, the report's final loss recommendation has three tiers:
+
+\begin{itemize}
+ \item \textbf{Primary: \texttt{m2\_robust\_gamma07}.} Mean Sharpe $0.9156$, CV $0.1808$, mean cumulative return $+27.99\%$. Approximately stable under the diagnostic component-normalisation probe. No seed in the run produces a negative Sharpe. This is the best-supported single choice.
+ \item \textbf{High-return alternative with explicit caveat: \texttt{m2\_robust\_gamma10}.} Mean Sharpe $1.0043$, CV $0.5613$. Appropriate only where the user knowingly accepts seed-sensitivity in exchange for best-case Sharpe.
+ \item \textbf{Stable fallback: \texttt{imadl\_m2\_alpha06}.} Mean Sharpe $0.6895$, CV $0.2443$, mean cumulative return $+30.42\%$. Provides independent corroboration that the multiplicative-hybrid region is the productive one.
+\end{itemize}
+
+\section{Limitations and future work}
+
+\label{sec:limitations}
+
+The findings are scoped by several design choices: a single US equity monthly panel, a fixed 24-month evaluation window (no rolling retraining), three random seeds per multi-seed row, a single frozen architecture (MLP[64,32,16]), one feature set (X1, 15 columns), and a gross-of-cost portfolio with fixed bucket thresholds. These constraints ensure clean internal validity but limit external generalisation. The most impactful extensions would be (1)~a rolling-window evaluation across market regimes, (2)~a larger seed depth ($\geq$10) for tighter confidence intervals, (3)~a per-component loss logger to replace the diagnostics-estimated scale ratios in the normalisation probe, and (4)~feature-set and asset-class sensitivity tests.
+
+\section{Concluding remarks}
+
+\label{sec:concluding-remarks}
+
+Under the static 24-month protocol studied here, \texttt{m2\_robust\_gamma07} is the best-supported loss recommendation --- scoped to US equity monthly data, a single evaluation window, and three-seed evidence. The broader contribution is methodological: a controlled evidence protocol that isolates the loss function as a design variable and measures multi-seed stability alongside mean performance, providing a reusable template for future loss-design research.

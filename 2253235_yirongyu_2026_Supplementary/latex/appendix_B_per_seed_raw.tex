@@ -1,0 +1,202 @@
+\chapter{Per-Seed Raw Results and Reproducibility}
+
+\label{ch:per-seed-raw-results}
+
+This appendix tabulates the per-seed raw Sharpes that the multi-seed grouped summaries in Chapter~5 aggregate, so that the reader can verify the mean, standard deviation, and coefficient of variation directly. It also lists the exact reproduction commands for every table in Chapter~5.
+
+\section{Phase 2.2 $\gamma$ refinement --- per-seed annualised Sharpe}
+
+\label{sec:phase22-gamma-refinement-per-seed}
+
+Source: \texttt{doc/phase2-fix/phase2\_2/gamma\_refinement/reports/phase2\_raw\_runs.csv}. Static train \texttt{1990-01..1994-12}, test \texttt{1995-01..1996-12}, \texttt{cap05} portfolio cap. Three seeds per $\gamma$; seeds are \texttt{\{42, 52, 62\}}.
+
+\textbf{Table B.1 --- Phase 2.2 $\gamma$ refinement per-seed annualised Sharpe.}
+
+\begin{table}[H]\centering
+\caption{Phase 2.2 $\gamma$ refinement per-seed annualised Sharpe}\label{tab:b1-gamma-per-seed}
+\begin{tabular}{ccccccc}\toprule
+Loss & seed 42 & seed 52 & seed 62 & mean & std & CV \\\midrule
+\texttt{m2\_robust\_gamma03} & $-0.01987$ & $0.32631$ & $0.66380$ & $0.32341$ & $0.34184$ & $1.05698$ \\
+\texttt{m2\_robust\_gamma05} & $0.86960$ & $0.66697$ & $0.57964$ & $0.70540$ & $0.14875$ & $0.21087$ \\
+\texttt{m2\_robust\_gamma07} & $0.90972$ & $1.08404$ & $0.75316$ & $0.91564$ & $0.16552$ & $0.18077$ \\
+\texttt{m2\_robust\_gamma10} & $0.45873$ & $1.58465$ & $0.96958$ & $1.00432$ & $0.56376$ & $0.56134$ \\
+\texttt{m2\_robust\_gamma15} & $0.90214$ & $0.40845$ & $1.13823$ & $0.81627$ & $0.37239$ & $0.45621$ \\
+\bottomrule\end{tabular}
+\end{table}
+
+(The seed-42 \texttt{m2\_robust\_gamma07} row here, Sharpe $0.90972$, differs from the rounded $0.9156$ grouped-summary mean because the grouped row averages the three per-seed values. Both numbers trace to the raw CSV.)
+
+\section{Phase 2.2-fix1 normalisation probe --- per-seed annualised Sharpe}
+
+\label{sec:phase22-fix1-normalisation-per-seed}
+
+Source: \texttt{doc/phase2-fix/phase2.2-fix1/phase2\_summary.json}.
+
+\textbf{Table B.2 --- Phase 2.2-fix1 normalisation probe per-seed Sharpe.}
+
+\begin{table}[H]\centering
+\caption{Phase 2.2-fix1 normalisation probe per-seed Sharpe}\label{tab:b2-norm-probe-per-seed}
+\begin{tabular}{cccccc}\toprule
+Loss & Normalised seed 1 & Normalised seed 2 & Normalised seed 3 & Normalised mean & Original mean \\\midrule
+\texttt{m2\_robust\_gamma07} & $0.5956$ & $1.4064$ & $0.7317$ & $0.9112$ & $0.9156$ \\
+\texttt{m2\_robust\_gamma10} & $0.6254$ & $0.1181$ & $0.4780$ & $0.4072$ & $1.0043$ \\
+\texttt{imadl\_m2\_alpha06} & $0.5628$ & $-0.8335$ & $0.2224$ & $-0.0161$ & $0.6895$ \\
+\bottomrule\end{tabular}
+\end{table}
+
+(The per-seed IDs are anonymised in the summary JSON. The project notes record that the normalisation probe uses seeds \texttt{\{42, 123, 456\}}, but the mapping between the numeric position and those seed IDs is not preserved in the summary file; the mean and per-seed spread remain the relevant quantities.)
+
+\section{Phase 2 integrated summary --- grouped row summary (reproduction)}
+
+\label{sec:phase2-integrated-summary}
+
+Source (read without switching branches): \texttt{git show phase2.2-fix:doc/phase2-fix/reports/phase2\_grouped\_summary.csv}.
+
+Grouped rows quoted in Chapter~5 Table~5.4 are read directly from this CSV (column-by-column, no averaging or post-processing). Per-seed raw rows for the same variants are available in the sibling \texttt{phase2\_raw\_runs.csv} on the same branch. Per-seed detail is elided from the main text for readability, but every seed is recoverable via:
+
+\begin{lstlisting}[language=bash]
+git show phase2.2-fix:doc/phase2-fix/reports/phase2_raw_runs.csv
+\end{lstlisting}
+
+\section{Reproduction commands per Chapter~5 table}
+
+\label{sec:reproduction-commands}
+
+Tables 5.1--5.2 reproduce on \texttt{main} at commit \texttt{6c0fbde} with the repository-root data CSVs (\texttt{*.csv} matching the \texttt{-{}-pattern}) and the shared \texttt{best\_hyperparameters.txt}. Tables 5.3--5.5 are read or reproduced from the \texttt{phase2.2-fix} branch and \texttt{doc/phase2-fix/phase2.2-fix1/} artifacts as listed below.
+
+\subsection{Table 5.1 --- Baseline losses (seed 42, 24 months)}
+
+\label{ssec:table51-baseline-losses}
+
+For each \texttt{\{loss\} in \{mse, medse, madl, gmadl, imadl, hybrid\_mul\_m1, hybrid\_mul\_m2\}}:
+
+\begin{lstlisting}[language=bash]
+python run_sanity_check_{loss}.py \
+  --data-dir . \
+  --pattern '*.csv' \
+  --train-start 1990-01 \
+  --train-end 1994-12 \
+  --test-start 1995-01 \
+  --test-months 24 \
+  --max-epochs 20 \
+  --batch-size 1024 \
+  --best-config-path best_hyperparameters.txt \
+  --output-dir <output-root>/results/baseline/{loss} \
+  --seed 42
+\end{lstlisting}
+
+The output CSV at \texttt{<output-root>/results/baseline/\{loss\}/sanity\_metrics\_\{loss\}.csv} must have \texttt{row\_count = 24}, \texttt{first\_month = 1995-01}, \texttt{last\_month = 1996-12}. The paired summary JSON is at \texttt{sanity\_summary\_\{loss\}.json}.
+
+\subsection{Table 5.2 --- Phase 1.5 A/M variants (seed 42, 24 months)}
+
+\label{ssec:table52-phase15-variants}
+
+For each variant (\texttt{A1..A5}, \texttt{M1..M4}) use the corresponding runner, e.g., for \texttt{M2}:
+
+\begin{lstlisting}[language=bash]
+python run_sanity_check_hybrid_mul_m2.py \
+  --data-dir . --pattern '*.csv' \
+  --train-start 1990-01 --train-end 1994-12 \
+  --test-start 1995-01 --test-months 24 \
+  --max-epochs 20 --batch-size 1024 \
+  --best-config-path best_hyperparameters.txt \
+  --output-dir <output-root>/results/phase15/M2 \
+  --seed 42
+\end{lstlisting}
+
+The runner-to-variant mapping is listed in \texttt{doc/final\_report\_all\_24m\_evidence/manifests/run\_manifest.json}.
+
+\subsection{Table 5.3 --- Phase 2.2 $\gamma$ refinement (multi-seed)}
+
+\label{ssec:table53-gamma-refinement-multiseed}
+
+The $\gamma$ refinement was run from the \texttt{phase2.2-fix} branch with three seeds and the five $\gamma$ values listed in \S\ref{sec:phase22-gamma-refinement-per-seed}. The grouped summary is reproduced locally at:
+
+\begin{lstlisting}[language=bash]
+doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_grouped_summary.csv
+doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_raw_runs.csv
+\end{lstlisting}
+
+The per-seed raw CSV can be aggregated into the grouped summary by:
+
+\begin{lstlisting}[language=Python]
+import pandas as pd
+raw = pd.read_csv("doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_raw_runs.csv")
+grouped = (
+    raw[raw["cap_tag"] == "cap05"]
+    .groupby("loss")["long_short_sharpe"]
+    .agg(["mean", "std", "min", "max", "count"])
+)
+grouped["cv"] = grouped["std"] / grouped["mean"].abs()
+\end{lstlisting}
+
+\subsection{Tables 5.4 and 5.5 --- Phase 2 integrated and normalisation}
+
+\label{ssec:table54-55-phase2-integrated}
+
+The integrated grouped summary is on branch \texttt{phase2.2-fix}:
+
+\begin{lstlisting}[language=bash]
+git show phase2.2-fix:doc/phase2-fix/reports/phase2_grouped_summary.csv
+\end{lstlisting}
+
+The normalisation probe summaries are on \texttt{main} at:
+
+\begin{lstlisting}
+doc/phase2-fix/phase2.2-fix1/phase1_summary.json
+doc/phase2-fix/phase2.2-fix1/phase2_summary.json
+\end{lstlisting}
+
+\section{Reproducibility checklist}
+
+\label{sec:reproducibility-checklist}
+
+Before re-running any table for publication, verify:
+
+\begin{enumerate}
+\item Working directory is the repository root; \texttt{*.csv} data files are present.
+\item \texttt{best\_hyperparameters.txt} is unchanged from commit \texttt{6c0fbde} (MLP[64, 32, 16], ReLU, dropout 0.2, input\_dim 15). This applies to Phase~1 and Phase~2 single-seed evidence; Phase~3 multi-seed evidence on \texttt{phase2.2-fix} uses tanh activation and dropout 0.0.
+\item Python version $\geq$ 3.10; PyTorch installed; NumPy/pandas/matplotlib available for figure scripts.
+\item CUDA or MPS accelerator is available if matching Phase 2 run behaviour (device auto-detection in \texttt{sanity\_check\_signal\_tilted.detect\_device}). CPU-only runs are numerically close but not bit-identical.
+\item The runner CLI arguments match exactly (\texttt{-{}-test-months 24}, \texttt{-{}-train-start 1990-01}, \texttt{-{}-train-end 1994-12}, \texttt{-{}-test-start 1995-01}, \texttt{-{}-seed 42} for single-seed tables).
+\item After each run, verify the output CSV has 24 rows with first month \texttt{1995-01} and last month \texttt{1996-12}; this is automated by the \texttt{*\_verification.json} writer in the evidence scripts.
+\end{enumerate}
+
+\section{Known numerical caveats}
+
+\label{sec:known-numerical-caveats}
+
+\begin{itemize}
+\item CUDA non-determinism. \texttt{torch.backends.cudnn.deterministic} is not forced; bit-level reproduction across hardware is not guaranteed. Grouped-summary values in Chapter~5 are reported to be stable across re-runs within the same environment, but no formal rerun artifact has been preserved.
+\item Floating-point noise in \texttt{compute\_portfolio\_returns}. The capped-simplex projection iterates up to 10 times; edge cases (multiple weights hitting the cap simultaneously) can produce microscopic differences across runs.
+\item \texttt{git show phase2.2-fix:...} depends on the \texttt{phase2.2-fix} branch being present in the local clone. \texttt{git fetch} if needed.
+\item The 6-month legacy window \texttt{1995-01..1995-06} in \texttt{sanity\_outputs/} is not part of this appendix's reproduction and should not be used for any final-report table.
+\end{itemize}
+
+\section{Complete model input columns}
+
+\label{sec:complete-model-input-columns}
+
+\textbf{Table B.3 --- Complete 15-column model input for X1.}
+
+\begin{table}[H]\centering
+\caption{Complete 15-column model input for X1}\label{tab:b3-model-input-columns}
+\begin{tabular}{ccc}\toprule
+\# & Column & Description \\\midrule
+1 & VOL & monthly trading volume (shares) for month $t$ \\
+2 & RET & raw monthly total return for month $t$ \\
+3 & SHROUT & shares outstanding (thousands) for month $t$ \\
+4 & r & numeric copy of RET \\
+5 & to & monthly turnover = VOL/(SHROUT$\times$1000) \\
+6 & cr\_1m & 1-month cumulative lagged return \\
+7 & co\_1m & 1-month cumulative lagged turnover \\
+8 & cr\_3m & 3-month cumulative lagged return \\
+9 & co\_3m & 3-month cumulative lagged turnover \\
+10 & cr\_6m & 6-month cumulative lagged return \\
+11 & co\_6m & 6-month cumulative lagged turnover \\
+12 & cr\_9m & 9-month cumulative lagged return \\
+13 & co\_9m & 9-month cumulative lagged turnover \\
+14 & cr\_12m & 12-month cumulative lagged return \\
+15 & co\_12m & 12-month cumulative lagged turnover \\
+\bottomrule\end{tabular}
+\end{table}

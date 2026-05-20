@@ -1,0 +1,4 @@
+Tier,Loss_ID,Mean_Sharpe,CV,Mean_Cum_Return,Normalisation_Stable,Note
+Primary,m2_robust_gamma07,0.9156,0.1808,+27.99%,Yes (0.9112),Best Sharpe-stability trade-off
+High-Return,m2_robust_gamma10,1.0043,0.5613,+23.68%,No (0.4072),Seed-sensitive; best-case Sharpe
+Stable Fallback,imadl_m2_alpha06,0.6895,0.2443,+30.42%,No (-0.0161),Independent corroboration

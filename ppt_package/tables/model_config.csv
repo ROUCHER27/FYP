@@ -1,0 +1,11 @@
+Parameter,Phase_1_2,Phase_3
+Architecture,MLP [64 32 16],MLP [64 32 16]
+Input_Dim,15,15
+Activation,ReLU,tanh
+Dropout,0.2,0.0
+Optimizer,Adam (lr=0.001),Adam (lr=0.001)
+Epochs,20,20
+Batch_Size,1024,1024
+Train_Window,1990-01..1994-12,1990-01..1994-12
+Test_Window,1995-01..1996-12,1995-01..1996-12
+Seeds,42,42/123/7
