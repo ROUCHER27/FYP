@@ -38,11 +38,12 @@ The project sits between three research streams.
 
 First, machine learning for stock prediction. Gu, Kelly, and Xiu show that nonlinear machine-learning models can improve return prediction, while Daniel and Moskowitz and Medhat and Schmeling motivate the return and turnover features used in this project.
 
-Second, robust regression. MSE is sensitive to outliers. Huber-style losses and MedSE reduce the effect of heavy-tailed residuals, but they do not directly encode directional correctness.
+**Second, robust regression.** MSE is sensitive to outliers. Huber (1964) introduced the idea of using a loss that is quadratic for small errors but linear for large errors, limiting outlier influence. MedSE applies the same median-based robustness principle. These reduce the effect of heavy-tailed residuals, but they do not directly encode directional correctness.  ==y=true, **ŷ（y_pred）**==
 
-Third, directional losses. MADL and GMADL reward sign alignment between realised and predicted returns. That is closer to a trading problem, but pure directional losses may lose prediction-scale control.
+Until 2024, we have new directional losses.** Sakowski and his team from**University of Warsaw**  proposed MADL and its generalisation GMADL, which reward sign alignment between realised and predicted returns. 
+That is closer to a trading problem, however, a pure directional losse may still lose prediction-scale control.
 
-Previous work compares these families separately. No one has put them all under the same controlled portfolio protocol — so this is the gap and I'm trying to figure out.
+After review all the Previous works. I found that No one has put them all under the same controlled portfolio protocol — so this is the gap and I'm trying to figure out.
 
 ---
 
@@ -50,55 +51,67 @@ Previous work compares these families separately. No one has put them all under 
 
 The methodology is a controlled single-factor comparison.
 
-The pipeline has five blocks: data, MLP model, loss function, portfolio construction, and evaluation. Within each comparison table, the data, features, training window, test window, portfolio construction, and evaluation metrics are fixed. The loss function is the treatment.
+The pipeline has five blocks: 
 
-This design is important because the project is not an architecture-search study. The question is narrower: given a fixed pipeline, can loss design alone improve the portfolio signal?
+First, I download CRSP amarican data from  xxxxx
+Then we need to find a model architecture to fix and It should satisfied the data structure -  **Our task is cross-sectional prediction: each sample is a fixed-length feature vector summarizing one stock at one point in time, with no sequential ordering across samples — MLP's simple matrix multiplication is a natural fit.**
 
-The final recommendation is scoped to one static 24-month test window, one feature set, one MLP width configuration, and three-seed robustness rows.
+And Loss function plays the role to help mlp model to predict the correct signs by **rewarding direction-aligned predictions and penalizing direction-mismatched ones.**
+
+==For the portfolio, **Each month, we rank all stocks by model prediction, go long the top 10% and short the bottom 10%. Within each bucket, we assign weights via z-score of predictions, then cap any single stock at 5% maximum weight to prevent concentration risk — ensuring no single position dominates the portfolio.**==
+# *later*
+
+**For prediction, we track directional accuracy (% of correct sign predictions) and R². For portfolio performance — which is the ultimate test — we compute the annualized Sharpe ratio and cumulative return of a long-short strategy that goes long the top-decile stocks and short the bottom-decile each month.**
 
 ---
 
 ## Slide 5 - Contributions
 
-There are four contributions.
+After introducing the whole procedure. I also want to talk about the four main contributions.
 
-First, I design additive and multiplicative hybrid losses that combine directional alignment with robust magnitude control.
+First, I design additive and multiplicative hybrid losses that combine directional alignment with robust magnitude control.  
 
-Second, I extend the multiplicative family into an M2-robust gamma family by adding a prediction-variance penalty.
+**Second, I extend the multiplicative family into an M2-robust gamma family by adding a prediction-variance penalty — the term γ · Var(ŷ) discourages the model from producing extreme or volatile predictions, which reduces monthly return variance and improves cross-seed stability of the portfolio's Sharpe ratio.**
 
-Third, I use staged evidence: single-seed baselines, single-seed hybrid sweeps, multi-seed robustness tests, and a component-normalisation probe.
+**Third, my experiments follow a progressive design: first confirmed each loss works on a single seed, then sweep the hybrid parameters, then did a stress-test the best candidates across multiple seeds, and finally designed a normalization to check whether the loss components are numerically balanced.**
 
-Fourth, I give a recommendation with clear limits: gamma07 as the primary choice, gamma10 as a high-return but seed-sensitive alternative, and alpha06 as a stable fallback.
+Fourth, I will deliver a recommendation with clear limits: which loss function is the primary choice, and why there are two alternative options.
 
 ---
 
 ## Slide 6 - Research Design And Architecture
-
 The model is a multi-layer perceptron with 15 inputs and hidden widths 64, 32, and 16. The output is one scalar predicted one-month-ahead return for each stock-month observation.
+The first step of the whole research is to find the hyper parameter from our history data.
 
-The 15 inputs come from feature set X1. There are 10 engineered features — cumulative return and cumulative turnover, each at five lookback windows from 1 month to 12 months. These are combined with 5 base panel columns: RET, VOL, SHROUT, r, and turnover.
+For feature engineering, I construct Feature Set X1 using two raw variables: monthly stock return and monthly turnover ratio. 
 
-The training window is January 1990 to December 1994. The test window is January 1995 to December 1996, giving 24 out-of-sample monthly portfolio returns. Training uses Adam with learning rate 0.001, batch size 1024, and 20 epochs.
+**I shift each stock's history by one month to avoid look-ahead bias, then compute cumulative returns and cumulative turnover over five windows — 1, 3, 6, 9, and 12 months.
+
+**For model configuration, I run a grid search over 64 combinations — varying layer sizes, activation functions, dropout, learning rate, and batch size. The winning configuration is a three-layer MLP with 64, 32, and 16 neurons, tanh activation, no dropout, trained with Adam optimiser for 20 epochs with a batch size of 1024. This achieved the lowest validation MSE of 0.0226.**
+
+==*加上解释*==
+Additionaly, there actually exist a mistake, 
 
 ---
 
 ## Slide 7 - Loss Function Families
 
-This is the key methodology slide. There are four loss families, shown here from simple to most complex.
+This is the key methodology slide. The title says "four loss families converge on one design" — so let me walk through all four, because they share the same building blocks shown on this slide.
 
-**Family one: regression.** MSE is the standard baseline — it minimises squared error. MedSE replaces the mean with the median, so it is more robust to outliers. But neither of them cares about prediction direction.
+Start with the two core components. On the slide you can see **D** — the directional gate. D equals one minus sigmoid of a times y times y-hat, multiplied by a batch-normalised magnitude weight, absolute y to the power b divided by its batch mean. When prediction and realised return share the same sign, a times y times y-hat is large and positive, sigmoid saturates near one, so D drops to near zero. When they disagree in sign, sigmoid drops toward zero and D rises. The parameters are a equals 100 and b equals 2.
 
-**Family two: directional.** MADL and GMADL reward the model when predicted and realised returns share the same sign. This is closer to what a portfolio actually needs. But pure directional losses can lose control over prediction scale — the model may predict the right direction at a completely wrong magnitude.
+Next to it — **H delta**, the Huber backbone. Huber is quadratic when the residual is smaller than delta, and linear when larger. Delta equals 0.01, matching the scale of monthly returns.  So for small prediction errors, Huber behaves like MSE and pushes the model to fine-tune. But for extreme outliers — like a stock that returns plus 2400 percent in one month — Huber caps the penalty at a linear rate instead of letting the squared term explode. This prevents a handful of extreme observations from dominating the entire gradient.
+
+So In the formal experiments, I actually set four sets loss functions.
+**Family one: regression type.** MSE is the standard baseline — it minimises squared error. MedSE replaces the mean with the median, so it is more robust to outliers. But neither of them cares about prediction direction.
+
+**Family two: directional.** MADL and GMADL reward the model when predicted and realised returns share the same sign. 
 
 **Family three: additive hybrid.** As shown in the formula here — we simply add a directional penalty and a Huber magnitude term together. It works, but the two components can fight each other at different scales.
 
 **Family four: multiplicative hybrid — my main design focus.** The formula is here. The intuition is simple: the Huber term is the backbone that controls magnitude. The directional gate — D, shown on the slide with a equals 100 and b equals 2 in the implementation — acts as a multiplier. When direction is correct, D is near zero, and the loss is just Huber. When direction is wrong, D amplifies the Huber loss. So wrong-direction predictions on large-return stocks get penalised the most.
 
 One more extension — and I will show the results on this later in Slide 13 — we add a prediction-variance penalty controlled by a parameter gamma. The base multiplicative loss here uses lambda_dir equal to 2. Gamma controls how much the model is allowed to spread its predictions apart. Too little gamma means instability across seeds; too much gamma compresses the signal. The experiment scans gamma from 0.3 to 1.5 to find the sweet spot.
-
-To summarise: we move from MSE, which ignores direction, through directional losses that ignore magnitude, to a multiplicative hybrid that handles both — and then add variance control on top.
-
-Remember, MSE gives Sharpe minus 0.46. Everything I design next is trying to beat that.
 
 ---
 
