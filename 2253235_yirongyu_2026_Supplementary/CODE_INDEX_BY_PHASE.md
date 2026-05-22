@@ -7,7 +7,7 @@
 | 分支 | HEAD | 角色 | 覆盖的 Phase |
 |---|---|---|---|
 | **`main`** | `0ed0cc0` | 最终交付分支：代码 + 论文 LaTeX + deck + Phase 3/4 证据镜像 + Phase 3/4 Colab 复现路径 | Phase 1 / Phase 2 代码<br>Phase 3a / Phase 3b / Phase 4 证据 + Colab 复现路径 |
-| **`phase3-4`** *(原 `phase2.2-fix`)* | `2fd9ae8` 起 | Phase 3/4 代码原产地：多 seed runner、归一化探针、Phase 4 诊断脚本 | Phase 3a / Phase 3b / Phase 4 代码 + 原始证据 |
+| **`phase3-4`** | `2fd9ae8` 起 | Phase 3/4 代码原产地：多 seed runner、归一化探针、Phase 4 诊断脚本 | Phase 3a / Phase 3b / Phase 4 代码 + 原始证据 |
 | `phase2-fixes` | `a921a95` | `phase3-4` 的前驱（Phase 3 完成、Phase 4 未起） | Phase 3a / Phase 3b 代码 |
 | `phase2/loss-combinations` | `84ecabe` | Phase 3b α/β/λ runner 起点（codegen 自 `generate_phase2_runners.py`） | Phase 3b 早期 |
 | `codex/phase15-colab-drive` | `eb26783` | Phase 2 Colab 早期探索 | Phase 2 探索 |
