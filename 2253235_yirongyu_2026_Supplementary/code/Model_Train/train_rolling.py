@@ -28,7 +28,7 @@ class RollingConfig:
 def month_diff(a: pd.Timestamp, b: pd.Timestamp) -> int:
     """
     Number of whole months between two timestamps.
-    中文：计算两个日期之间的整月差值。
+    计算两个日期之间的整月差值。
     """
     return (a.year - b.year) * 12 + (a.month - b.month)
 
@@ -39,7 +39,7 @@ def generate_time_windows(
 ) -> List[Tuple[pd.Timestamp, pd.Timestamp, pd.Timestamp, pd.Timestamp]]:
     """
     Generate rolling windows (train_start, train_end, test_start, test_end).
-    中文：生成训练起止与测试起止组成的滚动时间窗口列表。
+    生成训练起止与测试起止组成的滚动时间窗口列表。
     """
     unique_dates = sorted(pd.to_datetime(pd.Series(dates)).unique())
     windows: List[Tuple[pd.Timestamp, pd.Timestamp, pd.Timestamp, pd.Timestamp]] = []
@@ -92,7 +92,7 @@ def build_window_dataloaders(
 ) -> Tuple[DataLoader, DataLoader]:
     """
     Build PyTorch DataLoaders for a given rolling window.
-    中文：基于指定窗口切分特征/目标，并封装成训练与测试 DataLoader。
+    基于指定窗口切分特征/目标，并封装成训练与测试 DataLoader。
     """
     train_start, train_end, test_start, test_end = window
     date_array = pd.to_datetime(pd.Series(dates)).to_numpy()
@@ -114,7 +114,7 @@ def build_window_dataloaders(
 def get_loss_fn(name: str) -> LossFn:
     """
     Map a short name to a loss function.
-    中文：根据名称返回对应的损失函数。
+    根据名称返回对应的损失函数。
     """
     name_lower = name.lower()
     if name_lower == "mse":
@@ -139,7 +139,7 @@ def train_one_window(
 ) -> MLP:
     """
     Train a single MLP on one rolling window.
-    中文：在指定窗口的数据上训练一份 MLP 模型。
+    在指定窗口的数据上训练一份 MLP 模型。
     """
     model = MLP(config).to(device)
     optimizer = torch.optim.Adam(model.parameters())
@@ -163,7 +163,7 @@ def predict_window(
 ) -> np.ndarray:
     """
     Generate predictions for one window and return them as a numpy array.
-    中文：对测试窗口生成预测，并返回拼接后的 numpy 数组。
+    对测试窗口生成预测，并返回拼接后的 numpy 数组。
     """
     model.eval()
     preds_list: List[np.ndarray] = []
