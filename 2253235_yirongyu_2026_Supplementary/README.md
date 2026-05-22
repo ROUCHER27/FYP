@@ -1,7 +1,6 @@
 # Supplementary Materials
 
 **Student:** Yirong Yu (2253235)  
-**Title:** Loss Function Design for Neural Network-Based Cross-Sectional Stock Return Prediction  
 **Academic Year:** 2025/26
 
 ---
