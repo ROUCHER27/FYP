@@ -16,7 +16,7 @@ def load_raw_csvs(
 ) -> pd.DataFrame:
     """
     Load and vertically concatenate raw CSV files.
-    中文：批量读取目录中的原始 CSV 并纵向合并。
+    批量读取目录中的原始 CSV 并纵向合并。
 
     Parameters
     ----------
@@ -43,7 +43,7 @@ def load_raw_csvs(
 def validate_columns(df: pd.DataFrame, required: Sequence[str]) -> None:
     """
     Ensure required columns exist before downstream operations proceed.
-    中文：检查必需列是否存在，避免后续步骤因列缺失而失败。
+    检查必需列是否存在，避免后续步骤因列缺失而失败。
     """
     missing = [col for col in required if col not in df.columns]
     if missing:
@@ -56,7 +56,7 @@ def parse_dates(
 ) -> pd.DataFrame:
     """
     Ensure date column is in pandas datetime format and sorted by PERMNO, date.
-    中文：将日期列统一转为 pandas 的 datetime 并按 PERMNO、日期排序。
+    将日期列统一转为 pandas 的 datetime 并按 PERMNO、日期排序。
     """
     df = data.copy()
     parsed_dates = pd.to_datetime(df[date_column], errors="coerce")
@@ -74,7 +74,7 @@ def clean_core_columns(
 ) -> pd.DataFrame:
     """
     Handle missing values in core columns for each PERMNO using a simple strategy.
-    中文：按证券分组对 RET/VOL/SHROUT 做缺失值处理（前/后向填充）。
+    按证券分组对 RET/VOL/SHROUT 做缺失值处理（前/后向填充）。
     """
     df = data.copy()
     validate_columns(df, ["PERMNO", *columns])
@@ -97,7 +97,7 @@ def add_basic_variables(
 ) -> pd.DataFrame:
     """
     Add simple return and turnover variables used as building blocks for features.
-    中文：生成基础变量 r（简单收益）和 to（换手率）供后续特征使用。
+    生成基础变量 r（简单收益）和 to（换手率）供后续特征使用。
     """
     df = data.copy()
     validate_columns(df, [ret_column, vol_column, shrout_column])
@@ -119,7 +119,7 @@ def add_target_return(
 ) -> pd.DataFrame:
     """
     Add r_{i,t+1} as the prediction target via one-period-ahead shift within each PERMNO.
-    中文：在每个 PERMNO 内向前移动一月得到预测目标 r_{i,t+1}。
+    在每个 PERMNO 内向前移动一月得到预测目标 r_{i,t+1}。
     """
     df = data.copy()
     validate_columns(df, [id_column, ret_column, date_column])
@@ -140,7 +140,7 @@ def prepare_panel_data(
 ) -> pd.DataFrame:
     """
     End-to-end preprocessing pipeline that returns a cleaned panel with basic variables and target.
-    中文：贯穿式预处理流水线，输出包含基础变量与目标值的整洁面板数据。
+    贯穿式预处理流水线，输出包含基础变量与目标值的整洁面板数据。
     """
     if data_dir is None:
         data_dir_path = Path(__file__).resolve().parent.parent
