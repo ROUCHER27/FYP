@@ -14,7 +14,7 @@
 ## Directory Structure
 
 ```
-2253235_yirongyu_2026_Supplementary/
+2253235_yirongyu_2026_Supplementary/                  ← (on `main` branch)
 ├── README.md                          # This file
 ├── CODE_INDEX_BY_PHASE.md             # Per-phase index: code, runners, CLI, evidence paths
 ├── code/                              # Phase 1 / Phase 2 source code (single-seed runners)
@@ -57,15 +57,26 @@
     └── figures/
 ```
 
-### Phase 3 and Phase 4 source code
+```
+(repository root)                                     ← (on `phase3-4` branch · git checkout phase3-4)
+├── sanity_check_signal_tilted.py                            # Shared pipeline (extended with Phase 4 normalised-loss path)
+├── Model_Train/                                             # Same module layout as on main; losses.py extended to 31 entries
+├── run_sanity_check_m2_robust_gamma{03,05,07,10,15}.py      # Phase 3a · γ refinement (5 values)
+├── run_sanity_check_imadl_m2_alpha{02..08}.py               # Phase 3b · α sweep (7 values)
+├── run_sanity_check_imadl_gmadl_beta{03,05,07}.py           # Phase 3b · β sweep (3 values)
+├── run_sanity_check_adaptive_lambda{10,50,100}.py           # Phase 3b · adaptive λ sweep (3 values)
+├── run_sanity_check_m2_robust_gamma{001,01}.py              # Phase 3b · fine γ (γ → 0 limit)
+├── run_sanity_check_m2_robust_gamma{07,10}_normalized.py    # Phase 4 · normalisation probe
+├── run_sanity_check_imadl_m2_alpha06_normalized.py          # Phase 4 · normalisation probe
+├── run_phase2_gamma_refinement.py                           # Phase 3a batch orchestrator (5 × 3 seeds)
+├── run_phase2_robustness.py                                 # Phase 3b + Phase 4 batch orchestrator
+├── run_loss_scale_diagnostics.py                            # Phase 4 · per-batch component scale diagnostics
+├── analyze_loss_scales.py                                   # Phase 4 · diagnostics aggregator
+└── notebooks/
+    └── phase2_loss_component_analysis.ipynb                 # Phase 4 · interactive analysis & figures
+```
 
-Multi-seed Phase 3a / Phase 3b / Phase 4 runner scripts live on the **`phase3-4`** branch of the repository (not under `code/` here). This includes:
-
-- Phase 3a γ refinement: `run_sanity_check_m2_robust_gamma{03,05,07,10,15}.py` and the orchestrator `run_phase2_gamma_refinement.py`
-- Phase 3b α / β / λ + fine γ sweeps: `run_sanity_check_imadl_m2_alpha{02..08}.py`, `run_sanity_check_imadl_gmadl_beta{03,05,07}.py`, `run_sanity_check_adaptive_lambda{10,50,100}.py`, `run_sanity_check_m2_robust_gamma{001,01}.py`, and orchestrator `run_phase2_robustness.py`
-- Phase 4 normalisation probe: `run_sanity_check_m2_robust_gamma{07,10}_normalized.py`, `run_sanity_check_imadl_m2_alpha06_normalized.py`, plus diagnostics `run_loss_scale_diagnostics.py` / `analyze_loss_scales.py` and the analysis notebook `notebooks/phase2_loss_component_analysis.ipynb`
-
-The Phase 3/4 evidence CSV/JSON used to populate Tables 5.3–5.5 is also mirrored on the `main` branch under `doc/phase2-fix/` for read-only reference; see `CODE_INDEX_BY_PHASE.md` §2.3–§2.5 for full path mappings between the two branches.
+> Multi-seed Phase 3a / Phase 3b / Phase 4 source code lives on the **`phase3-4`** branch, not under `2253235_yirongyu_2026_Supplementary/code/`. The model configuration on `phase3-4` is `tanh + dropout 0.0` (vs. `relu + dropout 0.2` on `main`); see `CODE_INDEX_BY_PHASE.md` §2.3–§2.5 for the exact CLI templates, hyperparameters, and evidence CSV paths. The Phase 3/4 evidence CSV/JSON used to populate Tables 5.3–5.5 is also mirrored on the `main` branch under `doc/phase2-fix/` for read-only reference.
 
 ---
 
@@ -97,9 +108,9 @@ python run_sanity_check_hybrid_add_a3.py [same CLI flags]
 
 CLI flags are uniform across all Phase 1 / Phase 2 wrappers; only the runner filename and the implicit loss id change.
 
-### Phase 3 / Phase 4 (multi seed)
+### Phase 3 / Phase 4 (multi seed, on `phase3-4`)
 
-These rows require checking out the `phase3-4` branch and using the same CSV data files at the repository root. The model configuration on `phase3-4` is `tanh + dropout 0.0` (vs. `relu + dropout 0.2` on `main`); the CLI flags themselves are identical to Phase 1/2 except for `--seeds 42,52,62 --caps 0.05`.
+These rows require checking out the `phase3-4` branch and using the same CSV data files at the repository root. CLI flags are identical to Phase 1/2 except for `--seeds 42,52,62 --caps 0.05`.
 
 ```bash
 git checkout phase3-4
@@ -111,7 +122,7 @@ python run_sanity_check_m2_robust_gamma07.py \
   --train-start 1990-01 --train-end 1994-12 \
   --test-start 1995-01 --test-months 24 \
   --max-epochs 20 --batch-size 1024
-# or run the full 5×3 grid via the orchestrator:
+# or run the full 5 × 3 grid via the orchestrator:
 python run_phase2_gamma_refinement.py --data-dir <repo-root> --output-dir <output-root>
 
 # Phase 4 normalisation probe (three rows)
