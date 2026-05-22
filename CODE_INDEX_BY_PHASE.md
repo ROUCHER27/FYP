@@ -1,21 +1,23 @@
 # Code Index by Phase
 
-> 把 PPT 上的 Phase 1–4 与论文 Chapter 5 §5.2–§5.6 的实证结果，逐项对应到仓库里的代码与运行入口。给老师交付时只看本文件即可定位每条 loss 的 runner 与说明。
+本文件把 PPT 中的 Phase 1–Phase 4 与论文 Chapter 5 §5.2–§5.6 的实证结果，逐项映射到仓库内对应的代码、运行入口、CLI 参数和证据 CSV 路径。所有 Phase ↔ 章节 ↔ 表格的对应关系以下表为准。
 
 ## 一、分支总览
 
 | 分支 | HEAD | 角色 | 覆盖的 Phase |
 |---|---|---|---|
-| **`main`** | `0ed0cc0` | **最终交付分支**：单一来源，包含全部代码 + 论文 LaTeX + deck + Phase 3/4 证据镜像 + Phase 3/4 Colab 复现路径文档 | Phase 1 / Phase 2 代码<br>Phase 3a / Phase 3b / Phase 4 证据 + Colab 复现路径 |
-| **`phase2.2-fix`** | `2fd9ae8` | **Phase 3/4 代码原产地**：多 seed runner、归一化探针、Phase 4 诊断 | Phase 3a / Phase 3b / Phase 4 代码 + 原始证据 |
-| `phase2-fixes` | `a921a95` | `phase2.2-fix` 的前驱（Phase 3 完成、Phase 4 未起） | Phase 3a / Phase 3b 代码 |
+| **`main`** | `0ed0cc0` | 最终交付分支：代码 + 论文 LaTeX + deck + Phase 3/4 证据镜像 + Phase 3/4 Colab 复现路径 | Phase 1 / Phase 2 代码<br>Phase 3a / Phase 3b / Phase 4 证据 + Colab 复现路径 |
+| **`phase3-4`** *(原 `phase2.2-fix`)* | `2fd9ae8` 起 | Phase 3/4 代码原产地：多 seed runner、归一化探针、Phase 4 诊断脚本 | Phase 3a / Phase 3b / Phase 4 代码 + 原始证据 |
+| `phase2-fixes` | `a921a95` | `phase3-4` 的前驱（Phase 3 完成、Phase 4 未起） | Phase 3a / Phase 3b 代码 |
 | `phase2/loss-combinations` | `84ecabe` | Phase 3b α/β/λ runner 起点（codegen 自 `generate_phase2_runners.py`） | Phase 3b 早期 |
-| `codex/phase15-colab-drive` | `eb26783` | Phase 2 Colab 早期探索（旧名 "Phase 1.5"） | Phase 2 探索 |
+| `codex/phase15-colab-drive` | `eb26783` | Phase 2 Colab 早期探索 | Phase 2 探索 |
 | `codex/hybrid-lambda-sweep` | `3d921cd` | Phase 2 hybrid λ sweep runner 雏形 | Phase 2 前奏 |
 | `codex/colab-repo-cleanup` | `b872bab` | Phase 1 Colab 流水线基础设施 | Phase 1 工具链 |
-| `script-revision-v2` | `164fc0c` | 已合入 main（5 behind / 0 ahead），可删 | — |
+| `script-revision-v2` | `164fc0c` | 已合入 main（5 behind / 0 ahead） | — |
 
-> 给老师的口径：只看 `main` 即可；`phase2.2-fix` 作为多 seed 实验的"原产地存证"保留。其余 6 条都是开发过程快照，建议交付前归档（命名为 `archive/<原名>`）或删除。
+> **分支命名说明**：`phase3-4` 由原分支 `phase2.2-fix` 重命名而来。仓库内若干目录路径仍保留旧名（例如 `doc/phase2-fix/phase2.2-fix/` 与 main 上的镜像目录 `doc/phase2-fix/phase2.2-fix1/`），为历史路径，未一并重命名以保持论文 Appendix B 中既有引用的一致性。
+
+`main` 与 `phase3-4` 是阅读本仓库实证证据所需的两条分支；其余分支为开发过程快照。
 
 ---
 
@@ -23,7 +25,7 @@
 
 ### 通用脚本包头模板
 
-所有 `run_sanity_check_<loss_id>.py` 都是同一个 thin wrapper，只换两个参数：`build_arg_parser` 的描述字符串与 `run_sanity_check` 的 loss id。共享 pipeline 在 `sanity_check_signal_tilted.py` 中实现。
+所有 `run_sanity_check_<loss_id>.py` 都是 thin wrapper，区别仅在 `build_arg_parser` 的描述字符串与 `run_sanity_check` 调用的 loss id。共享 pipeline 实现位于 `sanity_check_signal_tilted.py`。
 
 **Phase 1 / Phase 2 入口脚本**（在 `main` 上）：
 
@@ -41,7 +43,7 @@ if __name__ == "__main__":
     main()
 ```
 
-**Phase 3a / Phase 3b / Phase 4 入口脚本**（在 `phase2.2-fix` 上，描述字符串换成 `Phase 2 sanity check`，并把 `parser.parse_args()` 直接内联）：
+**Phase 3a / Phase 3b / Phase 4 入口脚本**（在 `phase3-4` 上，描述字符串换成 `Phase 2 sanity check`，并把 `parser.parse_args()` 直接内联）：
 
 ```python
 from sanity_check_signal_tilted import build_arg_parser, run_sanity_check
@@ -141,10 +143,10 @@ produce a CSV without modifying the training loop.
 | `m2_robust_gamma15` | `run_sanity_check_m2_robust_gamma15.py` | 1.5 | 过度压缩信号，性能与稳定性双降 |
 
 **批量编排**：`run_phase2_gamma_refinement.py`（封装 5 × 3 = 15 次实验，调用 `run_phase2_robustness.run_batch`）。
-**所在分支**：`phase2.2-fix`（**code 唯一原产地，main 上没有这些 runner**）。
+**所在分支**：`phase3-4`（代码唯一原产地，main 上不含这些 runner；如需运行需切到 `phase3-4` 分支）。
 **CLI 模板**：`--data-dir <repo-root> --pattern '*.csv' --seeds 42,52,62 --caps 0.05 --train-start 1990-01 --train-end 1994-12 --test-start 1995-01 --test-months 24 --max-epochs 20 --batch-size 1024`
 **证据路径**：
-- 原产地：`phase2.2-fix:doc/phase2-fix/reports/phase2_grouped_summary.csv` + `phase2_raw_runs.csv`（与 Phase 3b 整合在一份 CSV 内）
+- 原产地：`phase3-4:doc/phase2-fix/reports/phase2_grouped_summary.csv` + `phase2_raw_runs.csv`（与 Phase 3b 整合在一份 CSV 内）
 - main 镜像（已拆分）：`main:doc/phase2-fix/phase2_2/gamma_refinement/reports/phase2_grouped_summary.csv` + `phase2_raw_runs.csv`
 
 ### 2.4 Phase 3b · 整合 α / β / λ + 细 γ（每行 3 seed）
@@ -187,7 +189,7 @@ produce a CSV without modifying the training loop.
 | `m2_robust_gamma01` | `run_sanity_check_m2_robust_gamma01.py` | 0.1 | 比 0.3 更弱的方差正则 |
 
 **批量编排**：`run_phase2_robustness.py`（默认 16 个 loss × 3 seed = 48 次实验）
-**所在分支**：`phase2.2-fix`（α/β/λ runner 早期版本见 `phase2/loss-combinations:generate_phase2_runners.py`）
+**所在分支**：`phase3-4`（α/β/λ runner 早期版本见 `phase2/loss-combinations:generate_phase2_runners.py`）
 **证据路径**：与 Phase 3a 共享 `phase2_grouped_summary.csv` / `phase2_raw_runs.csv`
 
 ### 2.5 Phase 4 · loss-component normalisation probe（诊断性，3 seed）
@@ -206,88 +208,38 @@ produce a CSV without modifying the training loop.
 - `analyze_loss_scales.py` — 把上一步输出聚合为 `loss_scale_*.csv`
 - `notebooks/phase2_loss_component_analysis.ipynb` — 交互式分析与作图
 
-**所在分支**：`phase2.2-fix`（**唯一原产地**）
+**所在分支**：`phase3-4`（代码唯一原产地）
 **证据路径**：
-- 原产地：`phase2.2-fix:doc/phase2-fix/phase2.2-fix/{phase1_summary.json, phase2_summary.json, LOSS_COMPONENT_ANALYSIS_RESULTS.md}`
+- 原产地：`phase3-4:doc/phase2-fix/phase2.2-fix/{phase1_summary.json, phase2_summary.json, LOSS_COMPONENT_ANALYSIS_RESULTS.md}`
 - main 镜像：`main:doc/phase2-fix/phase2.2-fix1/{phase1_summary.json, phase2_summary.json}`
-- ⚠️ 目录名差一个 "1"：main 镜像是 `phase2.2-fix1`，phase2.2-fix 分支上是 `phase2.2-fix`。论文 Appendix B §B.2 写的 `phase2.2-fix1` 路径只在 `main` 上存在。
+- 注：目录名 `phase2.2-fix` 与 `phase2.2-fix1` 是历史路径（沿用原分支名 `phase2.2-fix` 的命名），未随分支重命名一并迁移；论文 Appendix B §B.2 依此引用 main 上的 `phase2.2-fix1` 路径。
 
 ---
 
-## 三、Colab 复现路径文档（统一收到 main）
+## 三、Colab 复现路径目录
 
-按你的决定：**Phase 3 / Phase 4 在 `phase2.2-fix` 上的 Colab 复现产物，连同 Phase 1 / Phase 2 的 Colab 资产，一并保存在 `main` 的交付包里**，让老师 clone main 就能拿到完整的复现路径。
+`2253235_yirongyu_2026_Supplementary/colab_runs/` 收录 Phase 1–Phase 4 在 Google Colab 上的实际跑批 notebook 与操作手册（原样自仓库内拷入，未做格式转换）。该目录的目的为留档复现路径与操作历史；批改人无需在 Colab 重跑。Notebook 内部出现的 `/content/drive/MyDrive/...` 等 Drive 挂载路径为开发过程中的个人挂载点，重跑时替换为本地或自有 Drive 路径即可。
 
-### 3.1 计划布局（所有路径都在 `main` 上）
-
-```
-2253235_yirongyu_2026_Supplementary/
-├── code/                            # 已存在：Phase 1/2 单 loss runner + sanity_check_signal_tilted.py
-├── colab_runs/                      # 新增目录：Colab 复现路径文档
-│   ├── README.md                    # 索引：每个 notebook 跑了哪个 Phase / 多少 loss / 多少 seed
-│   ├── phase1_2_baselines.html      # 由 doc/final_report_24m_baselines_colab.ipynb nbconvert
-│   ├── phase1_2_all_evidence.html   # 由 doc/final_report_all_24m_evidence_colab.ipynb nbconvert
-│   ├── phase3_2_2_runner.html       # 由 phase2.2-fix:Phase2_2_Experiment_Runner.ipynb nbconvert
-│   ├── phase3_4_fixes_runner.html   # 由 phase2.2-fix:Phase2_Fixes_Colab_Runner.ipynb nbconvert
-│   ├── phase4_loss_component.html   # 由 phase2.2-fix:notebooks/phase2_loss_component_analysis.ipynb nbconvert
-│   ├── COLAB_USAGE.md               # 从 phase2.2-fix 拷贝并清理 Drive 私人路径
-│   └── COLAB_PHASE2_P0_GUIDE.md     # 从 phase2.2-fix 拷贝并清理 Drive 私人路径
-└── ...
-```
-
-### 3.2 收编步骤（执行时附加到 PR）
-
-1. **从 `phase2.2-fix` 拉 5 个 notebook + 2 个 md**：
-   - `Phase2_2_Experiment_Runner.ipynb`
-   - `Phase2_Fixes_Colab_Runner.ipynb`
-   - `notebooks/phase2_loss_component_analysis.ipynb`
-   - `COLAB_USAGE.md`
-   - `COLAB_PHASE2_P0_GUIDE.md`
-2. **对 5 个 notebook 跑 `jupyter nbconvert --to html --no-input`**，得到带输出 cell（保留）但不暴露源码 cell（避免 Drive token 类敏感信息泄露）的 HTML 静态页。
-3. **对 2 个 md 做 sed 清理**：
-   - `s|/content/drive/MyDrive/[^[:space:]]*|<DRIVE_PATH>|g` 替换 Drive 私人路径
-   - 删除任何形如 `https://drive.google.com/file/d/...` 的私人共享链接
-4. **新增 `2253235_yirongyu_2026_Supplementary/colab_runs/README.md`**，按下表填写 5 个 HTML 的对应关系：
-
-| 文件 | 对应 Phase | 跑了什么 | 来源 notebook（branch:path） |
+| 文件 | 对应 Phase | 跑了什么 | 来源（branch:path） |
 |---|---|---|---|
-| `phase1_2_baselines.html` | Phase 1 | mse + medse 两条 baseline 的 Colab 跑批 | `main:doc/final_report_24m_baselines_colab.ipynb` |
-| `phase1_2_all_evidence.html` | Phase 1 + Phase 2 | 7 baseline + 9 hybrid = 16 条 single-seed 跑批 | `main:doc/final_report_all_24m_evidence_colab.ipynb` |
-| `phase3_2_2_runner.html` | Phase 3a | 5 γ 值 × 3 seed = 15 次实验的 Colab 编排 | `phase2.2-fix:Phase2_2_Experiment_Runner.ipynb` |
-| `phase3_4_fixes_runner.html` | Phase 3b + Phase 4 | α/β/λ + 细 γ + 3 normalised 的统一 Colab 编排 | `phase2.2-fix:Phase2_Fixes_Colab_Runner.ipynb` |
-| `phase4_loss_component.html` | Phase 4 | normalisation probe 的交互式分析 + 作图 | `phase2.2-fix:notebooks/phase2_loss_component_analysis.ipynb` |
+| `final_report_24m_baselines_colab.ipynb` | Phase 1（一部分） | mse + medse 两条 baseline 的 Colab 跑批 | `main:doc/final_report_24m_baselines_colab.ipynb` |
+| `final_report_24m_baselines_colab.md` | Phase 1（操作手册） | 上面 notebook 的逐步说明 | `main:doc/final_report_24m_baselines_colab.md` |
+| `final_report_all_24m_evidence_colab.ipynb` | Phase 1 + Phase 2 | 7 baseline + 9 hybrid = 16 条 single-seed 跑批 | `main:doc/final_report_all_24m_evidence_colab.ipynb` |
+| `final_report_all_24m_evidence_colab.md` | Phase 1 + Phase 2（操作手册） | 上面 notebook 的逐步说明 | `main:doc/final_report_all_24m_evidence_colab.md` |
+| `Phase2_2_Experiment_Runner.ipynb` | Phase 3a | 5 γ 值 × 3 seed = 15 次 γ refinement 实验的 Colab 编排 | `phase3-4:Phase2_2_Experiment_Runner.ipynb` |
+| `Phase2_Fixes_Colab_Runner.ipynb` | Phase 3b + Phase 4 | α/β/λ + 细 γ + 3 normalised 在 Colab 上的统一跑批 | `phase3-4:Phase2_Fixes_Colab_Runner.ipynb` |
+| `phase2_loss_component_analysis.ipynb` | Phase 4 | normalisation probe 的交互式分析与作图 | `phase3-4:notebooks/phase2_loss_component_analysis.ipynb` |
+| `COLAB_USAGE.md` | 通用操作 | Colab 端挂载 Drive、resume、batch 跑批的通用文档 | `phase3-4:COLAB_USAGE.md` |
+| `COLAB_PHASE2_P0_GUIDE.md` | Phase 3/4 操作 | Phase 3/4 跑批在 Colab 上的逐步操作指南 | `phase3-4:COLAB_PHASE2_P0_GUIDE.md` |
 
-5. **`scripts/colab_backup.sh`** 不进交付包（个人 Drive 备份脚本）。
-6. **探索性 notebook**（`Feature_Pipeline_Check.ipynb` / `G:MADL/*.ipynb` / `test/Feature_Pipeline_CheckX*.ipynb`）不进交付包，已被论文 §3.3 / §3.4 / §4 文字归纳。
+shell 跑批入口位于 `2253235_yirongyu_2026_Supplementary/code/scripts/`：`run_final_report_24m_baselines_colab.sh` 与 `run_final_report_all_24m_evidence_colab.sh` 覆盖 Phase 1 + Phase 2；Phase 3/4 跑批由 notebook 内嵌调用 `run_phase2_robustness.py` / `run_phase2_gamma_refinement.py` 完成。
 
 ---
 
-## 四、需要顺手做的清理：删除注释里的 "中文：" 前缀（共 13 行）
+## 四、命名与路径备注
 
-**只删字面量 "中文："**（含全角冒号），保留后面的中文句子。涉及 6 份文件，全部是 `Model_Train/data_preprocess.py` 与 `Model_Train/train_rolling.py` 在不同位置的镜像。
-
-| 分支 | 文件 | 命中行号 |
-|---|---|---|
-| main | `Model_Train/data_preprocess.py` | 19, 46, 60, 80, 103, 125, 146（7 行） |
-| main | `Model_Train/train_rolling.py` | 31, 42, 95, 117, 142, 166（6 行） |
-| main | `2253235_yirongyu_2026_Supplementary/code/Model_Train/data_preprocess.py` | 同上 7 行（与顶层 md5 一致） |
-| main | `2253235_yirongyu_2026_Supplementary/code/Model_Train/train_rolling.py` | 同上 6 行（与顶层 md5 一致） |
-| phase2.2-fix | `Model_Train/data_preprocess.py` | 19, 46, 59, 77, 100, 122, 143（7 行） |
-| phase2.2-fix | `Model_Train/train_rolling.py` | 同 main（md5 一致） |
-
-**改法示例**（`data_preprocess.py:19`）：
-
-```diff
-     """
-     Load and vertically concatenate raw CSV files.
--    中文：批量读取目录中的原始 CSV 并纵向合并。
-+    批量读取目录中的原始 CSV 并纵向合并。
-
-     Parameters
-     ----------
-```
-
-`losses.py` 等文件里的中文注释（如"对逐元素损失按照 mean/sum/none 指令做标准化聚合"）没有"中文："前缀，**不在本次清理范围内**。
+- **分支**：`phase3-4` 由 `phase2.2-fix` 重命名而来；后者旧名仅为历史引用，仓库内涉及该旧名的几个目录（`doc/phase2-fix/phase2.2-fix/` 与 `doc/phase2-fix/phase2.2-fix1/`）保留为历史路径。
+- **目录名差异**：`phase2.2-fix1` 是 main 上对原 phase2.2-fix 分支 Phase 4 产物的镜像目录名；`phase2.2-fix`（无 1）是 phase3-4 分支上的同源原始目录名。论文 Appendix B 与 §3.7 中 `phase2.2-fix` / `phase2.2-fix1` 字样均指上述目录或原分支名，与目前的 `phase3-4` 分支等价。
 
 ---
 
